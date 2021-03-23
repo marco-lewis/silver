@@ -3,12 +3,17 @@ import numpy as np
 from complex import Complex, I
 from ComplexVector import ComplexVector
 import cmath
+from QuantumReferencer import QuantumReferencer
 
 class QuantumChecker:
     def __init__(self):
+#     Initialise a solver
         self.solver = Solver()
+#     Set the time tracker to 0
         self.t = 0
-        self.qvars = []
+        self.q_ref = QuantumReferencer()
+        self.qs = []
+        self.N = 0
         
     def check_solver(self):
         return self.solver.check()
@@ -29,16 +34,29 @@ class QuantumChecker:
     
     def add_constraint(self, conds):
         self.solver.add(conds)
-            
-    def init_new_reg(self, n):
+                
+#     Initialises a new register to 0
+    def init_new_qreg(self, name, n):
         s = self.solver
-        self.N = 2**n
-        self.qs = ComplexVector('t' + str(self.t) + '_q', self.N)
-        for i in range(self.N):
-            q = self.qs[i]
-            if (i != 0): s.add(q == 0 + 0*I)
-            else: s.add(q == 1 + 0*I)
-                            
+        self.q_ref.add(name, n)
+        if self.qs == []:
+            self.qs = self.qs + ComplexVector('t' + str(self.t) + '_q', 2**n)
+            for i in range(0, 2**n):
+                q = self.qs[i]
+                s.add(q == 0 + 0*I) if not(i == 0) else s.add(q == 1 + 0*I)
+        else:
+            old_N = self.N
+            v = ComplexVector('t' + str(self.t) + '_q', 2**(self.q_ref.get_total_size()) - old_N, offset = old_N)
+            self.qs = self.qs + v
+
+            for i in range(old_N, old_N * (2**n)):
+                q = self.qs[i]
+                s.add(q == 0 + 0*I)
+        
+        self.N = 2**(self.q_ref.get_total_size())
+            
+
+#     Applies an operator to the entire qubit state    
     def apply_op(self, U):
         if (U.shape[0] != self.N or U.shape[1] != self.N):
             print(U.shape, self.N)
