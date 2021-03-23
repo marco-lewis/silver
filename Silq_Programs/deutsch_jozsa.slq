@@ -1,0 +1,36 @@
+def b_oracle[bs: !N](const n:uint[bs])lifted: B {
+  return (n == 3) || (n == 2) || (n == 7) || (n == 5);
+}
+
+def c_oracle[bs: !N](const n:uint[bs])lifted:B{
+    return false;
+}
+
+def c2_oracle[bs: !N](const n:uint[bs])lifted:B{
+    return true;
+}
+
+def phase_oracle[bits:!N](f: const uint[bits] !-> qfree B, const x:uint[bits]) {
+  if f(x) { phase(pi); }
+  return x;
+}
+
+// [Constant f, bits => 1]
+def deutsch_jozsa[bits:!N](f: const uint[bits] !->qfree B) {
+  x := 0:uint[bits];
+  for i in [0..bits){ x[i] := H(x[i]); }
+
+  if f(x) { phase(pi); }
+
+  for i in [0..bits){ x[i] := H(x[i]); }
+  x := measure(x);
+  return x;
+}
+// [0]
+
+def main() {
+    bits := 3:!N;
+    // Prints 0 if const, prints another number if balanced
+    print(deutsch_jozsa[bits](b_oracle[bits]));
+    return 0;
+}

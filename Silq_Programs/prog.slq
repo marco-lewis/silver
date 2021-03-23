@@ -1,0 +1,9 @@
+// Pre []
+def main() {
+    x := 1:B;
+    x := H(x);
+    x := X(x);
+    x := measure(x);
+    return x;
+}
+// Post []
