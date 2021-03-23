@@ -5,6 +5,8 @@ from ComplexVector import ComplexVector
 import cmath
 from QuantumReferencer import QuantumReferencer
 
+
+#     TODO: Add checks/exceptions across the board
 class QuantumChecker:
     def __init__(self):
 #     Initialise a solver
@@ -45,7 +47,7 @@ class QuantumChecker:
                 q = self.qs[i]
                 s.add(q == 0 + 0*I) if not(i == 0) else s.add(q == 1 + 0*I)
         else:
-            old_N = self.N
+            old_N = self.N # self.q_ref.get_loc(name)
             v = ComplexVector('t' + str(self.t) + '_q', 2**(self.q_ref.get_total_size()) - old_N, offset = old_N)
             self.qs = self.qs + v
 
@@ -55,12 +57,19 @@ class QuantumChecker:
         
         self.N = 2**(self.q_ref.get_total_size())
             
-
+            
+    def apply_sing_op(self, U, name, i):
+        q_loc = self.q_ref.get_loc(name) + i
+        U_kron = np.identity(2) if not (q_loc == 0) else U
+        for i in range(1, self.q_ref.get_total_size()):
+            U_kron = np.kron(np.identity(2), U_kron) if not(i == q_loc) else np.kron(U, U_kron)
+        self.apply_op(U_kron)
+            
 #     Applies an operator to the entire qubit state    
     def apply_op(self, U):
         if (U.shape[0] != self.N or U.shape[1] != self.N):
             print(U.shape, self.N)
-            raise Exception('Error: U not right shape')
+            raise Exception('Error: U not right shape, expected (' + str(self.N) + ',' + str(self.N) + '), but received ' + str(U.shape))
         s = self.solver
         
         next_stamp = 't' + str(self.t + 1) + '_q'
