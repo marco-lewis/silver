@@ -6,12 +6,19 @@ import cmath
 from QuantumReferencer import QuantumReferencer
 
 
-#     TODO: Add checks/exceptions across the board
+# TODO: Add checks/exceptions across the board
+# TODO: Add measurement or check highest prob
+# TODO: Handle Hadamard?
+# TODO: Initialisation to a specific state/number
+# TODO: Handling classical variables - new class?
+# TODO: Handle 2-qubit gates/ops - quantum if-statements
+# TODO: Adding extra constraints - done?
+
 class QuantumChecker:
     def __init__(self):
 #     Initialise a solver
         self.solver = Solver()
-#     Set the time tracker to 0
+#     Set the step tracker to 0
         self.t = 0
         self.q_ref = QuantumReferencer()
         self.qs = []
