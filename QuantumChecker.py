@@ -6,13 +6,13 @@ import cmath
 from QuantumReferencer import QuantumReferencer
 import QuantumOps as qo
 
-# TODO: Add checks/exceptions across the board
+# TODO: Precondition/postcondition addition
 # TODO: Add measurement or check highest prob
-# TODO: Handle Hadamard?
 # TODO: Initialisation to a specific state/number
 # TODO: Handling classical variables - new class?
 # TODO: Handle 2-qubit gates/ops - quantum if-statements
-# TODO: Adding extra constraints - done?
+# TODO: Handle terms in functions e.g. phase(r+a)
+# TODO: Add checks/exceptions across the board
 
 class QuantumChecker:
     def __init__(self):
@@ -91,6 +91,16 @@ class QuantumChecker:
             i += 1
             
         self.apply_op(U_kron)
+        
+    def apply_H(self, name, i):
+        sqrt2 = Real('sqrt2')
+        self.add_constraint([sqrt2**2 == 2, sqrt2 > 0])
+        H = np.array([[1/sqrt2,1/sqrt2], [1/sqrt2,-1/sqrt2]])
+        self.apply_sing_op(H, name, i)
+        
+    def apply_phase(self, phase, name, i):
+        U = np.array([[np.exp(phase), 0], [0, np.exp(phase)]])
+        self.apply_sing_op(U, name, i)
         
 #     Applies an operator to the entire qubit state    
     def apply_op(self, U):
