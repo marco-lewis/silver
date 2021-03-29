@@ -4,7 +4,7 @@ from complex import Complex, I
 from ComplexVector import ComplexVector
 import cmath
 from QuantumReferencer import QuantumReferencer
-
+import QuantumOps as qo
 
 # TODO: Add checks/exceptions across the board
 # TODO: Add measurement or check highest prob
@@ -71,7 +71,27 @@ class QuantumChecker:
         for i in range(1, self.q_ref.get_total_size()):
             U_kron = np.kron(np.identity(2), U_kron) if not(i == q_loc) else np.kron(U, U_kron)
         self.apply_op(U_kron)
+        
+#     Need to check ctrl_q not >= size(name)-1
+    def apply_cnot_to_reg(self, name, ctrl_q):
+        loc = self.q_ref.get_loc(name) + ctrl_q
+        i = 1
+        if not(loc == 0):
+            U_kron = np.identity(2)
+        else: 
+            U_kron = qo.cnot
+            i += 1
+
+        while i < self.q_ref.get_total_size():
+            if not (i == loc):
+                U_kron = np.kron(np.identity(2), U_kron)
+            else:
+                U_kron = np.kron(qo.cnot, U_kron)
+                i += 1
+            i += 1
             
+        self.apply_op(U_kron)
+        
 #     Applies an operator to the entire qubit state    
     def apply_op(self, U):
         if (U.shape[0] != self.N or U.shape[1] != self.N):

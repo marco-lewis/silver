@@ -12,3 +12,5 @@ rotZ = lambda r: np.array([[np.cos(r/2), -1j * np.sin(r/2)], [1j * np.sin(r/2) ,
 H = 1/np.sqrt(2) * np.array([[1,1],[1,-1]])
 
 phase = lambda r: np.array(np.exp(1j*r))
+
+cnot = np.array([[1,0,0,0], [0,1,0,0], [0,0,0,1], [0,0,1,0]])
