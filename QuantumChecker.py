@@ -94,7 +94,7 @@ class QuantumChecker:
         self.apply_op(U_kron)
     
 #     Only when ctrl is 1 (not 0)
-    def apply_ctrl(self, U, ctrl_name, ctrl_q, tgt_name, tgt_q):
+    def apply_ctrl(self, U, ctrl_name, ctrl_q, tgt_name, tgt_q, ctrl_state=1):
         ctrl_loc = self.q_ref.get_loc(ctrl_name) + ctrl_q
         tgt_loc = self.q_ref.get_loc(tgt_name) + tgt_q
         op_size = 2**self.q_ref.get_total_size()
@@ -103,7 +103,7 @@ class QuantumChecker:
         M = 2**(tgt_loc)
         
         for row in range(0, op_size):
-            if (row & (1 << ctrl_loc)):
+            if (ctrl_state and (row & (1 << ctrl_loc))) or (not (ctrl_state) and not (row & (1 << ctrl_loc))):
                 if (row & (1<<tgt_loc)):
                     ctrl_op[row][row - M] = U[1][0]
                     ctrl_op[row][row] = U[1][1]
