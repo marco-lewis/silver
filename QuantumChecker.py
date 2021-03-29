@@ -6,10 +6,11 @@ import cmath
 from QuantumReferencer import QuantumReferencer
 import QuantumOps as qo
 
-# TODO: Precondition/postcondition addition
-# TODO: Add measurement or check highest prob
-# TODO: Initialisation to a specific state/number
+# TODO: General control on operations
 # TODO: Handling classical variables - new class?
+# TODO: Initialisation to a specific state/number
+# TODO: Add measurement or check highest prob
+# TODO: Precondition/postcondition addition
 # TODO: Handle 2-qubit gates/ops - quantum if-statements
 # TODO: Handle terms in functions e.g. phase(r+a)
 # TODO: Add checks/exceptions across the board
@@ -91,6 +92,26 @@ class QuantumChecker:
             i += 1
             
         self.apply_op(U_kron)
+    
+#     Only when ctrl is 1 (not 0)
+    def apply_ctrl(self, U, ctrl_name, ctrl_q, tgt_name, tgt_q):
+        ctrl_loc = self.q_ref.get_loc(ctrl_name) + ctrl_q
+        tgt_loc = self.q_ref.get_loc(tgt_name) + tgt_q
+        op_size = 2**self.q_ref.get_total_size()
+        ctrl_op = np.identity(op_size, dtype=complex)
+        N = 2**(ctrl_loc)
+        M = 2**(tgt_loc)
+        
+        for row in range(0, op_size):
+            if (row & (1 << ctrl_loc)):
+                if (row & (1<<tgt_loc)):
+                    ctrl_op[row][row - M] = U[1][0]
+                    ctrl_op[row][row] = U[1][1]
+                else:
+                    ctrl_op[row][row] = U[0][0]
+                    ctrl_op[row][row + M] = U[0][1]
+        print(ctrl_op)
+        self.apply_op(ctrl_op)
         
     def apply_H(self, name, i):
         sqrt2 = Real('sqrt2')
