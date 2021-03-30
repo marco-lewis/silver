@@ -67,15 +67,17 @@ class QuantumChecker:
             
             
     def apply_sing_op(self, U, name, i):
-        q_loc = self.q_ref.get_loc(name) + i
+        q_loc = self.q_ref.get_loc(name, i)
         U_kron = np.identity(2) if not (q_loc == 0) else U
         for i in range(1, self.q_ref.get_total_size()):
             U_kron = np.kron(np.identity(2), U_kron) if not(i == q_loc) else np.kron(U, U_kron)
         self.apply_op(U_kron)
         
 #     Need to check ctrl_q not >= size(name)-1
-    def apply_cnot_to_reg(self, name, ctrl_q):
-        loc = self.q_ref.get_loc(name) + ctrl_q
+    def apply_cnot_to_reg(self, name, ctrl_i):
+        if (ctrl_i >= self.q_ref.get_size(name) - 1):
+            raise ValueError("Referenced address must be before final address")
+        loc = self.q_ref.get_loc(name, ctrl_i)
         i = 1
         if not(loc == 0):
             U_kron = np.identity(2)
@@ -93,10 +95,9 @@ class QuantumChecker:
             
         self.apply_op(U_kron)
     
-#     Only when ctrl is 1 (not 0)
-    def apply_ctrl(self, U, ctrl_name, ctrl_q, tgt_name, tgt_q, ctrl_state=1):
-        ctrl_loc = self.q_ref.get_loc(ctrl_name) + ctrl_q
-        tgt_loc = self.q_ref.get_loc(tgt_name) + tgt_q
+    def apply_ctrl(self, U, ctrl_name, ctrl_i, tgt_name, tgt_i, ctrl_state=1):
+        ctrl_loc = self.q_ref.get_loc(ctrl_name, ctrl_i)
+        tgt_loc = self.q_ref.get_loc(tgt_name, tgt_i)
         op_size = 2**self.q_ref.get_total_size()
         ctrl_op = np.identity(op_size, dtype=complex)
         N = 2**(ctrl_loc)
@@ -110,7 +111,6 @@ class QuantumChecker:
                 else:
                     ctrl_op[row][row] = U[0][0]
                     ctrl_op[row][row + M] = U[0][1]
-        print(ctrl_op)
         self.apply_op(ctrl_op)
         
     def apply_H(self, name, i):
@@ -121,8 +121,37 @@ class QuantumChecker:
         
     def apply_phase(self, phase, name, i):
         U = np.array([[np.exp(phase), 0], [0, np.exp(phase)]])
-        self.apply_sing_op(U, name, i)
+        self.apply_sing_op(U, name, i)        
+
+    def apply_swap(self, name1, i1, name2, i2):
+        loc1 = self.q_ref.get_loc(name1, i1)
+        loc2 = self.q_ref.get_loc(name2, i2)
         
+        s = self.solver
+        
+        next_stamp = 't' + str(self.t + 1) + '_q'
+        new_qs = ComplexVector(next_stamp, self.N)
+        
+        for state in range(self.N):
+            qr = new_qs[state].r
+            qi = new_qs[state].i
+            if (bool(state  & (1 << loc1)) ^ bool(state & (1 << loc2))):
+#                 Get swap state number
+                set1 =  (state >> loc1) & 1
+                set2 =  (state >> loc2) & 1
+                xor = (set1 ^ set2)
+                xor = (xor << loc1) | (xor << loc2)
+                swap_state = state ^ xor
+
+#                 Make new qubit state the current swapped one
+                s.add(qr == self.qs[swap_state].r)
+                s.add(qi == self.qs[swap_state].i)
+            else:
+                s.add(qr == self.qs[state].r)
+                s.add(qi == self.qs[state].i)
+        self.t += 1
+        self.qs = new_qs
+            
 #     Applies an operator to the entire qubit state    
     def apply_op(self, U):
         if (U.shape[0] != self.N or U.shape[1] != self.N):

@@ -17,11 +17,13 @@ class QuantumReferencer:
             
         raise ValueError("No reference with that name")
         
-    def get_loc(self, name):
+    def get_loc(self, name, offset = 0):
         loc = 0
         for ref in self.q_refs:
             if ref[0] == name:
-                return loc
+                if offset >= ref[1]:
+                    raise ValueError("Offset is larger than register size")
+                else: return loc + offset
             else: loc += ref[1]
         
         raise ValueError("No reference with that name")
