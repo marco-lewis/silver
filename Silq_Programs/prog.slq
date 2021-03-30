@@ -1,4 +1,3 @@
-// Pre []
 def main() {
     x := 1:B;
     x := H(x);
@@ -6,4 +5,3 @@ def main() {
     x := measure(x);
     return x;
 }
-// Post []

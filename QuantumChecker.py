@@ -6,6 +6,7 @@ import cmath
 from QuantumReferencer import QuantumReferencer
 import QuantumOps as qo
 
+# TODO: Separate Control of solver from handling quantum operations
 # TODO: General control on operations
 # TODO: Handling classical variables - new class?
 # TODO: Initialisation to a specific state/number
