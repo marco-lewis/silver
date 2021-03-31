@@ -1,7 +1,12 @@
+# Goal: Create or be given a blank QuantumChecker.
+# When given interpreted commands, "run" them on 
+# the QuantumChecker by adding commands to the solver
+
 from Prog import Prog
 import QuantumOps as qo
 
 # TODO: Handle non-0 initialisation
+# TODO: Handle new commands that get added to the SilqInterpreter
 
 class InterpretationTranslator:
     def __init__(self, checker):

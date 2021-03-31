@@ -1,4 +1,4 @@
-# Goal: take in a Silq file and interpret it into a format 
+# Goal: Take in a Silq file and interpret it into a format 
 # that can be used in combination with another class later
 # for the QuantumChecker().
 import re
@@ -6,7 +6,9 @@ from Prog import Prog
 
 # TODO: Regex for valid variables (atm. only a-z)
 # TODO: Handle arrays in operations
+# TODO: Handle classical functionality
 # TODO: Handle mutli-variable functions
+# TODO: Handle controls
 # TODO: Handle custom functions
 
 class SilqInterpreter:
@@ -61,16 +63,16 @@ class SilqInterpreter:
         return name, size, val
 
     def handle_qop(self, line):
-# Get info
+        # Get info
         q_op, var_in, var_out = self.get_qop_info(line)
 
-# Check var interpretations and change them (or add to vars if necc.)
+        # Check var interpretations and change them (or add to vars if necc.)
         if not(var_out[0] in self.vars):
             self.vars[var_out[0]] = self.vars[var_in[0]]
 
-# Add command to list (QOP, var_out, out_addr, operation, var_in, in_addr)
-# e.g. y := H(x); -> (QOP, var1, 0, H, var1, 0)
-# x[1] := Y(x[i]); -> (QOP, x, 1, Y, x, 1)
+        # Add command to list (QOP, var_out, out_addr, operation, var_in, in_addr)
+        # e.g. y := H(x); -> (QOP, var1, 0, H, var1, 0)
+        # x[1] := Y(x[i]); -> (QOP, x, 1, Y, x, 1)
         self.commands.append((Prog.QOP, self.vars[var_out[0]], var_out[1], q_op, self.vars[var_in[0]], var_in[1]))
                              
     def get_qop_info(self, line):
