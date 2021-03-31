@@ -1,7 +1,22 @@
 def main() {
-    x := 1:B;
-    x := H(x);
+    x := 0:B;
+    y := 0:B;
+
     x := X(x);
-    x := measure(x);
-    return x;
+    x := H(x);
+
+    y := Y(y);
+
+    z := 0:B;
+
+    y := H(y);
+    y := Z(y);
+
+    x := H(x);
+
+    a := H(z);
+    b := Z(a);
+    z := H(b);
+
+    return (x, y, z);
 }
