@@ -2,16 +2,11 @@
 # that can be used in combination with another class later
 # for the QuantumChecker().
 import re
-
-from enum import Enum
-class Prog(Enum):
-    QINIT = 1
-    QOP = 2
-#     MEAS = 3
-#     RET = 4
-
+from Prog import Prog
 
 # TODO: Regex for valid variables (atm. only a-z)
+# TODO: Handle mutli-variable functions
+# TODO: Handle custom functions
 
 class SilqInterpreter:
     def __init__(self):
@@ -26,17 +21,17 @@ class SilqInterpreter:
         with open('Silq_Programs/prog.slq', 'r') as slq_prog:
             prog = slq_prog.readlines()
         self.interpret_silq(prog)
+        return self.commands
         
     def interpret_silq(self, slq):
         for line in slq:
             line_type = self.identify_line(line)
             if line_type == Prog.QINIT:
-                print(Prog.QINIT)
                 self.handle_qinit(line)
             elif line_type == Prog.QOP:
-                print(Prog.QOP)
                 self.handle_qop(line)
-            else: print("No id")
+            else: 
+                print("No id")
                             
     def identify_line(self, line):
         if re.search('[a-z]+ := [01]:B;', line):
@@ -59,7 +54,6 @@ class SilqInterpreter:
         name = s[0]
         val = int(s[2].partition(':')[0])
         qtype = s[2].partition(':')[2]
-        print(qtype)
         if qtype == "B;":
             size = 1
         return name, size, val
