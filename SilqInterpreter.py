@@ -5,6 +5,7 @@ import re
 from Prog import Prog
 
 # TODO: Regex for valid variables (atm. only a-z)
+# TODO: Handle arrays in operations
 # TODO: Handle mutli-variable functions
 # TODO: Handle custom functions
 
@@ -18,6 +19,7 @@ class SilqInterpreter:
             print(c)
         
     def interpret_file(self, file):
+        self.commands = []
         with open('Silq_Programs/prog.slq', 'r') as slq_prog:
             prog = slq_prog.readlines()
         self.interpret_silq(prog)
@@ -68,6 +70,7 @@ class SilqInterpreter:
 
 # Add command to list (QOP, var_out, out_addr, operation, var_in, in_addr)
 # e.g. y := H(x); -> (QOP, var1, 0, H, var1, 0)
+# x[1] := Y(x[i]); -> (QOP, x, 1, Y, x, 1)
         self.commands.append((Prog.QOP, self.vars[var_out[0]], var_out[1], q_op, self.vars[var_in[0]], var_in[1]))
                              
     def get_qop_info(self, line):
@@ -77,4 +80,4 @@ class SilqInterpreter:
         
         in_name = s[2].partition('(')[2].partition(')')[0]
         
-        return op, (in_name, 1), (out_name, 1)
+        return op, (in_name, 0), (out_name, 0)
