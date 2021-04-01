@@ -46,26 +46,40 @@ class QuantumChecker:
     def add_constraint(self, conds):
         self.solver.add(conds)
                 
-#     Initialises a new register to 0
-    def init_new_qreg(self, name, n):
+#     Initialises a new register
+    def init_new_qreg(self, name, size, val=0):
         s = self.solver
-        self.q_ref.add(name, n)
-        if self.qs == []:
-            self.qs = self.qs + ComplexVector('t' + str(self.t) + '_q', 2**n)
-            for i in range(0, 2**n):
-                q = self.qs[i]
-                s.add(q == 0 + 0*I) if not(i == 0) else s.add(q == 1 + 0*I)
-        else:
-            old_N = self.N # self.q_ref.get_loc(name)
-            v = ComplexVector('t' + str(self.t) + '_q', 2**(self.q_ref.get_total_size()) - old_N, offset = old_N)
-            self.qs = self.qs + v
+        self.q_ref.add(name, size)
+        new_N = 2**self.q_ref.get_total_size()
 
-            for i in range(old_N, old_N * (2**n)):
+#         If no qubits are stored create some new ones and don't change the timer
+        if self.qs == []:
+            self.qs = self.qs + ComplexVector('t' + str(self.t) +'_q', 2**size)
+            for i in range(2**size):
                 q = self.qs[i]
-                s.add(q == 0 + 0*I)
-        
-        self.N = 2**(self.q_ref.get_total_size())
+                s.add(q == 0 + 0*I) if not(i == val) else s.add(q == 1 + 0*I)
+#         If there are already qubits, need to change assignment to handle the value assignment
+        else:
+            old_N = self.N
+            old_qs = self.qs
             
+            new_token = 't' + str(self.t+1) + '_q'
+            new_qs = ComplexVector(new_token, new_N)
+
+            for i in range(new_N):
+                q = new_qs[i]
+                if not((i >> self.q_ref.get_loc(name)) ^ (val)):
+#                     Need to remove binary format characters and then the actual binary value
+                    loc = int(bin(i)[size + 1:].zfill(self.q_ref.get_loc(name)), 2)
+                    old_q = self.qs[loc]
+                    s.add(q.r == old_q.r)
+                    s.add(q.i == old_q.i)
+                else:
+                    s.add(q == 0 + 0*I)
+            self.t += 1
+            self.qs = new_qs
+        
+        self.N = new_N
             
     def apply_sing_op(self, U, name, i):
         q_loc = self.q_ref.get_loc(name, i)
