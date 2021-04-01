@@ -16,7 +16,7 @@ class InterpretationTranslator:
         for command in commands:
             print(command)
             if command[0] == Prog.QINIT:
-                self.checker.init_new_qreg(command[1], command[2])
+                self.checker.init_new_qreg(command[1], command[2], command[3])
             elif command[0] == Prog.QOP:
                 self.translate_operation(command)
                 

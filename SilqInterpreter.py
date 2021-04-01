@@ -22,7 +22,7 @@ class SilqInterpreter:
         
     def interpret_file(self, file):
         self.commands = []
-        with open('Silq_Programs/prog.slq', 'r') as slq_prog:
+        with open(file, 'r') as slq_prog:
             prog = slq_prog.readlines()
         self.interpret_silq(prog)
         return self.commands
@@ -38,7 +38,7 @@ class SilqInterpreter:
                 print("No id")
                             
     def identify_line(self, line):
-        if re.search('[a-z]+ := [01]:B;', line):
+        if re.search('[a-z]+ := [01]:B;', line) or re.search('[a-z]+ := [0-9]+:u?int\[[0-9]+\];', line):
             return Prog.QINIT
         elif re.search('[a-z]+ := [HXYZ]\([a-z]+\);', line) or re.search('[a-z]+ := rot[XYZ]\([a-z]+\)', line):
             return Prog.QOP
@@ -55,11 +55,15 @@ class SilqInterpreter:
 
     def get_qinit_info(self, line):
         s = line.split()
+        
         name = s[0]
         val = int(s[2].partition(':')[0])
+        
         qtype = s[2].partition(':')[2]
         if qtype == "B;":
             size = 1
+        if re.match("u?int\[[0-9]+\];", qtype):
+            size = int(qtype.split('[')[1].split(']')[0])
         return name, size, val
 
     def handle_qop(self, line):
