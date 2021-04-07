@@ -30,3 +30,6 @@ class ClassicalChecker:
             self.time_stamp[name] += 1
         else:
             raise Exception("SizeError: size given doesn't match expected size.")
+            
+    def handle_op(self):
+        return False

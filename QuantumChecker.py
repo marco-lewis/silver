@@ -49,7 +49,7 @@ class QuantumChecker:
                 q = new_qs[i]
                 if not((i >> self.q_ref.get_loc(name)) ^ (val)):
 #                     Need to remove binary format characters and then the actual binary value
-                    loc = int(bin(i)[size + 1:].zfill(self.q_ref.get_loc(name)), 2)
+                    loc = int(bin(i)[2:].zfill(self.q_ref.get_total_size())[size:], 2)
                     old_q = self.qs[loc]
                     s.add(q.r == old_q.r)
                     s.add(q.i == old_q.i)
@@ -59,6 +59,33 @@ class QuantumChecker:
             self.qs = new_qs
         
         self.N = new_N
+            
+    def dup_qreg(self, dup_name, orig_name):
+        s = self.solver
+        size = self.q_ref.get_size(orig_name)
+        self.q_ref.add(dup_name, size)
+        
+        new_N = 2**self.q_ref.get_total_size()
+        old_N = self.N
+        old_qs = self.qs
+
+        new_qs = ComplexVector(self.state_token(self.t + 1), new_N)
+
+        for i in range(new_N):
+            q = new_qs[i]
+#             Get bitstrings and compare
+            i_str = bin(i)[2:].zfill(self.q_ref.get_total_size())
+            orig_bitstr = i_str[len(i_str)-self.q_ref.get_loc(orig_name)-size:len(i_str)-self.q_ref.get_loc(orig_name)]
+            dup_bitstr = i_str[:size]
+            if orig_bitstr == dup_bitstr:
+                loc = int(i_str[size:], 2)
+                old_q = self.qs[loc]
+                s.add(q.r == old_q.r)
+                s.add(q.i == old_q.i)
+            else:
+                s.add(q == 0 + 0*I)
+        self.t += 1
+        self.qs = new_qs
             
     def apply_sing_op(self, U, name, i):
         q_loc = self.q_ref.get_loc(name, i)
