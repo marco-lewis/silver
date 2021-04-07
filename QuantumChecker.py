@@ -6,14 +6,12 @@ import cmath
 from QuantumReferencer import QuantumReferencer
 import QuantumOps as qo
 
-# TODO: Separate Control of solver from handling quantum operations
-# TODO: General control on operations
 # TODO: Handling classical variables - new class?
-# TODO: Initialisation to a specific state/number
 # TODO: Add measurement or check highest prob
 # TODO: Precondition/postcondition addition
-# TODO: Handle 2-qubit gates/ops - quantum if-statements
+# TODO: Handle 2-qubit gates/ops - quantum if-statements?
 # TODO: Handle terms in functions e.g. phase(r+a)
+# TODO: Handle reverse procedure
 # TODO: Add checks/exceptions across the board
 
 class QuantumChecker:
@@ -42,10 +40,22 @@ class QuantumChecker:
             
     def get_model(self):
         return self.solver.model()
+
+#     Return all valid models
+    def get_all_models():
+        return False
     
     def add_constraint(self, conds):
         self.solver.add(conds)
-                
+
+# Classical Operations and Handling
+    def init_new_classical(self, name, val=0):
+        s = self.solver()
+        var = Real('t' + str(self.t) + '_c_' + name)
+        s.add(var == val)
+
+        
+# Quantum Operation and Handling
 #     Initialises a new register
     def init_new_qreg(self, name, size, val=0):
         s = self.solver
@@ -188,7 +198,3 @@ class QuantumChecker:
         
         self.t += 1
         self.qs = new_qs
-        
-#     Return all valid models
-    def get_all_models():
-        return False
