@@ -15,56 +15,15 @@ import QuantumOps as qo
 # TODO: Add checks/exceptions across the board
 
 class QuantumChecker:
-    def __init__(self):
-#     Initialise a solver
-        self.solver = Solver()
-#     Set the step tracker to 0
+    def __init__(self, solver):
+        self.solver = solver
         self.t = 0
         self.q_ref = QuantumReferencer()
         self.qs = []
         self.N = 0
-        self.cs = []
         
-    def check_solver(self):
-        return self.solver.check()
-    
-    def print_solver(self):
-        print(self.solver)
-    
-    def print_model(self):
-        c = self.solver.check()
-        if c == sat:
-            m = self.solver.model()
-            print(m)
-        else:
-            print("No model to print. Solver returned: " + str(c))
-            
-    def get_model(self):
-        return self.solver.model()
-
-#     Return all valid models
-    def get_all_models():
-        return False
-    
-    def add_constraint(self, conds):
-        self.solver.add(conds)
-        
-    def get_smt2lib(self):
-        return self.solver.to_smt2()
-
-# Classical Operations and Handling
-    def init_new_creg(self, name, size=0, val=0):
-        s = self.solver
-        token = 't' + str(self.t) + '_c_' + name
-        if size == 0:
-            var = Real(token)
-            s.add(var == val)
-        else:
-            var = RealVector(token, size)
-            for i in range(size):
-                s.add(var[i] == int(bool((val & 1<<i))))
-        self.cs.append((name, size))
-
+    def state_token(self, time):
+        return 't' + str(time) + '_qstate'
         
 # Quantum Operation and Handling
 #     Initialises a new register
@@ -75,7 +34,7 @@ class QuantumChecker:
 
 #         If no qubits are stored create some new ones and don't change the timer
         if self.qs == []:
-            self.qs = self.qs + ComplexVector('t' + str(self.t) +'_q', 2**size)
+            self.qs = self.qs + ComplexVector(self.state_token(self.t), 2**size)
             for i in range(2**size):
                 q = self.qs[i]
                 s.add(q == 0 + 0*I) if not(i == val) else s.add(q == 1 + 0*I)
@@ -84,8 +43,7 @@ class QuantumChecker:
             old_N = self.N
             old_qs = self.qs
             
-            new_token = 't' + str(self.t+1) + '_q'
-            new_qs = ComplexVector(new_token, new_N)
+            new_qs = ComplexVector(self.state_token(self.t + 1), new_N)
 
             for i in range(new_N):
                 q = new_qs[i]
@@ -151,7 +109,7 @@ class QuantumChecker:
         
     def apply_H(self, name, i):
         sqrt2 = Real('sqrt2')
-        self.add_constraint([sqrt2**2 == 2, sqrt2 > 0])
+        self.solver.add([sqrt2**2 == 2, sqrt2 > 0])
         H = np.array([[1/sqrt2,1/sqrt2], [1/sqrt2,-1/sqrt2]])
         self.apply_sing_op(H, name, i)
         
@@ -165,8 +123,7 @@ class QuantumChecker:
         
         s = self.solver
         
-        next_stamp = 't' + str(self.t + 1) + '_q'
-        new_qs = ComplexVector(next_stamp, self.N)
+        new_qs = ComplexVector(self.state_token(self.t + 1), self.N)
         
         for state in range(self.N):
             qr = new_qs[state].r
@@ -195,8 +152,7 @@ class QuantumChecker:
             raise Exception('Error: U not right shape, expected (' + str(self.N) + ',' + str(self.N) + '), but received ' + str(U.shape))
         s = self.solver
         
-        next_stamp = 't' + str(self.t + 1) + '_q'
-        new_qs = ComplexVector(next_stamp, self.N)
+        new_qs = ComplexVector(self.state_token(self.t + 1), self.N)
         
         for num in range(self.N):
             qr = new_qs[num].r
