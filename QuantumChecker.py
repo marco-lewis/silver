@@ -23,6 +23,7 @@ class QuantumChecker:
         self.q_ref = QuantumReferencer()
         self.qs = []
         self.N = 0
+        self.cs = []
         
     def check_solver(self):
         return self.solver.check()
@@ -47,12 +48,22 @@ class QuantumChecker:
     
     def add_constraint(self, conds):
         self.solver.add(conds)
+        
+    def get_smt2lib(self):
+        return self.solver.to_smt2()
 
 # Classical Operations and Handling
-    def init_new_classical(self, name, val=0):
-        s = self.solver()
-        var = Real('t' + str(self.t) + '_c_' + name)
-        s.add(var == val)
+    def init_new_creg(self, name, size=0, val=0):
+        s = self.solver
+        token = 't' + str(self.t) + '_c_' + name
+        if size == 0:
+            var = Real(token)
+            s.add(var == val)
+        else:
+            var = RealVector(token, size)
+            for i in range(size):
+                s.add(var[i] == int(bool((val & 1<<i))))
+        self.cs.append((name, size))
 
         
 # Quantum Operation and Handling
