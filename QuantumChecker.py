@@ -14,6 +14,22 @@ import QuantumOps as qo
 # TODO: Handle reverse procedure
 # TODO: Add checks/exceptions across the board
 
+# Verification of:
+# classical - functions that only have classical parameters
+# const - preserves parameter ("read" only)
+# lifted - fairly simple, classical operations only (CNOT?)
+# lifted = qfree + const params (almost classical, use for oracles)
+# qfree - no superpositions introduced, manipulation of variable definitions only - can act on superpositioned states?
+# mfree - no measurement
+# All qfree functions are mfree, {qfree functions} in {mfree functions} => measurement not qfree
+
+# Measurement - needed?
+# Restrict to a subset of Silq - no measurement
+# Just read the "amplitude" and check which is highest
+# State measurement in pre-/post-conditions
+# SQIR-like - unitary version and measurement version
+
+
 class QuantumChecker:
     def __init__(self, solver):
         self.solver = solver
@@ -47,6 +63,7 @@ class QuantumChecker:
 
             for i in range(new_N):
                 q = new_qs[i]
+#                 Check bit is same as bit in value
                 if not((i >> self.q_ref.get_loc(name)) ^ (val)):
 #                     Need to remove binary format characters and then the actual binary value
                     loc = int(bin(i)[2:].zfill(self.q_ref.get_total_size())[size:], 2)
@@ -77,7 +94,9 @@ class QuantumChecker:
             i_str = bin(i)[2:].zfill(self.q_ref.get_total_size())
             orig_bitstr = i_str[len(i_str)-self.q_ref.get_loc(orig_name)-size:len(i_str)-self.q_ref.get_loc(orig_name)]
             dup_bitstr = i_str[:size]
+            
             if orig_bitstr == dup_bitstr:
+#                 Get location and map to appropriate bit
                 loc = int(i_str[size:], 2)
                 old_q = self.qs[loc]
                 s.add(q.r == old_q.r)
@@ -192,3 +211,6 @@ class QuantumChecker:
         
         self.t += 1
         self.qs = new_qs
+        
+    def measure(self, name):
+        return False
