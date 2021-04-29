@@ -17,8 +17,8 @@ import QuantumOps as qo
 # Verification of:
 # classical - functions that only have classical parameters
 # const - preserves parameter ("read" only)
-# lifted - fairly simple, classical operations only (CNOT?)
-# lifted = qfree + const params (almost classical, use for oracles)
+# lifted - fairly simple, classical operations only
+# lifted = qfree + const params (almost classical, use for some oracles)
 # qfree - no superpositions introduced, manipulation of variable definitions only - can act on superpositioned states?
 # mfree - no measurement
 # All qfree functions are mfree, {qfree functions} in {mfree functions} => measurement not qfree

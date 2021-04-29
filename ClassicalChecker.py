@@ -45,7 +45,7 @@ class ClassicalChecker:
             
     def handle_real_op(self, op, name, val):
         s = self.solver
-        token = self.token(name);
+        token = self.token(name)
         if not(self.size[name] == 0) :
             raise Exception("SizeError: expected a real number, not a B, int or uint")
 
@@ -53,3 +53,13 @@ class ClassicalChecker:
         s.add(var == op(val))
         self.memory[name] = var
         self.time_stamp[name] += 1
+        
+#     Operation with 2 inputs (different variables)
+    def handle_equation(self, op, out, in1, in2):
+        s = self.solver
+        token = self.token(out)
+        
+        out_var = Real(token)
+        s.add(out_var == op(self.memory[in1], self.memory[in2]))
+        s.memory[out] = out_var
+        self.time_stamp[out] += 1

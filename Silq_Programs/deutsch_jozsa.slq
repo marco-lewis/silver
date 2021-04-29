@@ -1,19 +1,4 @@
-def b_oracle[bs: !N](const n:uint[bs])lifted: B {
-  return (n == 3) || (n == 2) || (n == 7) || (n == 5);
-}
-
-def c_oracle[bs: !N](const n:uint[bs])lifted:B{
-    return false;
-}
-
-def c2_oracle[bs: !N](const n:uint[bs])lifted:B{
-    return true;
-}
-
-def phase_oracle[bits:!N](f: const uint[bits] !-> qfree B, const x:uint[bits]) {
-  if f(x) { phase(pi); }
-  return x;
-}
+import dj_oracles;
 
 // [Constant f, bits => 1]
 def deutsch_jozsa[bits:!N](f: const uint[bits] !->qfree B) {
