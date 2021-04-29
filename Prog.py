@@ -4,3 +4,4 @@ class Prog(Enum):
     QOP = 2
 #     MEAS = 3
 #     RET = 4
+    QORACLE = 5

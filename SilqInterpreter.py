@@ -34,14 +34,18 @@ class SilqInterpreter:
                 self.handle_qinit(line)
             elif line_type == Prog.QOP:
                 self.handle_qop(line)
+            elif line_type == Prog.QORACLE:
+                self.handle_qor(line)
             else: 
                 print("No id")
                             
     def identify_line(self, line):
-        if re.search('[a-z]+ := [01]:B;', line) or re.search('[a-z]+ := [0-9]+:u?int\[[0-9]+\];', line):
+        if re.search('[a-z]+ := [01]:B;', line) or re.search('[a-z]+ := [0-9]+:[u]?int\[[0-9]+\];', line):
             return Prog.QINIT
-        elif re.search('[a-z]+ := [HXYZ]\([a-z]+\);', line) or re.search('[a-z]+ := rot[XYZ]\([a-z]+\)', line):
+        elif re.search('[a-z]+[\[[0-9]+\]]* := [HXYZ]\([a-z]+[\[[0-9]+\]]*\);', line) or re.search('[a-z]+[\[[0-9]+\]]* := rot[XYZ]\([a-z]+[\[[0-9]+\]]*\)', line):
             return Prog.QOP
+        elif re.search('if f\([a-z]+\)\{ phase\(pi\); \}', line):
+            return Prog.QORACLE
     
     def handle_qinit(self, line):
         # Get info
@@ -81,9 +85,27 @@ class SilqInterpreter:
                              
     def get_qop_info(self, line):
         s = line.split()
-        out_name = s[0]
+
+        # Handle output name
+        out_name, out_size = self.handle_var(s[0])
+        # Handle operation
         op = s[2].partition('(')[0]
         
-        in_name = s[2].partition('(')[2].partition(')')[0]
+        # Handle input name
+        in_name, in_size = self.handle_var(s[2].partition('(')[2].partition(')')[0])
         
-        return op, (in_name, 0), (out_name, 0)
+        return op, (in_name, in_size), (out_name, out_size)
+    
+    def handle_var(self, var):
+        if '[' in var:
+            t = var.partition('[')
+            name = t[0]
+            size = int(t[2].partition(']')[0])
+            return name, size
+        return var, 0
+    
+    def handle_qor(self, line):
+        s = line.split()
+        name = s[1].partition('(')[2].partition(')')[0]
+        
+        self.commands.append((Prog.QORACLE, name))

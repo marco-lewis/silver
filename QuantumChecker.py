@@ -6,6 +6,18 @@ import cmath
 from QuantumReferencer import QuantumReferencer
 import QuantumOps as qo
 
+
+# Should move elsewhere
+def oracle(N, f):
+    mat = []
+    for i in range(N):
+        f_z = []
+        for j in range(N):
+            if j == i: f_z.append(1- 2*f(i))
+            else: f_z.append(0)
+        mat.append(f_z)
+    return np.array(mat)
+
 # TODO: Handling classical variables - new class?
 # TODO: Add measurement or check highest prob
 # TODO: Precondition/postcondition addition
@@ -28,7 +40,6 @@ import QuantumOps as qo
 # Just read the "amplitude" and check which is highest
 # State measurement in pre-/post-conditions
 # SQIR-like - unitary version and measurement version
-
 
 class QuantumChecker:
     def __init__(self, solver):
@@ -211,6 +222,15 @@ class QuantumChecker:
         
         self.t += 1
         self.qs = new_qs
+        
+    def add_oracle(self, conds):
+        self.oracle = Function('f', IntSort(), IntSort())
+        self.solver.add(conds(self.oracle))
+        
+    def apply_oracle(self, name):
+        var_N = 2**self.q_ref.get_size(name)
+        self.apply_op(oracle(var_N, self.oracle))
+        
         
     def measure(self, name):
         return False

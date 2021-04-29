@@ -19,6 +19,8 @@ class InterpretationTranslator:
                 self.checker.init_new_qreg(command[1], command[2], command[3])
             elif command[0] == Prog.QOP:
                 self.translate_operation(command)
+            elif command[0] == Prog.QORACLE:
+                self.checker.apply_oracle(command[1])
                 
                 
     def translate_operation(self, command):
