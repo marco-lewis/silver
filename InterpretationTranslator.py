@@ -1,3 +1,5 @@
+# DEPRECATED
+
 # Goal: Create or be given a blank QuantumChecker.
 # When given interpreted commands, "run" them on 
 # the QuantumChecker by adding commands to the solver

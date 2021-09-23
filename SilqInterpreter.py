@@ -1,3 +1,5 @@
+# DEPRECATED
+
 # Goal: Take in a Silq file and interpret it into a format 
 # that can be used in combination with another class later
 # for the QuantumChecker().
