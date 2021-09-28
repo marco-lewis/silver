@@ -51,6 +51,9 @@ class QuantumChecker:
         
     def state_token(self, time):
         return 't' + str(time) + '_qstate'
+
+    def is_var(self, name):
+        return self.q_ref(name)
         
 # Quantum Operation and Handling
 #     Initialises a new register

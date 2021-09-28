@@ -10,6 +10,11 @@ class QuantumReferencer:
             
         self.q_refs.append((name, size))
         
+    def is_stored(self, name):
+        for ref in self.q_refs:
+            if ref[0] == name: return True
+        return False
+
     def get_size(self, name):
         for ref in self.q_refs:
             if ref[0] == name:

@@ -26,7 +26,7 @@ class ClassicalChecker:
             self.time_stamp[name] = -1
             self.size[name] = size
 
-        token = self.token(name);
+        token = self.token(name)
             
         if self.size[name] == size:
             if size == 0:
