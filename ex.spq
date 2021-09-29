@@ -1,0 +1,12 @@
+f_dj(define x : {0, 1}^3, define z : N)->(define x_ret : {0,1}){w
+}
+
+dj_alg(define f : {0, 1} ^ 3)->(define dj_ret : {0,1}^3){
+    define y : N
+    define bal : {0, 1}
+    define const : {0, 1}
+    assert((¬bal) <=> const)
+    assert(SUM[x](f(x)) = y)
+    assert(const => dj_ret = 0)
+    assert(bal => ¬(dj_ret = 0))
+}
