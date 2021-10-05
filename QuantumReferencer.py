@@ -1,3 +1,9 @@
+class QRef:
+    def __init__(self, name, size, version):
+        self.name = name
+        self.size = size
+        self.version = version
+
 class QuantumReferencer:
     def __init__(self):
         self.q_refs = []
@@ -8,24 +14,27 @@ class QuantumReferencer:
         if not(type(size) == int):
             raise TypeError("Size is not an int")
             
-        self.q_refs.append((name, size))
+        self.q_refs.append(QRef(name, size, 0))
         
+    def valid_name(self, ref, name):
+        return ref.name == name
+
     def is_stored(self, name):
         for ref in self.q_refs:
-            if ref[0] == name: return True
+            if self.valid_name(ref, name): return True
         return False
 
     def get_size(self, name):
         for ref in self.q_refs:
-            if ref[0] == name:
-                return ref[1]
+            if self.valid_name(ref, name):
+                return ref.size
             
         raise ValueError("No reference with that name")
         
     def get_loc(self, name, offset = 0):
         loc = 0
         for ref in self.q_refs:
-            if ref[0] == name:
+            if self.valid_name(ref, name):
                 if offset >= ref[1]:
                     raise ValueError("Offset is larger than register size")
                 else: return loc + offset
@@ -35,3 +44,8 @@ class QuantumReferencer:
         
     def get_total_size(self):
         return sum(ref[1] for ref in self.q_refs)
+
+    def get_version(self, name):
+        for ref in self.q_refs:
+            if self.valid_name(ref, name):
+                return ref.version
