@@ -53,7 +53,7 @@ class QuantumChecker:
         return 't' + str(time) + '_qstate'
 
     def is_var(self, name):
-        return self.q_ref(name)
+        return self.q_ref.is_stored(name)
         
 # Quantum Operation and Handling
 #     Initialises a new register
@@ -64,17 +64,13 @@ class QuantumChecker:
 
 #         If no qubits are stored create some new ones and don't change the timer
         if self.qs == []:
-            self.qs = self.qs + ComplexVector(self.state_token(self.t), 2**size)
-            for i in range(2**size):
+            self.qs = self.qs + ComplexVector(self.state_token(self.t), new_N)
+            for i in range(new_N):
                 q = self.qs[i]
                 s.add(q == 0 + 0*I) if not(i == val) else s.add(q == 1 + 0*I)
 #         If there are already qubits, need to change assignment to handle the value assignment
         else:
-            old_N = self.N
-            old_qs = self.qs
-            
             new_qs = ComplexVector(self.state_token(self.t + 1), new_N)
-
             for i in range(new_N):
                 q = new_qs[i]
 #                 Check bit is same as bit in value
@@ -116,11 +112,12 @@ class QuantumChecker:
                 s.add(q.r == old_q.r)
                 s.add(q.i == old_q.i)
             else:
-                s.add(q == 0 + 0*I)
+                s.add(q.r == 0)
+                s.add(q.i == 0)
         self.t += 1
         self.qs = new_qs
             
-    def apply_sing_op(self, U, name, i):
+    def apply_sing_op(self, U, name, i = 0):
         q_loc = self.q_ref.get_loc(name, i)
         U_kron = np.identity(2) if not (q_loc == 0) else U
         for i in range(1, self.q_ref.get_total_size()):
@@ -167,7 +164,7 @@ class QuantumChecker:
                     ctrl_op[row][row + M] = U[0][1]
         self.apply_op(ctrl_op)
         
-    def apply_H(self, name, i):
+    def apply_H(self, name, i = 0):
         sqrt2 = Real('sqrt2')
         self.solver.add([sqrt2**2 == 2, sqrt2 > 0])
         H = np.array([[1/sqrt2,1/sqrt2], [1/sqrt2,-1/sqrt2]])

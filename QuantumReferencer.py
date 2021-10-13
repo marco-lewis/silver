@@ -35,15 +35,15 @@ class QuantumReferencer:
         loc = 0
         for ref in self.q_refs:
             if self.valid_name(ref, name):
-                if offset >= ref[1]:
+                if offset >= ref.size:
                     raise ValueError("Offset is larger than register size")
                 else: return loc + offset
-            else: loc += ref[1]
+            else: loc += ref.size
         
         raise ValueError("No reference with that name")
         
     def get_total_size(self):
-        return sum(ref[1] for ref in self.q_refs)
+        return sum(ref.size for ref in self.q_refs)
 
     def get_version(self, name):
         for ref in self.q_refs:

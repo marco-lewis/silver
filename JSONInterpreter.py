@@ -1,7 +1,14 @@
-# Goal: Take in JSON and convert to Z3 using Python API
+# Goal: Take in JSON and make calls to appropriate checkers
+'''
+Assumptions:
+Variable is only one used in a function
+Integers for now only
+Quantum variables only
+'''
+
 import json
-from typing import Match
 from Prog import *
+from QuantumOps import *
 
 expType = "expType"
 
@@ -16,6 +23,8 @@ class JSONInterpreter:
 
         self.qc = checkerHandler.qc
         self.cc = checkerHandler.cc
+
+        self.var_pointer = {}
 
     def getJSON(self):
         with open(self.file, "r") as rf:
@@ -65,9 +74,13 @@ class JSONInterpreter:
     def decode_statement(self, stmt):
         e = stmt[expType]
         if e == "defineExp":
-            # Handle expressions
+            # Don't care about LHS? Yes for ops, no for literals
             lhs = stmt["lhs"]
-            rhs_call = self.decode_expression(stmt["rhs"])
+            rhs = self.decode_expression(stmt["rhs"])
+            if not(self.qc.is_var(lhs)):
+                self.qc.init_new_qreg(lhs, self.size_from_type(rhs["type"]), rhs["expr"])
+            else:
+                self.apply_op(lhs, rhs)
         if e == "returnExp":
             stmt["value"]
         return False
@@ -75,12 +88,34 @@ class JSONInterpreter:
     def decode_expression(self, exp):
         e = exp[expType]
         if e == "callExp":
-            exp["arg"]
-            exp["op"]
+            d = {}
+            d["arg"] = exp["arg"]
+            d["op"] = exp["op"]
+            return d
         if e == "litExp":
-            exp["value"]
+            return exp["value"]
         if e == "typeChangeExp":
-            exp["expr"]
-            exp["consume"]
-            exp["type"]
+            d = {}
+            d["type"] = exp["type"]
+            d["expr"] = self.decode_expression(exp["expr"])
+            return d
         return False
+
+    def size_from_type(self, type):
+        if self.single_type(type):
+            return 1
+        return 0
+
+    def single_type(self, type):
+        return type == "B" or type == "𝔹"
+
+    def apply_op(self, lhs, rhs):
+        if rhs["op"] == "H":
+            self.qc.apply_H(lhs)
+        self.qc.apply_sing_op(self.matrix_from_op(rhs["op"]), lhs)
+
+    def matrix_from_op(self, op):
+        if "H": return H
+        if "X": return X
+        if "Y": return Y
+        if "Z": return Z
