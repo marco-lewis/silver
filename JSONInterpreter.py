@@ -1,4 +1,4 @@
-# Goal: Take in JSON and make calls to appropriate checkers
+# Goal: Take in JSON and make calls to ObligationGenerator
 '''
 Assumptions:
 Variable is only one used in a function
@@ -9,11 +9,14 @@ Quantum variables only
 import json
 from Prog import *
 from QuantumOps import *
+from ObligationGenerator import ObilgationGenerator
 
 expType = "expType"
 
 class JSONInterpreter:
-    def __init__(self, file, checkerHandler):
+    obligation_generator = ObilgationGenerator()
+
+    def __init__(self, file, solver):
         self.file = file
         
         self.spec_flags = {}
@@ -21,8 +24,7 @@ class JSONInterpreter:
         self.spec_flags["post"] = False
         self.spec_flags["summary"] = False
 
-        self.qc = checkerHandler.qc
-        self.cc = checkerHandler.cc
+        self.solver = solver
 
         self.var_pointer = {}
 
@@ -59,8 +61,6 @@ class JSONInterpreter:
                     print(arg)
                     # t = arg["type"]
                     # TODO: Handle function types (dw for now)
-                    # Detect if classical/quantum and send to relative checker
-                    # Create variables (in checkers?)
                 # Check arguments and create variables that are needed there (with any pre-conditions if flagged)
                 # Make a PO for summary if flagged
                 # OR go through statements of function
@@ -77,13 +77,11 @@ class JSONInterpreter:
             # Don't care about LHS? Yes for ops, no for literals
             lhs = stmt["lhs"]
             rhs = self.decode_expression(stmt["rhs"])
-            if not(self.qc.is_var(lhs)):
-                self.qc.init_new_qreg(lhs, self.size_from_type(rhs["type"]), rhs["expr"])
-            else:
-                self.apply_op(lhs, rhs)
+            pass
         if e == "returnExp":
             stmt["value"]
-        return False
+            pass
+        pass
 
     def decode_expression(self, exp):
         e = exp[expType]
@@ -91,15 +89,15 @@ class JSONInterpreter:
             d = {}
             d["arg"] = exp["arg"]
             d["op"] = exp["op"]
-            return d
+            pass
         if e == "litExp":
-            return exp["value"]
+            val = exp["value"]
+            pass
         if e == "typeChangeExp":
             d = {}
             d["type"] = exp["type"]
-            d["expr"] = self.decode_expression(exp["expr"])
-            return d
-        return False
+            pass
+        pass
 
     def size_from_type(self, type):
         if self.single_type(type):
@@ -109,13 +107,8 @@ class JSONInterpreter:
     def single_type(self, type):
         return type == "B" or type == "𝔹"
 
-    def apply_op(self, lhs, rhs):
-        if rhs["op"] == "H":
-            self.qc.apply_H(lhs)
-        self.qc.apply_sing_op(self.matrix_from_op(rhs["op"]), lhs)
-
     def matrix_from_op(self, op):
-        if "H": return H
-        if "X": return X
-        if "Y": return Y
-        if "Z": return Z
+        if op == "H": return H
+        if op == "X": return X
+        if op == "Y": return Y
+        if op == "Z": return Z
