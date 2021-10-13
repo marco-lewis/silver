@@ -8,11 +8,28 @@ class QRef:
         return str(self.name) + "_v" + str(self.version)
 
 class QuantumReferencer:
+    q_refs = []
+    
     def __init__(self):
-        self.q_refs = []
+        pass
 
     def get_obligation_variables(self):
-        pass
+        return self.__generate_strings(self.q_refs)
+
+    def __make_token(self, q_ref, num):
+        return q_ref.__str__() + "t" + str(num)
+
+    def __generate_strings(self, q_refs):
+        if q_refs == []:
+            return [""]
+        elif len(q_refs) == 1:
+            return [self.__make_token(q_refs[0], i) for i in range(0, q_refs[0].size)]
+        else:
+            out = []
+            ob_vars = self.__generate_strings(q_refs[1:])
+            for i in range(0, q_refs[0].size):
+                out += [self.__make_token(q_refs[0], i) + "|" + ob for ob in ob_vars]
+            return out
 
     def add(self, name, size):
         if not(type(name) == str):
