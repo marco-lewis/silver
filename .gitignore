@@ -3,4 +3,4 @@ __pycache__/
 *.ipynb
 example.py
 *.json
-Deprecated/*
+Deprecated/
