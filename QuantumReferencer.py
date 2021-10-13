@@ -4,10 +4,16 @@ class QRef:
         self.size = size
         self.version = version
 
+    def __str__(self):
+        return str(self.name) + "_v" + str(self.version)
+
 class QuantumReferencer:
     def __init__(self):
         self.q_refs = []
-        
+
+    def get_obligation_variables(self):
+        pass
+
     def add(self, name, size):
         if not(type(name) == str):
             raise TypeError("Name is not a string")
@@ -18,6 +24,9 @@ class QuantumReferencer:
         
     def valid_name(self, ref, name):
         return ref.name == name
+
+    def is_empty(self):
+        return self.q_refs == []
 
     def is_stored(self, name):
         for ref in self.q_refs:
