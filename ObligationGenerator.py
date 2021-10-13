@@ -20,5 +20,10 @@ class ObilgationGenerator:
             return (1 if i == literal else 0 for i in range(0, self.quantum_referencer.get_total_size()))
         pass
 
-    def obligation_operation(self, operation):
-        pass
+    def obligation_operation(self, operation, obligations):
+        obs = []
+        for row in operation:
+            obs.append(Sum(
+                [operation[row][col] * obligations[col] for col in range(0, len(operation[row]))]
+            ))
+        return obs
