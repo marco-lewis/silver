@@ -11,6 +11,7 @@ from z3 import *
 from Prog import *
 from QuantumOps import *
 from ObligationGenerator import ObilgationGenerator
+from complex import Complex, _to_complex
 from ComplexVector import ComplexVector
 
 expType = "expType"
@@ -74,7 +75,7 @@ class JSONInterpreter:
                     ob = self.decode_statement(stmt)
                     ob = simplify(And(ob))
                     self.solver.add(ob)
-                    print(self.solver)
+                    print(self.solver.assertions())
                 # At end, check postcondition flag
 
     def decode_func(self):
@@ -123,7 +124,7 @@ class JSONInterpreter:
         return type == "B" or type == "𝔹"
 
     def matrix_from_op(self, op):
-        if op == "H": return [[self.isqrt2, self.isqrt2], [self.isqrt2, -self.isqrt2]]
+        if op == "H": return [[_to_complex(self.isqrt2), _to_complex(self.isqrt2)], [_to_complex(self.isqrt2), _to_complex(-self.isqrt2)]]
         if op == "X": return X
         if op == "Y": return Y
         if op == "Z": return Z

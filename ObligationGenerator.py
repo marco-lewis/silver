@@ -27,5 +27,6 @@ class ObilgationGenerator:
     def obligation_operation(self, operation, obligations):
         obs = []
         for row in operation:
+            print(row[0] , obligations[0])
             obs.append(Sum([row[col] * obligations[col] for col in range(0, len(row))]))
         return obs
