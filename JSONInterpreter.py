@@ -16,6 +16,7 @@ from ComplexVector import ComplexVector
 expType = "expType"
 
 class JSONInterpreter:
+    isqrt2 = Real("isqrt2")
     obligation_generator = ObilgationGenerator()
 
     def __init__(self, file, solver):
@@ -29,6 +30,7 @@ class JSONInterpreter:
         if not isinstance(solver, Solver):
             raise Exception("InterpreterError: solver is not a Solver")
         self.solver = solver
+        self.solver.add((1 / self.isqrt2)**2  == 2, self.isqrt2 > 0)
 
         self.var_pointer = {}
 
@@ -71,8 +73,8 @@ class JSONInterpreter:
                 for stmt in func["statements"]:
                     ob = self.decode_statement(stmt)
                     ob = simplify(And(ob))
-                    print(ob)
                     self.solver.add(ob)
+                    print(self.solver)
                 # At end, check postcondition flag
 
     def decode_func(self):
@@ -85,9 +87,8 @@ class JSONInterpreter:
             q_referencer = self.obligation_generator.quantum_referencer
             if not(q_referencer.is_stored(lhs)):
                 q_referencer.add(lhs, 1)
-            else:
-                q_referencer.iterate_var(lhs)
             rhs = self.decode_expression(stmt["rhs"])
+            q_referencer.iterate_var(lhs)
             qstate = self.obligation_generator.make_qstate(q_referencer.get_obligation_variables())
             return self.obligation_generator.obligation_quantum_assignment(qstate, rhs)
         if e == "returnExp":
@@ -102,8 +103,8 @@ class JSONInterpreter:
             # TODO: Generate appropriate matrix from operation
             # TODO: Sort out arguments
             arg = exp["arg"]
-            obs = self.obligation_generator.quantum_referencer.get_obligation_variables()
-            op = exp["op"]
+            obs = self.obligation_generator.make_qstate(self.obligation_generator.quantum_referencer.get_obligation_variables())
+            op = self.matrix_from_op(exp["op"])
             return self.obligation_generator.obligation_operation(op, obs)
         if e == "litExp":
             val = exp["value"]
@@ -122,7 +123,7 @@ class JSONInterpreter:
         return type == "B" or type == "𝔹"
 
     def matrix_from_op(self, op):
-        if op == "H": return H
+        if op == "H": return [[self.isqrt2, self.isqrt2], [self.isqrt2, -self.isqrt2]]
         if op == "X": return X
         if op == "Y": return Y
         if op == "Z": return Z

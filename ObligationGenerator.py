@@ -12,9 +12,6 @@ class ObilgationGenerator:
     def __init__(self):
         pass
 
-    def make_token(self, variable):
-        pass
-
     def make_qstate(self, names):
         return [Complex(name) for name in names]
 
@@ -30,7 +27,5 @@ class ObilgationGenerator:
     def obligation_operation(self, operation, obligations):
         obs = []
         for row in operation:
-            obs.append(Sum(
-                (operation[row][col] * obligations[col] for col in range(0, len(operation[row])))
-            ))
+            obs.append(Sum([row[col] * obligations[col] for col in range(0, len(row))]))
         return obs
