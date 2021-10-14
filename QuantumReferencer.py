@@ -1,13 +1,17 @@
 class QRef:
-    def __init__(self, name, size, version):
+    def __init__(self, name, size, version = 0):
         self.name = name
         self.size = size
         self.version = version
+
+    def iterate(self):
+        self.version += 1
 
     def __str__(self):
         return str(self.name) + "_v" + str(self.version)
 
 class QuantumReferencer:
+    # Change to a dictionary with pointers
     q_refs = []
     
     def __init__(self):
@@ -16,20 +20,20 @@ class QuantumReferencer:
     def get_obligation_variables(self):
         return self.__generate_strings(self.q_refs)
 
-    def __make_token(self, q_ref, num):
-        return q_ref.__str__() + "t" + str(num)
-
     def __generate_strings(self, q_refs):
-        if q_refs == []:
-            return [""]
+        if len(q_refs) == 0:
+            return []
         elif len(q_refs) == 1:
-            return [self.__make_token(q_refs[0], i) for i in range(0, q_refs[0].size)]
+            return [self.__make_token(q_refs[0], i) for i in range(0, 2**q_refs[0].size)]
         else:
             out = []
             ob_vars = self.__generate_strings(q_refs[1:])
-            for i in range(0, q_refs[0].size):
+            for i in range(0, 2**q_refs[0].size):
                 out += [self.__make_token(q_refs[0], i) + "|" + ob for ob in ob_vars]
             return out
+
+    def __make_token(self, q_ref, num):
+        return q_ref.__str__() + "q" + str(num)
 
     def add(self, name, size):
         if not(type(name) == str):
@@ -38,7 +42,12 @@ class QuantumReferencer:
             raise TypeError("Size is not an int")
             
         self.q_refs.append(QRef(name, size, 0))
-        
+
+    def iterate_var(self, name):
+        for ref in self.q_refs:
+            if self.valid_name(ref, name):
+                ref.iterate()
+            
     def valid_name(self, ref, name):
         return ref.name == name
 

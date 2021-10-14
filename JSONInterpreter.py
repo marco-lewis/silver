@@ -7,9 +7,11 @@ Quantum variables only
 '''
 
 import json
+from z3 import *
 from Prog import *
 from QuantumOps import *
 from ObligationGenerator import ObilgationGenerator
+from ComplexVector import ComplexVector
 
 expType = "expType"
 
@@ -24,6 +26,8 @@ class JSONInterpreter:
         self.spec_flags["post"] = False
         self.spec_flags["summary"] = False
 
+        if not isinstance(solver, Solver):
+            raise Exception("InterpreterError: solver is not a Solver")
         self.solver = solver
 
         self.var_pointer = {}
@@ -65,7 +69,10 @@ class JSONInterpreter:
                 # Make a PO for summary if flagged
                 # OR go through statements of function
                 for stmt in func["statements"]:
-                    self.decode_statement(stmt)
+                    ob = self.decode_statement(stmt)
+                    ob = simplify(And(ob))
+                    print(ob)
+                    self.solver.add(ob)
                 # At end, check postcondition flag
 
     def decode_func(self):
@@ -74,30 +81,37 @@ class JSONInterpreter:
     def decode_statement(self, stmt):
         e = stmt[expType]
         if e == "defineExp":
-            # Don't care about LHS? Yes for ops, no for literals
             lhs = stmt["lhs"]
+            q_referencer = self.obligation_generator.quantum_referencer
+            if not(q_referencer.is_stored(lhs)):
+                q_referencer.add(lhs, 1)
+            else:
+                q_referencer.iterate_var(lhs)
             rhs = self.decode_expression(stmt["rhs"])
-            pass
+            qstate = self.obligation_generator.make_qstate(q_referencer.get_obligation_variables())
+            return self.obligation_generator.obligation_quantum_assignment(qstate, rhs)
         if e == "returnExp":
             stmt["value"]
             pass
-        pass
+        raise Exception("TODO: statement " + e)
+
 
     def decode_expression(self, exp):
         e = exp[expType]
         if e == "callExp":
-            d = {}
-            d["arg"] = exp["arg"]
-            d["op"] = exp["op"]
-            pass
+            # TODO: Generate appropriate matrix from operation
+            # TODO: Sort out arguments
+            arg = exp["arg"]
+            obs = self.obligation_generator.quantum_referencer.get_obligation_variables()
+            op = exp["op"]
+            return self.obligation_generator.obligation_operation(op, obs)
         if e == "litExp":
             val = exp["value"]
-            pass
+            return self.obligation_generator.obligation_quantum_literal(val)
         if e == "typeChangeExp":
-            d = {}
-            d["type"] = exp["type"]
-            pass
-        pass
+            # TODO: Something with exp["type"]
+            return self.decode_expression(exp["expr"])
+        raise Exception("TODO: expression " + e)
 
     def size_from_type(self, type):
         if self.single_type(type):
