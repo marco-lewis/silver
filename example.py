@@ -4,7 +4,7 @@ import SilqSpeqParser as ssp
 def example():
     parser = ssp.SilSpeqParser()
     tree = parser.parse_file("ex.spq")
-    print(tree)
+    print(tree.pretty())
 
 
 if __name__ == "__main__":
