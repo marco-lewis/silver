@@ -4,7 +4,7 @@ class SilSpeqParser:
     def __init__(self):
         with open("SilSpeq.lark", 'r') as f:
             self.grammar = f.read()
-        self.parser = Lark(self.grammar, parser='larl')
+        self.parser = Lark(self.grammar, parser='lalr')
 
     def parse(self, spec):
         return self.parser.parse(spec)
