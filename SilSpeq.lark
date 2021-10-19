@@ -1,4 +1,4 @@
-?start: (func_spec)*
+?start: (func_spec)* -> specs
 
 ?func_spec: func "(" defs ")" "->" "(" defs ")" pre post -> funcspec
 

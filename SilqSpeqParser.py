@@ -3,13 +3,13 @@ from lark.visitors import Transformer
 from SilSpeqTransformer import SilqSpeqTransformer
 
 class SilSpeqParser:
-    def __init__(self):
+    def __init__(self, transformer=SilqSpeqTransformer()):
         with open("SilSpeq.lark", 'r') as f:
             self.grammar = f.read()
         self.parser = Lark(
             self.grammar, 
             parser='lalr', 
-            transformer=SilqSpeqTransformer())
+            transformer=transformer)
 
     def parse(self, spec):
         return self.parser.parse(spec)
