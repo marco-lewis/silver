@@ -1,6 +1,10 @@
 ?start: (func_spec)*
 
-?func_spec: func "(" defs ")" "->" "(" defs ")" "{" stmts "}" -> funcspec
+?func_spec: func "(" defs ")" "->" "(" defs ")" pre post -> funcspec
+
+?pre: "pre" "{" stmts "}" -> pre
+
+?post: "post" "{" stmts "}" -> post
 
 ?func: NAME
 
