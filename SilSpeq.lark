@@ -9,7 +9,7 @@
 ?func: NAME
 
 ?defs: (def ("," def)*)?
-?def: "define" NAME ":" type    -> def
+?def: "define" NAME ":" type    -> definition
 
 ?type: NAT
     | "{" "0" "," "1" "}" ("^" NUMBER)? -> int
@@ -22,11 +22,11 @@
     | "(" lexpr ")"
     | numexpr "=" numexpr       -> eq
     | numexpr "leq" numexpr     -> le
-    | lexpr "&" lexpr           -> and
-    | lexpr "|" lexpr           -> or
+    | lexpr "&" lexpr           -> land
+    | lexpr "|" lexpr           -> lor
     | lexpr "=>" lexpr          -> implies
     | lexpr "<=>" lexpr         -> equiv
-    | "¬" lexpr                 -> not
+    | "¬" lexpr                 -> lnot
     | "@" NAME "." lexpr        -> forall
     | "#" NAME "." lexpr        -> exists
 
