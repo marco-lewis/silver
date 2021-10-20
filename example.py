@@ -8,11 +8,12 @@ def example(run_inter):
     print(tree.pretty())
     if run_inter:
         s = Solver()
-        itp = SilSpeqInterpreter(s)
+        itp = SilSpeqInterpreter()
         print(itp.visit(tree))
-        # tree = parser.parse_file("ex2.spq")
-        # print(itp.visit(tree))
+        tree = parser.parse_file("ex2.spq")
+        print(itp.visit(tree))
         print(s)
+        print(s.check())
 
 if __name__ == "__main__":
     example(True)

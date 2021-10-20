@@ -1,6 +1,8 @@
 from lark.visitors import *
 from lark import Token, Tree
 from z3 import *
+from itertools import chain
+
 
 def Equiv(a, b):
     return And(Implies(a, b), Implies(b, a))
@@ -8,8 +10,7 @@ def Equiv(a, b):
 NAT = "NAT"
 
 class SilSpeqInterpreter(Interpreter):
-    def __init__(self, solver):
-        self.solver = solver
+    def __init__(self):
         self.vars = {}
         super().__init__()
 
@@ -18,7 +19,8 @@ class SilSpeqInterpreter(Interpreter):
     def specs(self, specs):
         d = {}
         for spec in specs:
-            d[spec[0].value] = spec[1:]
+            func_spec = [s for s in spec[1:] if s != None]
+            d[spec[0].value] = func_spec
         return d
 
     @visit_children_decor
@@ -27,14 +29,11 @@ class SilSpeqInterpreter(Interpreter):
 
     @visit_children_decor
     def pre(self, stmts):
-        # print(stmts)
-        return stmts
-        pass
+        return [wrap[0] for wrap in filter(None, stmts[0])]
 
     @visit_children_decor
     def post(self, stmts):
-        # return stmts
-        pass
+        return Not(And([wrap[0] for wrap in filter(None, stmts[0])]))
 
 
     # Handling definitions and statements
@@ -50,8 +49,7 @@ class SilSpeqInterpreter(Interpreter):
 
     @visit_children_decor
     def assertion(self, zexpr):
-        print('a', zexpr)
-        self.solver.add(zexpr)
+        return zexpr
 
 
     # Handling types

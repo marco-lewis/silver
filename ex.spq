@@ -7,9 +7,9 @@ pre{
     assert((¬(bal = 1)) <=> const = 1)
     # assert(SUM[x](f(x)) = y)
     assert(bal = 1 <=> y = 2^(3-1))
-    # assert(const <=> (y = 0 | y = 2^3))
+    assert(const = 1 <=> (y = 0 | y = 2^3))
 }
 post{
-    # assert(const => dj_ret = 0)
-    # assert(bal => ¬(dj_ret = 0))
+    assert(const = 1 => dj_ret = 0)
+    assert(bal = 1 => ¬(dj_ret = 0))
 }
