@@ -11,7 +11,7 @@
 ?defs: (def ("," def)*)?
 ?def: "define" NAME ":" type    -> definition
 
-?type: NAT
+?type: NAT                              -> nat
     | "{" "0" "," "1" "}" ("^" NUMBER)? -> int
 
 ?stmts: (stmt)*

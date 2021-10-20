@@ -1,17 +1,18 @@
-from lark import Lark
 from SilSpeqInterpreter import SilSpeqInterpreter
-from SilSpeqTransformer import SilqSpeqTransformer
 import SilqSpeqParser as ssp
+from z3 import Solver
 
 def example(run_inter):
-    # parser = ssp.SilSpeqParser(SilqSpeqTransformer())
-    parser = ssp.SilSpeqParser(None)
+    parser = ssp.SilSpeqParser()
     tree = parser.parse_file("ex.spq")
     print(tree.pretty())
-    itp = SilSpeqInterpreter()
-    print(itp.visit(tree))
-    tree = parser.parse_file("ex2.spq")
-    print(itp.visit(tree))
+    if run_inter:
+        s = Solver()
+        itp = SilSpeqInterpreter(s)
+        print(itp.visit(tree))
+        # tree = parser.parse_file("ex2.spq")
+        # print(itp.visit(tree))
+        print(s)
 
 if __name__ == "__main__":
     example(True)
