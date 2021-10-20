@@ -49,5 +49,7 @@ NAT: "N" | "ℕ"
 %import common.CNAME -> NAME
 %import common.NUMBER
 %import common.WS
+%import common.SH_COMMENT
 
 %ignore WS
+%ignore SH_COMMENT

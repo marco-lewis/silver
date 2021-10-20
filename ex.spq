@@ -4,10 +4,10 @@ pre{
     define bal : {0, 1}
     define const : {0, 1}
     
-    assert((¬bal) <=> const)
-    assert(SUM[x](f(x)) = y)
+    # assert((¬bal) <=> const)
+    # assert(SUM[x](f(x)) = y)
     assert(bal <=> y = 2^(3-1))
-    assert(const <=> (y = 0 | y = 2^3))
+    # assert(const <=> (y = 0 | y = 2^3))
 }
 post{
     assert(const => dj_ret = 0)
