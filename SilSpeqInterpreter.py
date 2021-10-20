@@ -1,4 +1,5 @@
 from lark.visitors import *
+from lark import Token, Tree
 from z3 import *
 
 def Equiv(a, b):
@@ -12,6 +13,7 @@ class SilSpeqInterpreter(Interpreter):
         self.vars = {}
         super().__init__()
 
+    # Handling pre, post, spec etc.
     @visit_children_decor
     def specs(self, specs):
         d = {}
@@ -25,8 +27,8 @@ class SilSpeqInterpreter(Interpreter):
 
     @visit_children_decor
     def pre(self, stmts):
-        print(stmts)
-        # return stmts
+        # print(stmts)
+        return stmts
         pass
 
     @visit_children_decor
@@ -34,23 +36,37 @@ class SilSpeqInterpreter(Interpreter):
         # return stmts
         pass
 
+
+    # Handling definitions and statements
     @visit_children_decor
     def definition(self, df):
-        pass
+        var = self.token(df[0])
+        if df[1] == NAT:
+            self.vars[var] = Int(var)
+        else:
+            self.vars[var] = Real(var)
+
+
+    @visit_children_decor
+    def assertion(self, expr):
+        return expr
+
 
     # Handling types
     def nat(self, a):
         return NAT
-
-    
     
     @visit_children_decor
-    def int(self, a):
-        if a == []:
-            a.append(1)
-        return int(a[0])
+    def int(self, n):
+        if n == []:
+            return 1
+        return int(n[0].value)
 
     # Handling lexpr
+    @visit_children_decor
+    def eq(self, a):
+        return a
+
     # def le(self, a):
     #     return a[0] <= a[1]
 
@@ -64,7 +80,8 @@ class SilSpeqInterpreter(Interpreter):
     #     return Implies(a[0], a[1])
 
     # def equiv(self, a):
-    #     return Equiv(a[0], a[1])
+    #     return a
+        # return Equiv(a[0], a[1])
     
     # def lnot(self, a):
     #     return Not(a[0])
@@ -76,30 +93,49 @@ class SilSpeqInterpreter(Interpreter):
     #     return Exists([a[0]], a[1])
 
     # Handling numexpr
-    # @visit_children_decor
-    # def add(self,exprs):
-    #     return exprs[0] + exprs[1]
+    @visit_children_decor
+    def add(self,exprs):
+        return self.handle_token(exprs[0]) + self.handle_token(exprs[1])
 
-    # @visit_children_decor
-    # def sub(self,exprs):
-    #     return exprs[0] - exprs[1]
 
-    # @visit_children_decor
-    # def mul(self,exprs):
-    #     return exprs[0] * exprs[1]
+    @visit_children_decor
+    def sub(self,exprs):
+        return self.handle_token(exprs[0]) - self.handle_token(exprs[1])
 
-    # @visit_children_decor
-    # def div(self,exprs):
-    #     return exprs[0] / exprs[1]
+    @visit_children_decor
+    def mul(self,exprs):
+        return self.handle_token(exprs[0]) * self.handle_token(exprs[1])
 
-    # @visit_children_decor
-    # def pow(self,exprs):
-    #     return exprs[0] ** exprs[1]
+    @visit_children_decor
+    def div(self,exprs):
+        return self.handle_token(exprs[0]) / self.handle_token(exprs[1])
+
+    @visit_children_decor
+    def pow(self,exprs):
+        return self.handle_token(exprs[0]) ** self.handle_token(exprs[1])
 
     # def call(self, a):
     #     return a
 
+    # def sum(self, expr):
+    #     pass
+
+    def handle_token(self, t):
+        if isinstance(t, Token):
+            return self.token(t)
+        else:
+            return t
+
+
+    def token(self, tok: Token):
+        if tok.type == "NUMBER":
+            return self.NUMBER(tok)
+        if tok.type == "NAME":
+            return tok.value
+
     def NUMBER(self, n):
-        print(n)
         (n,) = n
         return float(n)
+
+    def NAME(self, var):
+        return self.vars[var.value]
