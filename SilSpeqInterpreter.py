@@ -8,6 +8,7 @@ def Equiv(a, b):
     return And(Implies(a, b), Implies(b, a))
 
 NAT = "NAT"
+BOOL = "BOOL"
 
 class SilSpeqInterpreter(Interpreter):
     def __init__(self):
@@ -29,7 +30,7 @@ class SilSpeqInterpreter(Interpreter):
 
     @visit_children_decor
     def pre(self, stmts):
-        return [wrap[0] for wrap in filter(None, stmts[0])]
+        return stmts
 
     @visit_children_decor
     def post(self, stmts):
@@ -43,8 +44,13 @@ class SilSpeqInterpreter(Interpreter):
         var = df[0].value
         if df[1] == NAT:
             self.vars[var] = Int(var)
+            return self.vars[var] >= 0
+        elif df[1] == BOOL:
+            self.vars[var] = Int(var)
+            return Or(self.vars[var] == 0, self.vars[var] == 1)
         else:
-            self.vars[var] = Real(var)
+            self.vars[var] = Int(var)
+            return Or([self.vars[var] == i for i in range(0, 2**df[1])])
 
 
     @visit_children_decor
@@ -55,6 +61,9 @@ class SilSpeqInterpreter(Interpreter):
     # Handling types
     def nat(self, a):
         return NAT
+
+    def bool(self, a):
+        return BOOL
     
     @visit_children_decor
     def int(self, n):

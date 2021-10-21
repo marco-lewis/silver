@@ -12,7 +12,8 @@
 ?def: "define" NAME ":" type    -> definition
 
 ?type: NAT                              -> nat
-    | "{" "0" "," "1" "}" ("^" NUMBER)? -> int
+    | "{" "0" "," "1" "}"               -> bool
+    | "{" "0" "," "1" "}" "^" NUMBER    -> int
 
 ?stmts: (stmt)*
 ?stmt: def 
