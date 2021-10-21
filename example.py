@@ -1,4 +1,4 @@
-from SilSpeqInterpreter import SilSpeqInterpreter
+from SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
 import SilqSpeqParser as ssp
 from z3 import *
 
@@ -8,7 +8,7 @@ def example(run_inter):
     print(tree.pretty())
     if run_inter:
         s = Solver()
-        itp = SilSpeqInterpreter()
+        itp = SilSpeqZ3Interpreter()
         intp_tree = itp.visit(tree)
         obl = intp_tree['dj_alg']
         s.add(obl)

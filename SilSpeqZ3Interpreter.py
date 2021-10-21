@@ -1,7 +1,6 @@
 from lark.visitors import *
-from lark import Token, Tree
+from lark import Token
 from z3 import *
-from itertools import chain
 
 
 def Equiv(a, b):
@@ -11,7 +10,7 @@ NAT = "NAT"
 BOOL = "BOOL"
 FUNC = "FUNC"
 
-class SilSpeqInterpreter(Interpreter):
+class SilSpeqZ3Interpreter(Interpreter):
     def __init__(self):
         self.vars = {}
         self.types = {}
