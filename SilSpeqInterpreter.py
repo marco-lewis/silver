@@ -14,6 +14,7 @@ FUNC = "FUNC"
 class SilSpeqInterpreter(Interpreter):
     def __init__(self):
         self.vars = {}
+        self.types = {}
         super().__init__()
 
     # Handling pre, post, spec etc.
@@ -22,8 +23,17 @@ class SilSpeqInterpreter(Interpreter):
         d = {}
         for spec in specs:
             func_spec = [s for s in spec[1:] if s != None]
-            d[spec[0].value] = func_spec
+            d[spec[0].value] = self.flatten(func_spec, [])
         return d
+
+    def flatten(self, old, new):
+        for i in old:
+            if isinstance(i, list):
+                self.flatten(i, new)
+            else:
+                new.append(i)
+        return new
+
 
     @visit_children_decor
     def funcspec(self, tree):
@@ -43,6 +53,7 @@ class SilSpeqInterpreter(Interpreter):
     @visit_children_decor
     def definition(self, df):
         var = df[0].value
+        self.types[var] = df[1]
         if df[1] == NAT:
             self.vars[var] = Int(var)
             return self.vars[var] >= 0
@@ -153,13 +164,20 @@ class SilSpeqInterpreter(Interpreter):
     def pow(self,exprs):
         return self.handle_token(exprs[0]) ** self.handle_token(exprs[1])
 
-    # def call(self, a):
-    #     return a
+    @visit_children_decor
+    def call(self, call):
+        return self.token(call[0])([self.token(input) for input in call[1]])
 
-    # @visit_children_decor
-    # def sum(self, expr):
-    #     print(expr)
-    #     pass
+    @visit_children_decor
+    def sum(self, expr):
+        body = Lambda([self.token(expr[0])], expr[1])
+        idx_type = self.types[str(self.token(expr[0]))]
+        if idx_type == NAT:
+            raise Exception("SumError: can't use natural numbers as a parameter for sum")
+        elif idx_type == BOOL:
+            return Sum([body[i] for i in range(0,2)])
+        else:
+            return Sum([body[i] for i in range(0, 2**idx_type)])
 
     def handle_token(self, t):
         if isinstance(t, Token):

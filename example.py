@@ -1,6 +1,6 @@
 from SilSpeqInterpreter import SilSpeqInterpreter
 import SilqSpeqParser as ssp
-from z3 import Solver
+from z3 import *
 
 def example(run_inter):
     parser = ssp.SilSpeqParser()
@@ -9,11 +9,14 @@ def example(run_inter):
     if run_inter:
         s = Solver()
         itp = SilSpeqInterpreter()
-        print(itp.visit(tree))
-        tree = parser.parse_file("ex2.spq")
-        print(itp.visit(tree))
+        intp_tree = itp.visit(tree)
+        obl = intp_tree['dj_alg']
+        s.add(obl)
         print(s)
-        print(s.check())
+        if s.check() == z3.sat:
+            print(s.model())
+        # tree = parser.parse_file("ex2.spq")
+        # print(itp.visit(tree))
 
 if __name__ == "__main__":
     example(True)
