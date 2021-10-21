@@ -9,6 +9,7 @@ def Equiv(a, b):
 
 NAT = "NAT"
 BOOL = "BOOL"
+FUNC = "FUNC"
 
 class SilSpeqInterpreter(Interpreter):
     def __init__(self):
@@ -48,10 +49,27 @@ class SilSpeqInterpreter(Interpreter):
         elif df[1] == BOOL:
             self.vars[var] = Int(var)
             return Or(self.vars[var] == 0, self.vars[var] == 1)
+        elif isinstance(df[1], list):
+            return self.function_obligation(var, df[1])
         else:
             self.vars[var] = Int(var)
-            return Or([self.vars[var] == i for i in range(0, 2**df[1])])
+            return And(0 <= self.vars[var], self.vars[var] < 2**df[1])
 
+
+    def function_obligation(self, fname, typing):
+        self.vars[fname] = Function(fname, IntSort(), IntSort())
+        inputs = [Int(fname + '_in' + str(i)) for i in range(0, len(typing[:-1]))]
+        in_obl = And([self.type_obligation(inputs[i], typing[i]) for i in range(0, len(typing[:-1]))])
+        out_obl = ForAll([input for input in inputs], self.type_obligation(self.vars[fname](inputs), typing[-1]))
+        return simplify(And(in_obl, out_obl))
+
+    def type_obligation(self, z3_expr, type):
+        if type == NAT:
+            return z3_expr >= 0
+        elif type == BOOL:
+            return Or(z3_expr == 0, z3_expr == 1)
+        else:
+            return And(0 <= z3_expr, z3_expr < 2**type)
 
     @visit_children_decor
     def assertion(self, zexpr):
@@ -70,6 +88,10 @@ class SilSpeqInterpreter(Interpreter):
         if n == []:
             return 1
         return int(n[0].value)
+
+    @visit_children_decor
+    def function(self, types):
+        return types
 
     # Handling lexpr
     @visit_children_decor
@@ -134,7 +156,9 @@ class SilSpeqInterpreter(Interpreter):
     # def call(self, a):
     #     return a
 
+    # @visit_children_decor
     # def sum(self, expr):
+    #     print(expr)
     #     pass
 
     def handle_token(self, t):
