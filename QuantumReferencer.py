@@ -11,7 +11,6 @@ class QRef:
         return str(self.name) + "_v" + str(self.version)
 
 class QuantumReferencer:
-    # Change to a dictionary with pointers
     q_refs = []
     
     def __init__(self):
@@ -53,6 +52,9 @@ class QuantumReferencer:
 
     def is_empty(self):
         return self.q_refs == []
+
+    def is_single(self):
+        return len(self.q_refs) == 1
 
     def is_stored(self, name):
         for ref in self.q_refs:
