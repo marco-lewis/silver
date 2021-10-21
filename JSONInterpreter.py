@@ -64,22 +64,22 @@ class JSONInterpreter:
             # 4) Look into JSON and generate proof obligations by using information from JSON
             else:
                 print("Make proof obligations")
-                for arg in func["args"]:
-                    print(arg)
-                    # t = arg["type"]
-                    # TODO: Handle function types (dw for now)
-                # Check arguments and create variables that are needed there (with any pre-conditions if flagged)
-                # Make a PO for summary if flagged
-                # OR go through statements of function
-                for stmt in func["statements"]:
-                    ob = self.decode_statement(stmt)
-                    ob = simplify(And(ob))
-                    self.solver.add(ob)
-                    print(self.solver.assertions())
-                # At end, check postcondition flag
+                self.decode_func(func)
 
-    def decode_func(self):
-        return False
+
+    def decode_func(self, func):
+        for arg in func["args"]:
+            print(arg)
+            # t = arg["type"]
+            # TODO: Handle function types (dw for now)
+        # Check arguments and create variables that are needed there (with any pre-conditions if flagged)
+        # Make a PO for summary if flagged
+        # OR go through statements of function
+        for stmt in func["statements"]:
+            ob = self.decode_statement(stmt)
+            ob = simplify(And(ob))
+            self.solver.add(ob)
+            print(self.solver.assertions())
 
     def decode_statement(self, stmt):
         e = stmt[expType]
@@ -105,7 +105,7 @@ class JSONInterpreter:
             # TODO: Sort out arguments
             arg = exp["arg"]
             obs = self.obligation_generator.make_qstate(self.obligation_generator.quantum_referencer.get_obligation_variables())
-            op = self.matrix_from_op(exp["op"])
+            op = self._matrix_from_op(exp["op"])
             return self.obligation_generator.obligation_operation(op, obs)
         if e == "litExp":
             val = exp["value"]
@@ -115,15 +115,15 @@ class JSONInterpreter:
             return self.decode_expression(exp["expr"])
         raise Exception("TODO: expression " + e)
 
-    def size_from_type(self, type):
-        if self.single_type(type):
+    def _size_from_type(self, type):
+        if self._single_type(type):
             return 1
         return 0
 
-    def single_type(self, type):
+    def _single_type(self, type):
         return type == "B" or type == "𝔹"
 
-    def matrix_from_op(self, op):
+    def _matrix_from_op(self, op):
         if op == "H": return [[_to_complex(self.isqrt2), _to_complex(self.isqrt2)], [_to_complex(self.isqrt2), _to_complex(-self.isqrt2)]]
         if op == "X": return X
         if op == "Y": return Y
