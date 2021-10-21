@@ -105,7 +105,7 @@ class JSONInterpreter:
             # TODO: Sort out arguments
             arg = exp["arg"]
             obs = self.obligation_generator.make_qstate(self.obligation_generator.quantum_referencer.get_obligation_variables())
-            op = self._matrix_from_op(exp["op"])
+            op = self.obligation_generator.make_qubit_operation(self._matrix_from_op(exp["op"]), arg)
             return self.obligation_generator.obligation_operation(op, obs)
         if e == "litExp":
             val = exp["value"]
@@ -127,4 +127,5 @@ class JSONInterpreter:
         if op == "H": return [[_to_complex(self.isqrt2), _to_complex(self.isqrt2)], [_to_complex(self.isqrt2), _to_complex(-self.isqrt2)]]
         if op == "X": return X
         if op == "Y": return Y
-        if op == "Z": return Z
+        if op == "Z'": return Z
+        raise Exception("OpError: operation " + str(op) + " does not exist.")

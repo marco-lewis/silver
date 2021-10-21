@@ -2,7 +2,8 @@ from z3 import *
 from QuantumReferencer import QuantumReferencer
 from complex import *
 from ComplexVector import *
-import numpy as np
+from utils import *
+from QuantumOps import ID
 
 # Currently handles single variable, want to change to handle multiple variables
 # TODO: Checks for valid sizes of inputs
@@ -21,13 +22,13 @@ class ObilgationGenerator:
     def make_qubit_operation(self, op, var):
         q_loc = self.quantum_referencer.get_loc(var)
         size = self.quantum_referencer.get_total_size()
-        out = 1
-        for i in range(0, 2**size):
-            out = np.kron(np.identity(2), out) if not(q_loc == i) else np.kron(op, out)
-        return np.ndarray.tolist(out)
+        out = [[1]]
+        for i in range(size):
+            out = kronecker(out, ID) if not(q_loc == i) else kronecker(out, op)
+        return out
 
     def obligation_quantum_assignment(self, lhs, rhs):
-        return [lhs[i] == rhs[i] for i in range(0, len(lhs))]
+        return [lhs[i] == rhs[i] for i in range(len(lhs))]
 
     def obligation_quantum_literal(self, literal = 0, var_name = ""):
         if self.quantum_referencer.is_empty():
@@ -37,7 +38,7 @@ class ObilgationGenerator:
         else:
             out = []
             j = 0
-            for i in range(0, 2**self.quantum_referencer.get_total_size()):
+            for i in range(2**self.quantum_referencer.get_total_size()):
                 if i % 2 == literal:
                     out.append(self.__prev_quantum_mem[j])
                     j += 1
@@ -48,7 +49,7 @@ class ObilgationGenerator:
 
     def obligation_operation(self, operation, obligations):
         obs = []
+        print(len(operation), len(obligations))
         for row in operation:
-            print(row[0] , obligations[0])
-            obs.append(Sum([row[col] * obligations[col] for col in range(0, len(row))]))
+            obs.append(Sum([row[col] * obligations[col] for col in range(len(row))]))
         return obs
