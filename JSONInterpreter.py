@@ -1,9 +1,18 @@
-# Goal: Take in JSON and make calls to ObligationGenerator
 '''
+Goal: Take in JSON and make calls to ObligationGenerator
 Assumptions:
 Variable is only one used in a function
 Integers for now only
 Quantum variables only
+
+TODO
+Handle quantum registers (uint[m], where m is fixed integer)
+Handle quantum operations with multiple qubits
+Handle measurement + return
+Handle conditionals (if statements with quantum)
+Import SilSpeq obligations
+Deutsch-Jozsa algorithm verification
+Grover algorithm verification
 '''
 
 import json
@@ -20,7 +29,7 @@ class JSONInterpreter:
     isqrt2 = Real("isqrt2")
     obligation_generator = ObilgationGenerator()
 
-    def __init__(self, file, solver):
+    def __init__(self, file, solver=Solver()):
         self.file = file
         
         self.spec_flags = {}
