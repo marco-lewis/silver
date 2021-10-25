@@ -22,17 +22,19 @@ class SilSpeqZ3Interpreter(Interpreter):
         d = {}
         for spec in specs:
             func_spec = [s for s in spec[1:] if s != None]
-            d[spec[0].value] = self.flatten(func_spec, [])
+            d[spec[0].value] = self.flatten(func_spec)
         return d
 
-    def flatten(self, old, new):
+    def flatten(self, old):
+        return self.__flatten(old, [])
+
+    def __flatten(self, old, new):
         for i in old:
             if isinstance(i, list):
-                self.flatten(i, new)
+                self.__flatten(i, new)
             else:
                 new.append(i)
         return new
-
 
     @visit_children_decor
     def funcspec(self, tree):
@@ -60,17 +62,17 @@ class SilSpeqZ3Interpreter(Interpreter):
             self.vars[var] = Int(var)
             return Or(self.vars[var] == 0, self.vars[var] == 1)
         elif isinstance(df[1], list):
-            return self.function_obligation(var, df[1])
+            return self.function_obligation(var, self.flatten(df[1]))
         else:
             self.vars[var] = Int(var)
             return And(0 <= self.vars[var], self.vars[var] < 2**df[1])
 
 
     def function_obligation(self, fname, typing):
-        self.vars[fname] = Function(fname, IntSort(), IntSort())
+        self.vars[fname] = Function(fname, [IntSort() for typ in typing])
         inputs = [Int(fname + '_in' + str(i)) for i in range(0, len(typing[:-1]))]
         in_obl = And([self.type_obligation(inputs[i], typing[i]) for i in range(0, len(typing[:-1]))])
-        out_obl = ForAll([input for input in inputs], self.type_obligation(self.vars[fname](inputs), typing[-1]))
+        out_obl = ForAll(inputs, self.type_obligation(self.vars[fname](inputs), typing[-1]))
         return simplify(And(in_obl, out_obl))
 
     def type_obligation(self, z3_expr, type):
@@ -84,7 +86,6 @@ class SilSpeqZ3Interpreter(Interpreter):
     @visit_children_decor
     def assertion(self, zexpr):
         return zexpr
-
 
     # Handling types
     def nat(self, a):
@@ -147,7 +148,6 @@ class SilSpeqZ3Interpreter(Interpreter):
     @visit_children_decor
     def forall(self, lexpr):
         return ForAll([self.token(lexpr[0])], lexpr[1])
-
 
     @visit_children_decor
     def exists(self, lexpr):

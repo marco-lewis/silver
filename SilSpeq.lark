@@ -23,7 +23,7 @@
 ?lexpr: numexpr
     | "(" lexpr ")"
     | numexpr "=" numexpr       -> eq
-    | numexpr ">" numexpr      -> gt
+    | numexpr ">" numexpr       -> gt
     | numexpr "<" numexpr       -> lt
     | numexpr ">=" numexpr      -> ge
     | numexpr "<=" numexpr      -> le
