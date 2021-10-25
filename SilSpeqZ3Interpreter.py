@@ -109,6 +109,18 @@ class SilSpeqZ3Interpreter(Interpreter):
         return lexprs[0] == lexprs[1]
 
     @visit_children_decor
+    def gt(self, nexprs):
+        return nexprs[0] > nexprs[1]
+
+    @visit_children_decor
+    def lt(self, nexprs):
+        return nexprs[0] < nexprs[1]
+
+    @visit_children_decor
+    def ge(self, nexprs):
+        return nexprs[0] >= nexprs[1]
+
+    @visit_children_decor
     def le(self, nexprs):
         return nexprs[0] <= nexprs[1]
 
@@ -131,18 +143,25 @@ class SilSpeqZ3Interpreter(Interpreter):
     @visit_children_decor
     def lnot(self, lexpr):
         return Not(lexpr[0])
-    
-    # def forall(self, a):
-    #     return ForAll([a[0]], a[1])
 
-    # def exists(self, a):
-    #     return Exists([a[0]], a[1])
+    @visit_children_decor
+    def forall(self, lexpr):
+        return ForAll([self.token(lexpr[0])], lexpr[1])
+
+
+    @visit_children_decor
+    def exists(self, lexpr):
+        return Exists([self.token(lexpr[0])], lexpr[1])
 
     # Handling numexpr
     @visit_children_decor
     def var(self, expr):
         return self.token(expr[0])
     
+    @visit_children_decor
+    def neg(self,expr):
+        return - self.handle_token(expr[0])
+
     @visit_children_decor
     def add(self,exprs):
         return self.handle_token(exprs[0]) + self.handle_token(exprs[1])

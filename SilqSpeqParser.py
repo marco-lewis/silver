@@ -1,6 +1,4 @@
 from lark import Lark
-from z3 import Solver
-from SilSpeqTransformer import SilqSpeqTransformer
 
 class SilSpeqParser:
     def __init__(self, transformer=None):

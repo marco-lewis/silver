@@ -4,8 +4,8 @@ from z3 import *
 
 def example(run_inter):
     parser = ssp.SilSpeqParser()
-    tree = parser.parse_file("ex.spq")
-    print(tree.pretty())
+    tree = parser.parse_file("ex3.spq")
+    # print(tree.pretty())
     if run_inter:
         s = Solver()
         itp = SilSpeqZ3Interpreter()

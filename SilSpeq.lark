@@ -23,23 +23,27 @@
 ?lexpr: numexpr
     | "(" lexpr ")"
     | numexpr "=" numexpr       -> eq
-    | numexpr "leq" numexpr     -> le
+    | numexpr ">" numexpr      -> gt
+    | numexpr "<" numexpr       -> lt
+    | numexpr ">=" numexpr      -> ge
+    | numexpr "<=" numexpr      -> le
     | lexpr "&" lexpr           -> land
     | lexpr "|" lexpr           -> lor
-    | lexpr "=>" lexpr          -> implies
-    | lexpr "<=>" lexpr         -> equiv
+    | lexpr "->" lexpr          -> implies
+    | lexpr "<->" lexpr         -> equiv
     | "¬" lexpr                 -> lnot
     | "@" NAME "." lexpr        -> forall
-    | "#" NAME "." lexpr        -> exists
+    | "$" NAME "." lexpr        -> exists
 
 ?numexpr: NUMBER
     | NAME                      -> var
+    | "(" numexpr ")"
+    | "-" numexpr               -> neg
     | numexpr "+" numexpr       -> add
     | numexpr "-" numexpr       -> sub
     | numexpr "*" numexpr       -> mul
     | numexpr "/" numexpr       -> div
     | numexpr "^" numexpr       -> pow
-    | "(" numexpr ")"
     | func "(" args ")"         -> call
     | "SUM" "[" NAME "]" "(" numexpr ")"    -> sum
 
