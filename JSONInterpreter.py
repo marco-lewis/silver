@@ -6,7 +6,7 @@ Integers for now only
 Quantum variables only
 
 TODO
-Handle quantum registers (uint[m], where m is fixed integer)
+Handle quantum registers (uint[4])
 Handle quantum operations with multiple qubits
 Handle measurement + return
 Handle conditionals (if statements with quantum)
@@ -23,14 +23,15 @@ from ObligationGenerator import ObilgationGenerator
 from complex import Complex, _to_complex
 from ComplexVector import ComplexVector
 
-expType = "expType"
+EXPTYPE = "expType"
+TYPEOBJ = "typeObj"
 
 class JSONInterpreter:
     isqrt2 = Real("isqrt2")
     obligation_generator = ObilgationGenerator()
 
-    def __init__(self, file, solver=Solver()):
-        self.file = file
+    def __init__(self, silq_json_file, solver=Solver()):
+        self.silq_json_file = silq_json_file
         
         self.spec_flags = {}
         self.spec_flags["pre"] = False
@@ -45,7 +46,7 @@ class JSONInterpreter:
         self.var_pointer = {}
 
     def getJSON(self):
-        with open(self.file, "r") as rf:
+        with open(self.silq_json_file, "r") as rf:
             self.fdefs = rf.read()
             self.fdefs = json.loads(self.fdefs)
             
@@ -54,7 +55,7 @@ class JSONInterpreter:
 
 
     # Will need to break down
-    # TODO: Make enumerations for expTypes
+    # TODO: Make enumerations for EXPTYPEs
     def decode_json(self):
         # Have functions that contain an array of statements (which may or may not have arrays/objects inside them)
         # 1) Get function name
@@ -91,7 +92,7 @@ class JSONInterpreter:
             print(self.solver.assertions())
 
     def decode_statement(self, stmt):
-        e = stmt[expType]
+        e = stmt[EXPTYPE]
         if e == "defineExp":
             lhs = stmt["lhs"]
             q_referencer = self.obligation_generator.quantum_referencer
@@ -102,13 +103,17 @@ class JSONInterpreter:
             qstate = self.obligation_generator.make_qstate(q_referencer.get_obligation_variables())
             return self.obligation_generator.obligation_quantum_assignment(qstate, rhs)
         if e == "returnExp":
-            stmt["value"]
+            val = self.obligation_generator.obligation_value(stmt["value"])
+            if val == []:
+                return True
             pass
         raise Exception("TODO: statement " + e)
 
 
     def decode_expression(self, exp):
-        e = exp[expType]
+        e = exp[EXPTYPE]
+        if e == "varDecl":
+            return self.decode_expression(exp["value"])
         if e == "callExp":
             # TODO: Generate appropriate matrix from operation
             # TODO: Sort out arguments
@@ -117,12 +122,29 @@ class JSONInterpreter:
             op = self.obligation_generator.make_qubit_operation(self._matrix_from_op(exp["op"]), arg)
             return self.obligation_generator.obligation_operation(op, obs)
         if e == "litExp":
+            # Have this return the value
             val = exp["value"]
+            print(val)
             return self.obligation_generator.obligation_quantum_literal(val)
         if e == "typeChangeExp":
             # TODO: Something with exp["type"]
+            # Change obligations from literals depending on type
+            self.handle_type(exp["type"])
             return self.decode_expression(exp["expr"])
         raise Exception("TODO: expression " + e)
+
+    # TODO: Find arbitrary value
+    # TODO: Arrange better way to fetch sizes
+    def handle_type(self, type):
+        if self._single_type(type):
+            pass
+        if isinstance(type, dict):
+            if type[TYPEOBJ] == "uint":
+                size = type["size"]
+                while isinstance(size, dict):
+                    size = size["value"]
+                self.obligation_generator.quantum_referencer.ammend_size(size)
+        pass
 
     def _size_from_type(self, type):
         if self._single_type(type):

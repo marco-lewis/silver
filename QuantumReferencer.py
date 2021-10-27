@@ -15,6 +15,14 @@ class QuantumReferencer:
     
     def __init__(self):
         pass
+    
+    def verify_name(self, name):
+        if not(type(name) == str):
+            raise TypeError("Name: (", name, ") is not a string")
+
+    def verify_size(self, size):
+        if not(type(size) == int):
+            raise TypeError("Size (", size,") is not an int")
 
     def get_obligation_variables(self):
         return self.__generate_strings(self.q_refs)
@@ -35,14 +43,18 @@ class QuantumReferencer:
         return q_ref.__str__() + "q" + str(num)
 
     def add(self, name, size):
-        if not(type(name) == str):
-            raise TypeError("Name is not a string")
-        if not(type(size) == int):
-            raise TypeError("Size is not an int")
+        self.verify_name(name)
+        self.verify_size(size)
             
         self.q_refs.append(QRef(name, size, 0))
 
+    def ammend_size(self, new_size):
+        self.verify_size(new_size)
+        ref = self.q_refs[-1]
+        ref.size = new_size
+
     def iterate_var(self, name):
+        self.verify_name(name)
         for ref in self.q_refs:
             if self.valid_name(ref, name):
                 ref.iterate()
@@ -67,8 +79,12 @@ class QuantumReferencer:
                 return ref.size
             
         raise ValueError("No reference with that name")
-        
+
+    def get_last_item_size(self):
+        return self.q_refs[-1].size
+
     def get_loc(self, name, offset = 0):
+        self.verify_name(name)
         loc = 0
         for ref in self.q_refs:
             if self.valid_name(ref, name):
@@ -83,6 +99,9 @@ class QuantumReferencer:
         return sum(ref.size for ref in self.q_refs)
 
     def get_version(self, name):
+        self.verify_name(name)
         for ref in self.q_refs:
             if self.valid_name(ref, name):
                 return ref.version
+
+        raise ValueError("No reference with that name")

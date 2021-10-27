@@ -30,22 +30,22 @@ class ObilgationGenerator:
     def obligation_quantum_assignment(self, lhs, rhs):
         return [lhs[i] == rhs[i] for i in range(len(lhs))]
 
-    def obligation_quantum_literal(self, literal = 0, var_name = ""):
+    def obligation_quantum_literal(self, literal = 0, size=0):
         if self.quantum_referencer.is_empty():
-            pass
+            raise Exception('OblError: qstate is empty')
         elif self.quantum_referencer.is_single():
             return [1 if i == literal else 0 for i in range(0, 2**self.quantum_referencer.get_total_size())]
         else:
             out = []
             j = 0
+            var_size = self.quantum_referencer.get_last_item_size()
             for i in range(2**self.quantum_referencer.get_total_size()):
-                if i % 2 == literal:
+                if i % 2**var_size == literal:
                     out.append(self.__prev_quantum_mem[j])
                     j += 1
                 else:
                     out.append(0)
             return out
-            pass
 
     def obligation_operation(self, operation, obligations):
         obs = []
@@ -53,3 +53,9 @@ class ObilgationGenerator:
         for row in operation:
             obs.append(Sum([row[col] * obligations[col] for col in range(len(row))]))
         return obs
+
+    def obligation_value(self, value):
+        if isinstance(value, list):
+            return [Int(v + "_ret") for v in value]
+        else:
+            return value
