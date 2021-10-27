@@ -42,7 +42,7 @@ class QuantumReferencer:
     def __make_token(self, q_ref, num):
         return q_ref.__str__() + "q" + str(num)
 
-    def add(self, name, size):
+    def append(self, name, size):
         self.verify_name(name)
         self.verify_size(size)
             

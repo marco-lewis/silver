@@ -6,13 +6,15 @@ Integers for now only
 Quantum variables only
 
 TODO
-Handle quantum registers (uint[4])
 Handle quantum operations with multiple qubits
 Handle measurement + return
 Handle conditionals (if statements with quantum)
 Import SilSpeq obligations
+Deutsch algorithm verification
 Deutsch-Jozsa algorithm verification
+For loop handling
 Grover algorithm verification
+Fix quantum registers so they are better
 '''
 
 import json
@@ -81,7 +83,7 @@ class JSONInterpreter:
         for arg in func["args"]:
             print(arg)
             # t = arg["type"]
-            # TODO: Handle function types (dw for now)
+            # TODO: Handle function types (handle arguments a bit later)
         # Check arguments and create variables that are needed there (with any pre-conditions if flagged)
         # Make a PO for summary if flagged
         # OR go through statements of function
@@ -97,7 +99,7 @@ class JSONInterpreter:
             lhs = stmt["lhs"]
             q_referencer = self.obligation_generator.quantum_referencer
             if not(q_referencer.is_stored(lhs)):
-                q_referencer.add(lhs, 1)
+                q_referencer.append(lhs, 1)
             rhs = self.decode_expression(stmt["rhs"])
             q_referencer.iterate_var(lhs)
             qstate = self.obligation_generator.make_qstate(q_referencer.get_obligation_variables())
@@ -113,6 +115,7 @@ class JSONInterpreter:
     def decode_expression(self, exp):
         e = exp[EXPTYPE]
         if e == "varDecl":
+            # TODO: Check this is right
             return self.decode_expression(exp["value"])
         if e == "callExp":
             # TODO: Generate appropriate matrix from operation
@@ -124,18 +127,17 @@ class JSONInterpreter:
         if e == "litExp":
             # Have this return the value
             val = exp["value"]
-            print(val)
             return self.obligation_generator.obligation_quantum_literal(val)
         if e == "typeChangeExp":
-            # TODO: Something with exp["type"]
             # Change obligations from literals depending on type
             self.handle_type(exp["type"])
             return self.decode_expression(exp["expr"])
         raise Exception("TODO: expression " + e)
 
-    # TODO: Find arbitrary value
-    # TODO: Arrange better way to fetch sizes
+
     def handle_type(self, type):
+        # TODO: Find arbitrary value
+        # TODO: Arrange better way to fetch sizes
         if self._single_type(type):
             pass
         if isinstance(type, dict):
