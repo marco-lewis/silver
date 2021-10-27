@@ -48,6 +48,9 @@ class JSONInterpreter:
         self.var_pointer = {}
 
     def getJSON(self):
+        """
+        Reads the JSON silq file and stores the data in fdefs.
+        """
         with open(self.silq_json_file, "r") as rf:
             self.fdefs = rf.read()
             self.fdefs = json.loads(self.fdefs)
@@ -59,6 +62,9 @@ class JSONInterpreter:
     # Will need to break down
     # TODO: Make enumerations for EXPTYPEs
     def decode_json(self):
+        """
+        Generates proof obligations by decoding the JSON file (or using generated specifications)
+        """
         # Have functions that contain an array of statements (which may or may not have arrays/objects inside them)
         # 1) Get function name
         for func in self.fdefs:
@@ -80,6 +86,12 @@ class JSONInterpreter:
 
 
     def decode_func(self, func):
+        """
+        Generates proof obligation for a function specification
+
+        Args:
+            func (dict): dictionary of arguments and statements for a function
+        """
         for arg in func["args"]:
             print(arg)
             # t = arg["type"]
@@ -96,7 +108,10 @@ class JSONInterpreter:
     def decode_statement(self, stmt):
         e = stmt[EXPTYPE]
         if e == "defineExp":
-            lhs = stmt["lhs"]
+            # TODO: Change handling of lhs and rhs
+            # Need to separate handling of logic/variable names and generation of obligations
+            # I.e. need to unwrap lhs to get key details
+            lhs = self.decode_expression(stmt["lhs"])
             q_referencer = self.obligation_generator.quantum_referencer
             if not(q_referencer.is_stored(lhs)):
                 q_referencer.append(lhs, 1)
@@ -113,6 +128,8 @@ class JSONInterpreter:
 
 
     def decode_expression(self, exp):
+        # TODO: Arrange better way to handle literal expressions
+        if isinstance(exp, str): return exp
         e = exp[EXPTYPE]
         if e == "varDecl":
             # TODO: Check this is right
@@ -137,7 +154,6 @@ class JSONInterpreter:
 
     def handle_type(self, type):
         # TODO: Find arbitrary value
-        # TODO: Arrange better way to fetch sizes
         if self._single_type(type):
             pass
         if isinstance(type, dict):
