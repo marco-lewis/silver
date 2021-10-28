@@ -1,24 +1,15 @@
-def f0_oracle(const b:B)lifted:B{
-    return b;
-}
+import deutsch_oracles;
 
-def f1_oracle(const b:B)lifted:B{
-    return false;
-}
-
-def f2_oracle(const b:B)lifted:B{
-    return true;
-}
-
-def f3_oracle(const b:B)lifted:B{
-    return !b;
+def deutsch(f : B !-> lifted B){
+  x := 0:B;
+  x := H(x);
+  if (f(x)) { phase(pi); }
+  x := H(x);
+  x := measure(x);
+  return x;
 }
 
 def main() {
-  x := 0:B;
-  x := H(x);
-  if (f1_oracle(x)) { phase(pi); }
-  x := H(x);
   // Returns only f(0) + f(1) mod 2
-  print(measure(x));
+  deutsch(f1_oracle);
 }
