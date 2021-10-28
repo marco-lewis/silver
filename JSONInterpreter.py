@@ -123,7 +123,7 @@ class JSONInterpreter:
 
 
     def decode_expression(self, exp):
-        # TODO: Arrange better way to handle literal expressions
+        # TODO: Change handling of variables (return location or the reference perhaps?)
         if isinstance(exp, str): return exp
         e = exp[EXPTYPE]
         if e == "varDecl":
@@ -134,14 +134,13 @@ class JSONInterpreter:
             pass
         if e == "callExp":
             # TODO: Handle non-Pauli gates/multiple variables
-            arg = exp["arg"]
+            arg = self.decode_expression(exp["arg"])
             obs = lambda var: self.obligation_generator.get_and_update_q_mem(var, arg)
             op = self.obligation_generator.make_qubit_operation(
                 self._matrix_from_op(exp["op"]), 
                 arg)
             return lambda var: self.obligation_generator.obligation_operation(op, obs(var))
         if e == "litExp":
-            # Have this return the value instead?
             val = exp["value"]
             return val
         if e == "typeChangeExp":
@@ -156,7 +155,8 @@ class JSONInterpreter:
         return 0
 
     def _matrix_from_op(self, op):
-        if op == "H": return [[_to_complex(self.isqrt2), _to_complex(self.isqrt2)], [_to_complex(self.isqrt2), _to_complex(-self.isqrt2)]]
+        if op == "H": return [[_to_complex(self.isqrt2), _to_complex(self.isqrt2)], 
+                              [_to_complex(self.isqrt2), _to_complex(-self.isqrt2)]]
         if op == "X": return X
         if op == "Y": return Y
         if op == "Z'": return Z

@@ -1,3 +1,4 @@
+# TODO: Change to notions of qubits, quantum registers and quantum memory
 class QRef:
     def __init__(self, name, size, version = 0):
         self.name = name
@@ -18,11 +19,11 @@ class QuantumReferencer:
     
     def verify_name(self, name):
         if not(type(name) == str):
-            raise TypeError("Name: (", name, ") is not a string")
+            raise TypeError("Name is not a string")
 
     def verify_size(self, size):
         if not(type(size) == int):
-            raise TypeError("Size (", size,") is not an int")
+            raise TypeError("Size is not an int")
 
     def get_obligation_variables(self):
         return self.__generate_strings(self.q_refs)
@@ -104,6 +105,15 @@ class QuantumReferencer:
             else: loc += ref.size
         
         raise ValueError("No reference with that name")
+    
+    def get_name_from_loc(self, loc):
+        if loc < 0 or loc >= self.get_total_size():
+            raise ValueError("Location is out of range")
+        
+        for ref in self.q_refs:
+            if loc - ref.size < 0:
+                return ref.name
+            else: loc -= ref.size
         
     def get_total_size(self):
         return sum(ref.size for ref in self.q_refs)
