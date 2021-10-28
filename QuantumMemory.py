@@ -56,7 +56,7 @@ class QuantumMemory:
         self.verify_reg(prev_reg)
         self.verify_reg(new_reg)
         
-        self.q_mem[new_reg] = self.q_mem.pop(prev_reg)
+        self.q_mem = {new_reg if k == prev_reg else k:v for k,v in self.q_mem.items()}
 
     def iterate_var(self, reg):
         self.verify_reg(reg)

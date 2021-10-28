@@ -44,7 +44,7 @@ class ObilgationGenerator:
     
     def update_quantum_memory(self, var, old_var = None):
         if not(old_var == None) and not(var == old_var):
-            self.q_memory.ammend_name(old_var, var)
+            self.q_memory.update_reg(old_var, var)
         self.q_memory.iterate_var(var)
         names = self.q_memory.get_obligation_variables()
         self.__prev_quantum_mem = [Complex(name) for name in names]
