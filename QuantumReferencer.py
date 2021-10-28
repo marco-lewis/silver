@@ -52,12 +52,22 @@ class QuantumReferencer:
         self.verify_size(new_size)
         ref = self.q_refs[-1]
         ref.size = new_size
+        
+    def ammend_name(self, prev_name, new_name):
+        self.verify_name(prev_name)
+        self.verify_name(new_name)
+        
+        for ref in self.q_refs:
+            if self.valid_name(ref, prev_name):
+                ref.name = new_name
+                break
 
     def iterate_var(self, name):
         self.verify_name(name)
         for ref in self.q_refs:
             if self.valid_name(ref, name):
                 ref.iterate()
+                break
             
     def valid_name(self, ref, name):
         return ref.name == name

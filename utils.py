@@ -1,8 +1,12 @@
-# Source: http://rosettacode.org/wiki/Kronecker_product#Python
+EXPTYPE = "expType"
+TYPEOBJ = "typeObj"
 
 def kronecker(matrix1, matrix2):
     """
     Performs the Kronecker product on 2 list of lists
+
+    Source: 
+        http://rosettacode.org/wiki/Kronecker_product#Python
 
     Args:
         matrix1 (T[][]): First list to be used in operation

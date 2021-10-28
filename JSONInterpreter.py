@@ -24,9 +24,7 @@ from QuantumOps import *
 from ObligationGenerator import ObilgationGenerator
 from complex import Complex, _to_complex
 from ComplexVector import ComplexVector
-
-EXPTYPE = "expType"
-TYPEOBJ = "typeObj"
+from utils import *
 
 class JSONInterpreter:
     isqrt2 = Real("isqrt2")
@@ -112,12 +110,9 @@ class JSONInterpreter:
             # Need to separate handling of logic/variable names and generation of obligations
             # I.e. need to unwrap lhs to get key details
             lhs = self.decode_expression(stmt["lhs"])
-            q_referencer = self.obligation_generator.quantum_referencer
-            if not(q_referencer.is_stored(lhs)):
-                q_referencer.append(lhs, 1)
-            rhs = self.decode_expression(stmt["rhs"])
-            q_referencer.iterate_var(lhs)
-            qstate = self.obligation_generator.make_qstate(q_referencer.get_obligation_variables())
+            rhs = self.decode_expression(stmt["rhs"])(lhs)
+
+            qstate = self.obligation_generator.make_qstate()
             return self.obligation_generator.obligation_quantum_assignment(qstate, rhs)
         if e == "returnExp":
             val = self.obligation_generator.obligation_value(stmt["value"])
@@ -134,43 +129,31 @@ class JSONInterpreter:
         if e == "varDecl":
             # TODO: Check this is right
             return self.decode_expression(exp["value"])
+        if e == "indexExp":
+            print(exp["var"], exp["index"]["value"])
+            pass
         if e == "callExp":
-            # TODO: Generate appropriate matrix from operation
-            # TODO: Sort out arguments
+            # TODO: Handle non-Pauli gates/multiple variables
             arg = exp["arg"]
-            obs = self.obligation_generator.make_qstate(self.obligation_generator.quantum_referencer.get_obligation_variables())
-            op = self.obligation_generator.make_qubit_operation(self._matrix_from_op(exp["op"]), arg)
-            return self.obligation_generator.obligation_operation(op, obs)
+            obs = lambda var: self.obligation_generator.get_and_update_q_mem(var, arg)
+            op = self.obligation_generator.make_qubit_operation(
+                self._matrix_from_op(exp["op"]), 
+                arg)
+            return lambda var: self.obligation_generator.obligation_operation(op, obs(var))
         if e == "litExp":
-            # Have this return the value
+            # Have this return the value instead?
             val = exp["value"]
-            return self.obligation_generator.obligation_quantum_literal(val)
+            return val
         if e == "typeChangeExp":
             # Change obligations from literals depending on type
-            self.handle_type(exp["type"])
-            return self.decode_expression(exp["expr"])
+            val = self.decode_expression(exp["expr"])
+            return lambda var: self.obligation_generator.obligation_quantum_literal(var, exp["type"], val)
         raise Exception("TODO: expression " + e)
-
-
-    def handle_type(self, type):
-        # TODO: Find arbitrary value
-        if self._single_type(type):
-            pass
-        if isinstance(type, dict):
-            if type[TYPEOBJ] == "uint":
-                size = type["size"]
-                while isinstance(size, dict):
-                    size = size["value"]
-                self.obligation_generator.quantum_referencer.ammend_size(size)
-        pass
-
+    
     def _size_from_type(self, type):
         if self._single_type(type):
             return 1
         return 0
-
-    def _single_type(self, type):
-        return type == "B" or type == "𝔹"
 
     def _matrix_from_op(self, op):
         if op == "H": return [[_to_complex(self.isqrt2), _to_complex(self.isqrt2)], [_to_complex(self.isqrt2), _to_complex(-self.isqrt2)]]

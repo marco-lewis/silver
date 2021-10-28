@@ -14,10 +14,40 @@ class ObilgationGenerator:
 
     def __init__(self):
         pass
-
-    def make_qstate(self, names):
-        self.__prev_quantum_mem = [Complex(name) for name in names]
+    
+    def get_prev_quantum_mem(self):
         return self.__prev_quantum_mem
+    
+    def get_and_update_q_mem(self, var, old_var = None):
+        qstate = self.make_qstate()
+        self.update_quantum_memory(var, old_var)
+        return qstate
+    
+    def handle_type(self, type):
+        # TODO: Find arbitrary value
+        if self.__single_type(type):
+            pass
+        if isinstance(type, dict):
+            if type[TYPEOBJ] == "uint":
+                size = type["size"]
+                while isinstance(size, dict):
+                    size = size["value"]
+                self.quantum_referencer.ammend_size(size)
+        pass
+    
+    def __single_type(self, type):
+        return type == "B" or type == "𝔹"
+    
+    def make_qstate(self):
+        names = self.quantum_referencer.get_obligation_variables()
+        return [Complex(name) for name in names]
+    
+    def update_quantum_memory(self, var, old_var = None):
+        self.quantum_referencer.iterate_var(var)
+        names = self.quantum_referencer.get_obligation_variables()
+        if not(old_var == None) and not(var == old_var):
+            self.quantum_referencer.ammend_name(old_var, var)
+        self.__prev_quantum_mem = [Complex(name) for name in names]
 
     def make_qubit_operation(self, op, var):
         q_loc = self.quantum_referencer.get_loc(var)
@@ -30,19 +60,23 @@ class ObilgationGenerator:
     def obligation_quantum_assignment(self, lhs, rhs):
         return [lhs[i] == rhs[i] for i in range(len(lhs))]
 
-    def obligation_quantum_literal(self, literal = 0, size=0):
+    def obligation_quantum_literal(self, var, type, literal = 0):
+        if not(self.quantum_referencer.is_stored(var)):
+            self.quantum_referencer.append(var, 1)
+            self.handle_type(type)
+
+        loc = self.quantum_referencer.get_loc(var)
         if self.quantum_referencer.is_empty():
             raise Exception('OblError: qstate is empty')
         elif self.quantum_referencer.is_single():
             return [1 if i == literal else 0 for i in range(0, 2**self.quantum_referencer.get_total_size())]
         else:
             out = []
-            j = 0
-            var_size = self.quantum_referencer.get_last_item_size()
+            mem_point = 0
             for i in range(2**self.quantum_referencer.get_total_size()):
-                if i % 2**var_size == literal:
-                    out.append(self.__prev_quantum_mem[j])
-                    j += 1
+                if i % 2**loc == literal:
+                    out.append(self.__prev_quantum_mem[mem_point])
+                    mem_point += 1
                 else:
                     out.append(0)
             return out
