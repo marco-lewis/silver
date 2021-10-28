@@ -43,10 +43,10 @@ class ObilgationGenerator:
         return [Complex(name) for name in names]
     
     def update_quantum_memory(self, var, old_var = None):
-        self.quantum_referencer.iterate_var(var)
-        names = self.quantum_referencer.get_obligation_variables()
         if not(old_var == None) and not(var == old_var):
             self.quantum_referencer.ammend_name(old_var, var)
+        self.quantum_referencer.iterate_var(var)
+        names = self.quantum_referencer.get_obligation_variables()
         self.__prev_quantum_mem = [Complex(name) for name in names]
 
     def make_qubit_operation(self, op, var):
