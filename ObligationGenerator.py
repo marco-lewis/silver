@@ -1,5 +1,5 @@
 from z3 import *
-from QuantumReferencer import QuantumReferencer
+from QuantumMemory import QuantumMemory
 from complex import *
 from ComplexVector import *
 from utils import *
@@ -9,7 +9,7 @@ from QuantumOps import ID
 # TODO: Checks for valid sizes of inputs
 
 class ObilgationGenerator:
-    quantum_referencer = QuantumReferencer()
+    q_memory = QuantumMemory()
     __prev_quantum_mem = []
 
     def __init__(self):
@@ -23,7 +23,7 @@ class ObilgationGenerator:
         self.update_quantum_memory(var, old_var)
         return qstate
     
-    def handle_type(self, type):
+    def handle_type(self, reg, type):
         # TODO: Find arbitrary value
         if self.__single_type(type):
             pass
@@ -32,26 +32,26 @@ class ObilgationGenerator:
                 size = type["size"]
                 while isinstance(size, dict):
                     size = size["value"]
-                self.quantum_referencer.ammend_size(size)
+                self.q_memory.ammend_size(reg, size)
         pass
     
     def __single_type(self, type):
         return type == "B" or type == "𝔹"
     
     def make_qstate(self):
-        names = self.quantum_referencer.get_obligation_variables()
+        names = self.q_memory.get_obligation_variables()
         return [Complex(name) for name in names]
     
     def update_quantum_memory(self, var, old_var = None):
         if not(old_var == None) and not(var == old_var):
-            self.quantum_referencer.ammend_name(old_var, var)
-        self.quantum_referencer.iterate_var(var)
-        names = self.quantum_referencer.get_obligation_variables()
+            self.q_memory.ammend_name(old_var, var)
+        self.q_memory.iterate_var(var)
+        names = self.q_memory.get_obligation_variables()
         self.__prev_quantum_mem = [Complex(name) for name in names]
 
     def make_qubit_operation(self, op, var):
-        q_loc = self.quantum_referencer.get_loc(var)
-        size = self.quantum_referencer.get_total_size()
+        q_loc = self.q_memory.get_loc(var)
+        size = self.q_memory.get_total_size()
         out = [[1]]
         for i in range(size):
             out = kronecker(out, ID) if not(q_loc == i) else kronecker(out, op)
@@ -61,19 +61,19 @@ class ObilgationGenerator:
         return [lhs[i] == rhs[i] for i in range(len(lhs))]
 
     def obligation_quantum_literal(self, var, type, literal = 0):
-        if not(self.quantum_referencer.is_stored(var)):
-            self.quantum_referencer.append(var, 1)
-            self.handle_type(type)
+        if not(self.q_memory.is_stored(var)):
+            self.q_memory.append(var, 1)
+            self.handle_type(var, type)
 
-        loc = self.quantum_referencer.get_loc(var)
-        if self.quantum_referencer.is_empty():
+        loc = self.q_memory.get_loc(var)
+        if self.q_memory.is_empty():
             raise Exception('OblError: qstate is empty')
-        elif self.quantum_referencer.is_single():
-            return [1 if i == literal else 0 for i in range(0, 2**self.quantum_referencer.get_total_size())]
+        elif self.q_memory.is_single():
+            return [1 if i == literal else 0 for i in range(0, 2**self.q_memory.get_total_size())]
         else:
             out = []
             mem_point = 0
-            for i in range(2**self.quantum_referencer.get_total_size()):
+            for i in range(2**self.q_memory.get_total_size()):
                 if i % 2**loc == literal:
                     out.append(self.__prev_quantum_mem[mem_point])
                     mem_point += 1
