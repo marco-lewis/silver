@@ -12,16 +12,21 @@
 ?def: "define" NAME ":" type    -> definition
 
 ?type: NAT                              -> nat
-    | "{" "0" "," "1" "}"               -> bool
+    | bool                              -> bool
     | "{" "0" "," "1" "}" "^" NUMBER    -> int
     | type ("->" type)+                 -> function
+
+?bool: BOOL
+    | "{" "0" "," "1" "}"
 
 ?stmts: (stmt)*
 ?stmt: def 
 | "assert" "(" lexpr ")"        -> assertion
 
-?lexpr: numexpr
-    | "(" lexpr ")"
+?lexpr: "(" lexpr ")"
+    | TRUE                      -> true
+    | FALSE                     -> false
+    | numexpr
     | numexpr "=" numexpr       -> eq
     | numexpr ">" numexpr       -> gt
     | numexpr "<" numexpr       -> lt
@@ -48,8 +53,12 @@
     | "SUM" "[" NAME "]" "(" numexpr ")"    -> sum
 
 ?args: (arg ("," arg)*)?        -> args
-?arg: NAME
+?arg: NAME | NUMBER
 
+TRUE: "⊤"
+FALSE: "⊥"
+
+BOOL : "B" | "𝔹"
 NAT: "N" | "ℕ"
 
 %import common.CNAME -> NAME

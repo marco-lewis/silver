@@ -48,7 +48,6 @@ class SilSpeqZ3Interpreter(Interpreter):
     def post(self, stmts):
         return Not(And([wrap[0] for wrap in filter(None, stmts[0])]))
 
-
     # Handling definitions and statements
     # TODO: Add more types
     # TODO: Separate type handling into another function
@@ -106,6 +105,9 @@ class SilSpeqZ3Interpreter(Interpreter):
         return types
 
     # Handling lexpr
+    true = lambda self,_: True
+    false = lambda self,_: False
+
     @visit_children_decor
     def eq(self, lexprs):
         return lexprs[0] == lexprs[1]
@@ -185,7 +187,7 @@ class SilSpeqZ3Interpreter(Interpreter):
 
     @visit_children_decor
     def call(self, call):
-        return self.token(call[0])([self.token(input) for input in call[1]])
+        return self.handle_token(call[0])([self.handle_token(input) for input in call[1]])
 
     @visit_children_decor
     def sum(self, expr):
@@ -212,8 +214,7 @@ class SilSpeqZ3Interpreter(Interpreter):
             return self.NAME(tok)
 
     def NUMBER(self, n):
-        (n,) = n
-        return float(n)
+        return float(n.value)
 
     def NAME(self, var):
         return self.vars[var.value]
