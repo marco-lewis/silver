@@ -46,13 +46,19 @@ class SilSpeqZ3Interpreter(Interpreter):
 
     @visit_children_decor
     def post(self, stmts):
-        return Not(And([wrap[0] for wrap in filter(None, stmts[0])]))
-
+        if not(stmts == [[]]):
+            return Not(And([wrap[0] for wrap in filter(None, stmts[0])]))
+        return True
+        
     # Handling definitions and statements
     # TODO: Add more types
     # TODO: Separate type handling into another function
     @visit_children_decor
     def definition(self, df):
+        # Ignore flag
+        if df[0] == None:
+            df = df[1:]
+        
         var = df[0].value
         self.types[var] = df[1]
         if df[1] == NAT:
@@ -86,6 +92,13 @@ class SilSpeqZ3Interpreter(Interpreter):
     @visit_children_decor
     def assertion(self, zexpr):
         return zexpr
+    
+    # Ignore flags
+    def qout(self, v):
+        pass
+    
+    def oracle(self, v):
+        pass
 
     # Handling types
     def nat(self, a):

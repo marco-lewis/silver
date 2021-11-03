@@ -1,6 +1,9 @@
 ?start: (func_spec)* -> specs
 
-?func_spec: func "(" defs ")" "->" "(" defs ")" pre post -> funcspec
+?func_spec: func ("[" funcflags "]")? "(" defs ")" "->" "(" defs ")" pre post -> funcspec
+
+?funcflags: funcflag ("," funcflag)*
+?funcflag: "qout"               -> qout
 
 ?pre: "pre" "{" stmts "}" -> pre
 
@@ -8,8 +11,11 @@
 
 ?func: NAME
 
-?defs: (def ("," def)*)?
-?def: "define" NAME ":" type    -> definition
+?defs: def ("," def)*
+?def: "define" ("[" defflags "]")? NAME ":" type    -> definition
+
+?defflags: defflag ("," defflag)*
+?defflag: "oracle"              -> oracle
 
 ?type: NAT                              -> nat
     | bool                              -> bool
