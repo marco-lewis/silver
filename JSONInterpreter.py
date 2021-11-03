@@ -17,6 +17,7 @@ Grover algorithm verification
 Fix quantum registers so they are better
 '''
 
+import os
 import json
 from z3 import *
 from Prog import *
@@ -56,6 +57,20 @@ class JSONInterpreter:
     def print_data(self):
         print(self.fdefs)
 
+    def make_silspeq_file(self):
+        self.__spq_file = os.path.splitext(self.silq_json_file)[0]+'.spq'
+        spq = ""
+        with open(self.__spq_file, 'w') as f:
+            for func in self.fdefs:
+                name = func['func']
+                args = func['args']
+                spq += name + "("
+                # TODO: Handle args here
+                # TODO: Replace return type from arbitrary to return type
+                spq += ")->(define " + name + "_ret : N" + ")\n"
+                spq += "pre{\n\n}\npost{\n\n}"
+            f.write(spq)
+        pass
 
     # Will need to break down
     # TODO: Make enumerations for EXPTYPEs
@@ -81,7 +96,6 @@ class JSONInterpreter:
             else:
                 print("Make proof obligations")
                 self.decode_func(func)
-
 
     def decode_func(self, func):
         """
