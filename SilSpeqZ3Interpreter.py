@@ -50,7 +50,8 @@ class SilSpeqZ3Interpreter(Interpreter):
 
 
     # Handling definitions and statements
-    # TODO: Add restrictions on values (e.g. b:{0,1} means s.add(Or(b==0, b==1)))
+    # TODO: Add more types
+    # TODO: Separate type handling into another function
     @visit_children_decor
     def definition(self, df):
         var = df[0].value
@@ -67,7 +68,7 @@ class SilSpeqZ3Interpreter(Interpreter):
             self.vars[var] = Int(var)
             return And(0 <= self.vars[var], self.vars[var] < 2**df[1])
 
-
+    # TODO: Test with tuples/arrays types?
     def function_obligation(self, fname, typing):
         self.vars[fname] = Function(fname, [IntSort() for typ in typing])
         inputs = [Int(fname + '_in' + str(i)) for i in range(0, len(typing[:-1]))]
@@ -197,6 +198,7 @@ class SilSpeqZ3Interpreter(Interpreter):
         else:
             return Sum([body[i] for i in range(0, 2**idx_type)])
 
+    # Handling tokens and fetching Z3 variables
     def handle_token(self, t):
         if isinstance(t, Token):
             return self.token(t)

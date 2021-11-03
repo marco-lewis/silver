@@ -13,10 +13,6 @@ def example(run_inter):
         obl = intp_tree['dj_alg']
         s.add(obl)
         print(s)
-        if s.check() == z3.sat:
-            print(s.model())
-        # tree = parser.parse_file("ex2.spq")
-        # print(itp.visit(tree))
 
 if __name__ == "__main__":
     example(True)
