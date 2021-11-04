@@ -43,7 +43,7 @@ class JSONInterpreter:
         self.solver = solver
         self.solver.add((1 / self.isqrt2)**2  == 2, self.isqrt2 > 0)
 
-        self.var_pointer = {}
+        self.args = {}
 
     def getJSON(self):
         """
@@ -78,8 +78,10 @@ class JSONInterpreter:
                 if False: print("Same hash")
             # 4) Look into JSON and generate proof obligations by using information from JSON
             else:
-                print("Make proof obligations")
+                print("Make proof obligations for " + func["func"] + "...")
+                self.args = {}
                 self.decode_func(func)
+                print("Done")
 
     def decode_func(self, func):
         """
@@ -89,9 +91,9 @@ class JSONInterpreter:
             func (dict): dictionary of arguments and statements for a function
         """
         for arg in func["args"]:
-            print(arg)
-            # t = arg["type"]
-            # TODO: Handle function types (handle arguments a bit later)
+            # TODO: Handle argument/function types to make appropriate Z3 objects
+            if True:
+                self.args[arg["name"]] = Function(arg["name"], IntSort(), IntSort())
         # Check arguments and create variables that are needed there (with any pre-conditions if flagged)
         # Make a PO for summary if flagged
         # OR go through statements of function
@@ -99,7 +101,6 @@ class JSONInterpreter:
             ob = self.decode_statement(stmt)
             ob = simplify(And(ob))
             self.solver.add(ob)
-            print(self.solver.assertions())
 
     def decode_statement(self, stmt):
         e = stmt[EXPTYPE]
@@ -110,8 +111,19 @@ class JSONInterpreter:
             lhs = self.decode_expression(stmt["lhs"])
             rhs = self.decode_expression(stmt["rhs"])(lhs)
 
-            if isinstance(rhs[0], BoolRef):
+            if all(isinstance(r, BoolRef) for r in rhs):
                 return rhs
+            qstate = self.obligation_generator.make_qstate()
+            return self.obligation_generator.obligation_quantum_assignment(qstate, rhs)
+        if e == "iteExp":
+            # TODO: Get cond and work out variables used
+            # TODO: Get statement matrix
+            # TODO: Make obligation
+            # TODO: Handle othw exp
+            rhs = self.obligation_generator.obligation_operation(
+                self.decode_expression(stmt["cond"]),
+                self.obligation_generator.get_prev_quantum_mem())
+            self.obligation_generator.get_and_update_q_mem(stmt["cond"]["arg"])
             qstate = self.obligation_generator.make_qstate()
             return self.obligation_generator.obligation_quantum_assignment(qstate, rhs)
         if e == "returnExp":
@@ -135,6 +147,11 @@ class JSONInterpreter:
         if e == "callExp":
             # TODO: Handle non-Pauli gates/multiple variables
             arg = self.decode_expression(exp["arg"])
+            if any(exp["op"] == key for key in self.args):
+                return self.obligation_generator.make_qubit_operation(
+                    [[_to_complex(1 - 2 * self.args[exp["op"]](0)), 0],
+                     [0, _to_complex(1 - 2 * self.args[exp["op"]](1))]],
+                    arg)
             if exp["op"] == "measure":
                 return self.obligation_generator.obligation_quantum_measurement(arg)
             op = self.obligation_generator.make_qubit_operation(

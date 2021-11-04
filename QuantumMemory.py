@@ -15,10 +15,6 @@ class QuantumMemory:
     
     def __init__(self):
         pass
-    
-    def verify_reg(self, reg):
-        if not(type(reg) == str):
-            raise TypeError("reg is not a string")
 
     def verify_size(self, size):
         if not(type(size) == int):
@@ -42,24 +38,18 @@ class QuantumMemory:
         return qreg.__str__() + "q" + str(num)
 
     def append(self, reg, size):
-        self.verify_reg(reg)
         self.verify_size(size)
 
         self.q_mem[reg] = QuantumRegister(reg, size, 0)
 
     def ammend_size(self, reg, new_size):
-        self.verify_reg(reg)
         self.verify_size(new_size)
         self.q_mem[reg].size = new_size
         
     def update_reg(self, prev_reg, new_reg):
-        self.verify_reg(prev_reg)
-        self.verify_reg(new_reg)
-        
         self.q_mem = {new_reg if k == prev_reg else k:v for k,v in self.q_mem.items()}
 
     def iterate_var(self, reg):
-        self.verify_reg(reg)
         self.q_mem[reg].iterate()
 
     def is_empty(self):
@@ -75,7 +65,6 @@ class QuantumMemory:
         return self.q_mem[reg].size
 
     def get_loc(self, reg, offset = 0):
-        self.verify_reg(reg)
         loc = 0
         for key, qreg in self.q_mem.items():
             if key == reg:
@@ -91,5 +80,4 @@ class QuantumMemory:
         return sum(reg.size for key, reg in self.q_mem.items())
 
     def get_version(self, reg):
-        self.verify_reg(reg)
         return self.q_mem[reg].version
