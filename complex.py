@@ -62,6 +62,9 @@ class ComplexExpr:
     def inv(self):
         den = self.r*self.r + self.i*self.i
         return ComplexExpr(self.r/den, -self.i/den)
+    
+    def len(self):
+        return z3.Sqrt(self.r*self.r + self.i*self.i)
 
     def __div__(self, other):
         inv_other = _to_complex(other).inv()

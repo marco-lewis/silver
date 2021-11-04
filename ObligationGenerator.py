@@ -80,6 +80,20 @@ class ObilgationGenerator:
                 else:
                     out.append(0)
             return out
+        
+    def obligation_quantum_measurement(self, var):
+        size = self.q_memory.get_size(var)
+        loc = self.q_memory.get_loc(var)
+        prev_mem = self.get_prev_quantum_mem()
+        probs = ["Pr_" + self.q_memory.get_reg_string(var) + "_" + str(i) 
+                 for i in range(2**size)]
+        probs = [Real(p) for p in probs]
+        ob = []
+        for i in range(len(probs)):
+            mem_locs = [x for x in range(2**self.q_memory.get_total_size()) if not(x^(i<<loc))]
+            s = [prev_mem[i].len()**2 for i in mem_locs]
+            ob.append(probs[i] == Sum(s))
+        return lambda lhs: ob
 
     def obligation_operation(self, operation, obligations):
         obs = []
@@ -89,6 +103,6 @@ class ObilgationGenerator:
 
     def obligation_value(self, value):
         if isinstance(value, list):
-            return [Int(v + "_ret") for v in value]
+            return [Complex(v + "_ret") for v in value]
         else:
             return value

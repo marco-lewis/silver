@@ -44,7 +44,7 @@ class QuantumMemory:
     def append(self, reg, size):
         self.verify_reg(reg)
         self.verify_size(size)
-            
+
         self.q_mem[reg] = QuantumRegister(reg, size, 0)
 
     def ammend_size(self, reg, new_size):
@@ -73,10 +73,6 @@ class QuantumMemory:
     
     def get_size(self, reg):
         return self.q_mem[reg].size
-            
-    # TODO: Delete eventually?
-    def get_last_item_size(self):
-        return self.q_mem[-1].size
 
     def get_loc(self, reg, offset = 0):
         self.verify_reg(reg)
@@ -87,6 +83,9 @@ class QuantumMemory:
                     raise ValueError("Offset is larger than register size")
                 return loc + offset    
             loc += qreg.size
+            
+    def get_reg_string(self, reg):
+        return self.q_mem[reg].__str__()
         
     def get_total_size(self):
         return sum(reg.size for key, reg in self.q_mem.items())

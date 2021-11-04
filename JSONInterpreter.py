@@ -29,7 +29,6 @@ from utils import *
 
 class JSONInterpreter:
     isqrt2 = Real("isqrt2")
-    obligation_generator = ObilgationGenerator()
 
     def __init__(self, silq_json_file, solver=Solver()):
         self.silq_json_file = silq_json_file
@@ -63,9 +62,11 @@ class JSONInterpreter:
         """
         Generates proof obligations by decoding the JSON file (or using generated specifications)
         """
-        # Have functions that contain an array of statements (which may or may not have arrays/objects inside them)
+        # Have functions that contain an array of statements
+        # (which may or may not have arrays/objects inside them)
         # 1) Get function name
         for func in self.fdefs:
+            self.obligation_generator = ObilgationGenerator()
             # 2) Check if there is a spec file or if spec is empty
                 # a) Flag pre/post/summary conditions
             print(func["func"] + " has no spec")
@@ -109,6 +110,8 @@ class JSONInterpreter:
             lhs = self.decode_expression(stmt["lhs"])
             rhs = self.decode_expression(stmt["rhs"])(lhs)
 
+            if isinstance(rhs[0], BoolRef):
+                return rhs
             qstate = self.obligation_generator.make_qstate()
             return self.obligation_generator.obligation_quantum_assignment(qstate, rhs)
         if e == "returnExp":
@@ -132,10 +135,12 @@ class JSONInterpreter:
         if e == "callExp":
             # TODO: Handle non-Pauli gates/multiple variables
             arg = self.decode_expression(exp["arg"])
-            obs = lambda var: self.obligation_generator.get_and_update_q_mem(var, arg)
+            if exp["op"] == "measure":
+                return self.obligation_generator.obligation_quantum_measurement(arg)
             op = self.obligation_generator.make_qubit_operation(
                 self._matrix_from_op(exp["op"]), 
                 arg)
+            obs = lambda var: self.obligation_generator.get_and_update_q_mem(var, arg)
             return lambda var: self.obligation_generator.obligation_operation(op, obs(var))
         if e == "litExp":
             val = exp["value"]
