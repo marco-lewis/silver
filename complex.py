@@ -111,7 +111,7 @@ I = ComplexExpr(RealVal(0), RealVal(1))
 def evaluate_cexpr(m, e):
     return ComplexExpr(m[e.r], m[e.i])
 
-def cex():
+def complex_ex():
     x = Complex("x")
     s = Tactic('qfnra-nlsat').solver()
     s.add(x*x == -2)
@@ -131,4 +131,4 @@ def cex():
     print(((3 + I) ** -3)/(5 - I))
 
 if __name__ == "main":
-    cex()
+    complex_ex()
