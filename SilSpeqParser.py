@@ -1,9 +1,17 @@
 from lark import Lark
+from os import getcwd
 
 class SilSpeqParser:
     def __init__(self, transformer=None):
-        with open("SilSpeq.lark", 'r') as f:
-            self.__grammar = f.read()
+        try:
+            with open("SilSpeq.lark", 'r') as f:
+                self.__grammar = f.read()
+        except:
+            try:
+                with open(getcwd() + "/silspeq/SilSpeq.lark", 'r') as f:
+                    self.__grammar = f.read()
+            except:
+                raise Exception("Cannot find SilSpeq.lark file")
         self.parser = Lark(
             self.__grammar, 
             parser='lalr', 
