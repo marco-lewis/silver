@@ -1,6 +1,6 @@
 from SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
 from SilSpeqZ3FlagInterpreter import SilSpeqZ3FlagInterpreter
-import SilqSpeqParser as ssp
+import SilSpeqParser as ssp
 from z3 import *
 
 symbols = ("examples/symbols.spq", 'test')
