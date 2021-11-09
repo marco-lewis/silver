@@ -17,8 +17,6 @@ Grover algorithm verification
 Fix quantum registers so they are better
 '''
 
-import os
-import json
 from z3 import *
 from Prog import *
 from QuantumOps import *
@@ -30,9 +28,7 @@ from utils import *
 class JSONInterpreter:
     isqrt2 = Real("isqrt2")
 
-    def __init__(self, silq_json_file, solver=Solver()):
-        self.silq_json_file = silq_json_file
-        
+    def __init__(self, solver=Solver()):
         self.spec_flags = {}
         self.spec_flags["pre"] = False
         self.spec_flags["post"] = False
@@ -45,27 +41,16 @@ class JSONInterpreter:
 
         self.args = {}
 
-    def getJSON(self):
-        """
-        Reads the JSON silq file and stores the data in fdefs.
-        """
-        with open(self.silq_json_file, "r") as rf:
-            self.fdefs = rf.read()
-            self.fdefs = json.loads(self.fdefs)
-            
-    def print_data(self):
-        print(self.fdefs)
-
     # Will need to break down
     # TODO: Make enumerations for EXPTYPEs
-    def decode_json(self):
+    def decode_json(self, fdefs):
         """
         Generates proof obligations by decoding the JSON file (or using generated specifications)
         """
         # Have functions that contain an array of statements
         # (which may or may not have arrays/objects inside them)
         # 1) Get function name
-        for func in self.fdefs:
+        for func in fdefs:
             self.obligation_generator = ObilgationGenerator()
             # 2) Check if there is a spec file or if spec is empty
                 # a) Flag pre/post/summary conditions
@@ -148,6 +133,7 @@ class JSONInterpreter:
             # TODO: Handle non-Pauli gates/multiple variables
             arg = self.decode_expression(exp["arg"])
             if any(exp["op"] == key for key in self.args):
+                # TODO: Not hardcode operation to return
                 return self.obligation_generator.make_qubit_operation(
                     [[_to_complex(1 - 2 * self.args[exp["op"]](0)), 0],
                      [0, _to_complex(1 - 2 * self.args[exp["op"]](1))]],
@@ -168,11 +154,6 @@ class JSONInterpreter:
             return lambda var: self.obligation_generator.obligation_quantum_literal(var, exp["type"], val)
         raise Exception("TODO: expression " + e)
     
-    def _size_from_type(self, type):
-        if self._single_type(type):
-            return 1
-        return 0
-
     def _matrix_from_op(self, op):
         if op == "H": return [[_to_complex(self.isqrt2), _to_complex(self.isqrt2)], 
                               [_to_complex(self.isqrt2), _to_complex(-self.isqrt2)]]
