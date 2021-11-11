@@ -1,8 +1,10 @@
 from JSONInterpreter import JSONInterpreter
 import json as json
+from os.path import splitext
 from silspeq.SilSpeqParser import SilSpeqParser
 from silspeq.SilSpeqZ3FlagInterpreter import SilSpeqZ3FlagInterpreter
 from silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
+from utils import generate_silspeq_from_func
 from z3.z3 import Solver
 
 class SilVer:
@@ -33,6 +35,25 @@ class SilVer:
         speq_obs = self.get_speq_obs(speq_file)
         self.add_func_speq_to_solver(speq_obs, "dj_alg")
         
-    def verify_silq(self, silq_json_file):
+    def generate_speq_file(self, silq_json_file):
+        silq_json = self.getJSON(silq_json_file)
+        silspeq = ""
+        for func_json in silq_json:
+            fname = func_json['func']
+            args = [arg["name"] + ":" + self.convert_type_to_speq_type(arg["type"])
+                    for arg in func_json['args']]
+            ret = fname + "_ret:{0,1}"
+            silspeq += generate_silspeq_from_func(fname, args, ret) + "\n\n"
+        silspeq = silspeq[:-2]
+        spq_file = splitext(silq_json_file)[0] + ".spq"
+        with open(spq_file, "w") as wf:
+            wf.write(silspeq)
+        pass
+
+    # TODO: Correctly interpret types to speq version
+    def convert_type_to_speq_type(self, type):
+        return type
+        
+    def verify_json(self, silq_json_file):
         silq_json = self.getJSON(silq_json_file)
         self.json_interp.decode_json(silq_json)

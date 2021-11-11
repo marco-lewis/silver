@@ -41,8 +41,8 @@ class JSONInterpreter:
 
         self.args = {}
 
-    # Will need to break down
     # TODO: Make enumerations for EXPTYPEs
+    # TODO: Move to SilVer class(?)
     def decode_json(self, fdefs):
         """
         Generates proof obligations by decoding the JSON file (or using generated specifications)

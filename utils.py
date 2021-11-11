@@ -32,3 +32,20 @@ def dot(A, B):
         T[][]: A.B
     """
     return [[sum(x * B[i][col] for i,x in enumerate(row)) for col in range(len(B[0]))] for row in A]
+
+def generate_silspeq_from_func(func, args, ret):
+    """
+    Generates the string for a SilSpeq file from given strings.
+
+    Args:
+        func ([type]): [description]
+        args ([type]): [description]
+        ret ([type]): [description]
+    """
+    speq = func + "("
+    for arg in args:
+        speq += arg + ","
+    if speq[-1] == ",":
+        speq = speq[:-1]
+    speq += ")->(" + ret + ")\npre{\n\n}\npost{\n\n}"
+    return speq
