@@ -1,6 +1,6 @@
 ?start: (func_spec)* -> specs
 
-?func_spec: func ("[" funcflags "]")? "(" defs ")" "->" "(" defs ")" pre post -> funcspec
+?func_spec: func ("[" funcflags "]")? "(" (defs)? ")" "->" "(" (defs)? ")" pre post -> funcspec
 
 ?funcflags: funcflag ("," funcflag)*
 ?funcflag: "qout"               -> qout
