@@ -11,6 +11,7 @@ from QuantumOps import ID
 class ObilgationGenerator:
     q_memory = QuantumMemory()
     __prev_quantum_mem = []
+    __cvars = {}
 
     def __init__(self):
         pass
@@ -49,6 +50,13 @@ class ObilgationGenerator:
         names = self.q_memory.get_obligation_variables()
         self.__prev_quantum_mem = [Complex(name) for name in names]
 
+    def new_cvar(self, var):
+        self.__cvars[var] = Int(var + "_0")
+        return self.__cvars[var]
+    
+    def get_cvar(self, var):
+        return self.__cvars[var]
+    
     def make_qubit_operation(self, op, var):
         q_loc = self.q_memory.get_loc(var)
         size = self.q_memory.get_total_size()
@@ -114,8 +122,8 @@ class ObilgationGenerator:
         obligations += [Implies(max_prob == probs[i], value == i)
                         for i in range(len(probs))]
 
-        return lambda lhs: obligations
-
+        return lambda lhs: obligations + [self.new_cvar(lhs) == value]
+    
     def obligation_operation(self, operation, obligations):
         obs = []
         for row in operation:

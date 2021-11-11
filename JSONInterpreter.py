@@ -17,6 +17,7 @@ Grover algorithm verification
 Fix quantum registers so they are better
 '''
 
+from numpy import true_divide
 from z3 import *
 from Prog import *
 from QuantumOps import *
@@ -83,11 +84,11 @@ class JSONInterpreter:
         # Make a PO for summary if flagged
         # OR go through statements of function
         for stmt in func["statements"]:
-            ob = self.decode_statement(stmt)
+            ob = self.decode_statement(func["func"], stmt)
             ob = simplify(And(ob))
             self.solver.add(ob)
 
-    def decode_statement(self, stmt):
+    def decode_statement(self, fname, stmt):
         e = stmt[EXPTYPE]
         if e == "defineExp":
             # TODO: Change handling of lhs and rhs
@@ -112,10 +113,13 @@ class JSONInterpreter:
             qstate = self.obligation_generator.make_qstate()
             return self.obligation_generator.obligation_quantum_assignment(qstate, rhs)
         if e == "returnExp":
+            # TODO: Handle different function returns (e.g. quantum, classical)
             val = self.obligation_generator.obligation_value(stmt["value"])
             if val == []:
                 return True
-            return True
+            classical = True
+            if classical:
+                return [Int(fname + "_ret") == self.obligation_generator.get_cvar(val)]
             pass
         raise Exception("TODO: statement " + e)
 
