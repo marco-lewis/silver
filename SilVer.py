@@ -1,6 +1,7 @@
 from JSONInterpreter import JSONInterpreter
 import json as json
 from os.path import splitext
+import re
 from silspeq.SilSpeqParser import SilSpeqParser
 from silspeq.SilSpeqZ3FlagInterpreter import SilSpeqZ3FlagInterpreter
 from silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
@@ -52,7 +53,17 @@ class SilVer:
 
     # TODO: Correctly interpret types to speq version
     def convert_type_to_speq_type(self, type):
-        return type
+        if (re.match("[B|𝔹]", type)):
+            return "{0, 1}"
+        if (re.match(r".*(→.*)+",type)):
+            types = [self.convert_type_to_speq_type(arg_type) + "->"
+                     for arg_type in re.split(r"→", type)]
+            out = "".join(types)[:-2]
+            return out
+        if (re.match(r"[¬, const, qfree].*", type)):
+            split = re.split(r"[¬, const, qfree]", type,1)[1]
+            return self.convert_type_to_speq_type(split)
+        raise Exception("TypeTODO: " + type)
         
     def verify_json(self, silq_json_file):
         silq_json = self.getJSON(silq_json_file)
