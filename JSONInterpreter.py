@@ -115,6 +115,7 @@ class JSONInterpreter:
             val = self.obligation_generator.obligation_value(stmt["value"])
             if val == []:
                 return True
+            return True
             pass
         raise Exception("TODO: statement " + e)
 

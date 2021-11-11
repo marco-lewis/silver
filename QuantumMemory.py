@@ -48,7 +48,10 @@ class QuantumMemory:
         
     def update_reg(self, prev_reg, new_reg):
         self.q_mem = {new_reg if k == prev_reg else k:v for k,v in self.q_mem.items()}
-
+        
+    def measure_reg(self, reg):
+        del self.q_mem[reg]
+        
     def iterate_var(self, reg):
         self.q_mem[reg].iterate()
 

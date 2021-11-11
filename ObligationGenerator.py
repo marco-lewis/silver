@@ -81,19 +81,40 @@ class ObilgationGenerator:
                     out.append(0)
             return out
         
+    # TODO: Handle measurement differently
     def obligation_quantum_measurement(self, var):
+        return self.obligation_qmeas_whp(var)
+    
+    # TODO: Split up
+    def obligation_qmeas_whp(self, var):
         size = self.q_memory.get_size(var)
         loc = self.q_memory.get_loc(var)
         prev_mem = self.get_prev_quantum_mem()
         probs = ["Pr_" + self.q_memory.get_reg_string(var) + "_" + str(i) 
                  for i in range(2**size)]
         probs = [Real(p) for p in probs]
-        ob = []
+        
+        obligations = []
         for i in range(len(probs)):
             mem_locs = [x for x in range(2**self.q_memory.get_total_size()) if not(x^(i<<loc))]
-            s = [prev_mem[i].len()**2 for i in mem_locs]
-            ob.append(probs[i] == Sum(s))
-        return lambda lhs: ob
+            # TODO: Check valid
+            s = [prev_mem[i].len_sqr() for i in mem_locs]
+            obligations.append(probs[i] == Sum(s))
+        
+        # TODO: Handle measuring part of qstate
+        self.q_memory.measure_reg(var)
+        if not(self.q_memory.is_empty()):
+            self.get_prev_quantum_mem()
+            pass
+        
+        max_prob = Real('hprob_' + var)
+        value = Int('meas_' + var)
+        obligations.append(Or([max_prob == p for p in probs]))
+        obligations.append(And([max_prob >= p for p in probs]))
+        obligations += [Implies(max_prob == probs[i], value == i)
+                        for i in range(len(probs))]
+
+        return lambda lhs: obligations
 
     def obligation_operation(self, operation, obligations):
         obs = []

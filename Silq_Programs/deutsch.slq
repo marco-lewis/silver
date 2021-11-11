@@ -1,4 +1,4 @@
-import deutsch_oracles;
+// import deutsch_oracles;
 
 def deutsch(f : B !-> lifted B){
   x := 0:B;
@@ -6,6 +6,7 @@ def deutsch(f : B !-> lifted B){
   if (f(x)) { phase(pi); }
   x := H(x);
   x := measure(x);
+  return x;
 }
 
 def main() {

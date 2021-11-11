@@ -32,7 +32,7 @@ class SilVer:
     def add_func_speq_to_solver(self, speq_obs, func):
         self.solver.add(speq_obs[func])
         
-    def verify_speq(self, speq_file):
+    def generate_speq_obligations(self, speq_file):
         speq_obs = self.get_speq_obs(speq_file)
         self.add_func_speq_to_solver(speq_obs, "deutsch")
         
@@ -64,10 +64,10 @@ class SilVer:
             out = "".join(types)[:-2]
             return out
         if (re.match(r"[¬, const, qfree].*", type)):
-            split = re.split(r"[¬, const, qfree]", type,1)[1]
+            split = re.split(r"[¬, const, qfree]", type, maxsplit=1)[1]
             return self.convert_type_to_speq_type(split)
         raise Exception("TypeTODO: " + type)
         
-    def verify_json(self, silq_json_file):
+    def generate_json_obligations(self, silq_json_file):
         silq_json = self.getJSON(silq_json_file)
         self.json_interp.decode_json(silq_json)
