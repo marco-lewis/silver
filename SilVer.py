@@ -34,24 +34,27 @@ class SilVer:
         
     def verify_speq(self, speq_file):
         speq_obs = self.get_speq_obs(speq_file)
-        self.add_func_speq_to_solver(speq_obs, "dj_alg")
+        self.add_func_speq_to_solver(speq_obs, "deutsch")
         
     def generate_speq_file(self, silq_json_file):
         silq_json = self.getJSON(silq_json_file)
         silspeq = ""
         for func_json in silq_json:
             fname = func_json['func']
-            args = [arg["name"] + ":" + self.convert_type_to_speq_type(arg["type"])
+            args = ["define " + arg["name"] + ":" + self.convert_type_to_speq_type(arg["type"])
                     for arg in func_json['args']]
-            ret = fname + "_ret:{0,1}"
+            ret = "define " + fname + "_ret:{0,1}"
             silspeq += generate_silspeq_from_func(fname, args, ret) + "\n\n"
         silspeq = silspeq[:-2]
-        spq_file = splitext(silq_json_file)[0] + ".spq"
-        with open(spq_file, "w") as wf:
+        with open(self.get_speq_file_name(silq_json_file), "w") as wf:
             wf.write(silspeq)
         pass
+    
+    def get_speq_file_name(self, silq_json_file):
+        return splitext(silq_json_file)[0] + ".spq"
 
     # TODO: Correctly interpret types to speq version
+    # TODO: Make a test library for this
     def convert_type_to_speq_type(self, type):
         if (re.match("[B|𝔹]", type)):
             return "{0, 1}"
