@@ -28,6 +28,7 @@ from utils import *
 
 class JSONInterpreter:
     isqrt2 = Real("isqrt2")
+    __meas_cert = False
 
     def __init__(self, solver=Solver()):
         self.spec_flags = {}
@@ -41,6 +42,9 @@ class JSONInterpreter:
         self.solver.add((1 / self.isqrt2)**2  == 2, self.isqrt2 > 0)
 
         self.args = {}
+        
+    def set_meas_cert(self, cert):
+        self.__meas_cert = cert
 
     # TODO: Make enumerations for EXPTYPEs
     # TODO: Move to SilVer class(?)
@@ -144,7 +148,7 @@ class JSONInterpreter:
                      [0, _to_complex(1 - 2 * self.args[exp["op"]](1))]],
                     arg)
             if exp["op"] == "measure":
-                return self.obligation_generator.obligation_quantum_measurement(arg)
+                return self.obligation_generator.obligation_quantum_measurement(arg, with_certainty= self.__meas_cert)
             op = self.obligation_generator.make_qubit_operation(
                 self._matrix_from_op(exp["op"]), 
                 arg)

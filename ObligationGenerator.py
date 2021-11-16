@@ -74,6 +74,7 @@ class ObilgationGenerator:
             self.handle_type(var, type)
 
         loc = self.q_memory.get_loc(var)
+        self.update_quantum_memory(var)
         if self.q_memory.is_empty():
             raise Exception('OblError: qstate is empty')
         elif self.q_memory.is_single():
@@ -90,19 +91,19 @@ class ObilgationGenerator:
             return out
         
     # TODO: Handle measurement differently
-    def obligation_quantum_measurement(self, var):
-        return self.obligation_qmeas_whp(var)
-    
-    # TODO: Split up
-    def obligation_qmeas_whp(self, var):
+    def obligation_quantum_measurement(self, var, with_certainty = False, with_hp = False):
         size = self.q_memory.get_size(var)
         loc = self.q_memory.get_loc(var)
         prev_mem = self.get_prev_quantum_mem()
         probs = ["Pr_" + self.q_memory.get_reg_string(var) + "_" + str(i) 
                  for i in range(2**size)]
         probs = [Real(p) for p in probs]
-        
+
         obligations = []
+               
+        obligations.append(And([And(p <= 1, p >= 0) for p in probs]))
+        obligations.append(Sum(probs) == 1)
+        
         for i in range(len(probs)):
             mem_locs = [x for x in range(2**self.q_memory.get_total_size()) if not(x^(i<<loc))]
             # TODO: Check valid
@@ -114,14 +115,29 @@ class ObilgationGenerator:
         if not(self.q_memory.is_empty()):
             self.get_prev_quantum_mem()
             pass
-        
+
+        if with_certainty:
+            return self.obligation_qmeas_with_cert(var, obligations, probs)
+        if with_hp:
+            return self.obligation_qmeas_whp(var, obligations, probs)
+    
+    def obligation_qmeas_with_cert(self, var, obligations, probs):
+        meas_cert = Bool('meas_cert')
+        obligations.append(Implies(Or([p == 1 for p in probs]), meas_cert == True))
+        value = Int('meas_' + var)
+        obligations += [Implies(1 == probs[i], value == i)
+                        for i in range(len(probs))]
+        return lambda lhs: obligations + [self.new_cvar(lhs) == value]
+    
+    # TODO: unsat on 50/50 chance, need a way to handle this just in case
+    def obligation_qmeas_whp(self, var, obligations, probs):
         max_prob = Real('hprob_' + var)
         value = Int('meas_' + var)
         obligations.append(Or([max_prob == p for p in probs]))
         obligations.append(And([max_prob >= p for p in probs]))
         obligations += [Implies(max_prob == probs[i], value == i)
                         for i in range(len(probs))]
-
+        
         return lambda lhs: obligations + [self.new_cvar(lhs) == value]
     
     def obligation_operation(self, operation, obligations):

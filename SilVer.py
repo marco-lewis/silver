@@ -13,9 +13,26 @@ class SilVer:
         self.solver = Solver()
         self.json_interp = JSONInterpreter(self.solver)
         self.speq_parser = SilSpeqParser()
+        # TODO: Move so that Interpreters are only function specific
         self.speq_z3_itp = SilSpeqZ3Interpreter()
         self.speq_flag_itp = SilSpeqZ3FlagInterpreter()
+        pass
+    
+    # TODO: Similar process from example.py 
+    def verify_func(self, func):
+        pass
+    
+    def check_flags(self, file):
+        tree = self.speq_parser.parse_file(file)
+        self.speq_flag_itp.visit(tree)
         
+        self.json_interp.set_meas_cert(self.speq_flag_itp.meas_cert)
+        self.speq_z3_itp.set_meas_cert(self.speq_flag_itp.meas_cert)
+        
+        if self.speq_flag_itp.quantum_out:
+            pass
+        pass
+    
     def getJSON(self, silq_json_file):
         """
         Reads the JSON silq file and stores the data in fdefs.
@@ -31,6 +48,7 @@ class SilVer:
         
     def add_func_speq_to_solver(self, speq_obs, func):
         self.solver.add(speq_obs[func])
+        pass
         
     def generate_speq_obligations(self, speq_file):
         speq_obs = self.get_speq_obs(speq_file)
@@ -71,3 +89,4 @@ class SilVer:
     def generate_json_obligations(self, silq_json_file):
         silq_json = self.getJSON(silq_json_file)
         self.json_interp.decode_json(silq_json)
+        pass
