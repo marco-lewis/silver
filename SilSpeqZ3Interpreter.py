@@ -11,10 +11,15 @@ BOOL = "BOOL"
 FUNC = "FUNC"
 
 class SilSpeqZ3Interpreter(Interpreter):
+    __meas_cert = False
+    
     def __init__(self):
         self.vars = {}
         self.types = {}
         super().__init__()
+
+    def set_meas_cert(self, val):
+        self.__meas_cert = val
 
     # Handling pre, post, spec etc.
     @visit_children_decor
@@ -47,7 +52,10 @@ class SilSpeqZ3Interpreter(Interpreter):
     @visit_children_decor
     def post(self, stmts):
         if not(stmts == [[]]):
-            return Not(And([wrap[0] for wrap in filter(None, stmts[0])]))
+            obl = And([wrap[0] for wrap in filter(None, stmts[0])])
+            t = Bool('meas_cert')
+            obl = And(obl, t == self.__meas_cert)
+            return simplify(Not(obl))
         return True
         
     # Handling definitions and statements
@@ -98,6 +106,9 @@ class SilSpeqZ3Interpreter(Interpreter):
         pass
     
     def oracle(self, v):
+        pass
+    
+    def cert(self, v):
         pass
 
     # Handling types
