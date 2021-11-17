@@ -1,12 +1,13 @@
+from genericpath import exists
 from JSONInterpreter import JSONInterpreter
 import json as json
 from os.path import splitext
 import re
 from silspeq.SilSpeqParser import SilSpeqParser
-from silspeq.SilSpeqZ3FlagInterpreter import SilSpeqZ3FlagInterpreter
+from silspeq.SilSpeqZ3FlagVisitor import SilSpeqZ3FlagVisitor
 from silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
 from utils import generate_silspeq_from_func
-from z3.z3 import Solver
+from z3.z3 import Solver, sat, unsat
 
 class SilVer:
     def __init__(self):
@@ -15,10 +16,33 @@ class SilVer:
         self.speq_parser = SilSpeqParser()
         # TODO: Move so that Interpreters are only function specific
         self.speq_z3_itp = SilSpeqZ3Interpreter()
-        self.speq_flag_itp = SilSpeqZ3FlagInterpreter()
-        pass
+        self.speq_flag_itp = SilSpeqZ3FlagVisitor()
     
     # TODO: Similar process from example.py 
+    def verify_file(self, file):
+        if not(exists(self.get_speq_file_name(file))):
+            self.generate_speq_file(file)
+            raise Exception("New SilSpeq file created, you should add your specification before continuing")
+        
+        spq_name = self.get_speq_file_name(file)
+        self.check_flags(spq_name)
+        self.generate_speq_obligations(spq_name)
+        self.generate_json_obligations(file)
+        
+        self.check_solver_sat()
+        
+    def check_solver_sat(self):
+        solver_sat = self.solver.check()
+        if solver_sat == sat:
+            m = self.solver.model()
+            print("Counterexample found")
+            print(m)
+        elif solver_sat == unsat:
+            print("Program is correct!")
+        else:
+            print("Unable to determine if satisfiable")
+            print(sat)
+
     def verify_func(self, func):
         pass
     
@@ -31,7 +55,6 @@ class SilVer:
         
         if self.speq_flag_itp.quantum_out:
             pass
-        pass
     
     def getJSON(self, silq_json_file):
         """
@@ -48,7 +71,6 @@ class SilVer:
         
     def add_func_speq_to_solver(self, speq_obs, func):
         self.solver.add(speq_obs[func])
-        pass
         
     def generate_speq_obligations(self, speq_file):
         speq_obs = self.get_speq_obs(speq_file)
@@ -66,7 +88,6 @@ class SilVer:
         silspeq = silspeq[:-2]
         with open(self.get_speq_file_name(silq_json_file), "w") as wf:
             wf.write(silspeq)
-        pass
     
     def get_speq_file_name(self, silq_json_file):
         return splitext(silq_json_file)[0] + ".spq"
@@ -89,4 +110,3 @@ class SilVer:
     def generate_json_obligations(self, silq_json_file):
         silq_json = self.getJSON(silq_json_file)
         self.json_interp.decode_json(silq_json)
-        pass
