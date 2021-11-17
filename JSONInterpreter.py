@@ -7,7 +7,8 @@ Quantum variables only
 
 TODO
 Handle quantum operations with multiple qubits
-Handle measurement + return
+Handle return
+Handle types of measurement
 Handle conditionals (if statements with quantum)
 Import SilSpeq obligations
 Deutsch algorithm verification
@@ -17,7 +18,6 @@ Grover algorithm verification
 Fix quantum registers so they are better
 '''
 
-from numpy import true_divide
 from z3 import *
 from Prog import *
 from QuantumOps import *
@@ -47,53 +47,59 @@ class JSONInterpreter:
         self.__meas_cert = cert
 
     # TODO: Make enumerations for EXPTYPEs
-    # TODO: Move to SilVer class(?)
+    # TODO: Move to SilVer class/Remove?
     def decode_json(self, fdefs):
         """
         Generates proof obligations by decoding the JSON file (or using generated specifications)
         """
         # Have functions that contain an array of statements
         # (which may or may not have arrays/objects inside them)
-        # 1) Get function name
+        # Get function name
         for func in fdefs:
             self.obligation_generator = ObilgationGenerator()
-            # 2) Check if there is a spec file or if spec is empty
-                # a) Flag pre/post/summary conditions
-            print(func["func"] + " has no spec")
+            # Generate proof obligations by using information from JSON
+            print("Make proof obligations for " + func["func"] + "...")
+            self.args = {}
+            self.decode_func(func)
+            print("Done")
 
-            # 3) Check if there is already a generated PO file
-            if False: 
-                print("There's a PO file?!")
-                # a) If hash of file + spec is the same, just use that
-                if False: print("Same hash")
-            # 4) Look into JSON and generate proof obligations by using information from JSON
-            else:
-                print("Make proof obligations for " + func["func"] + "...")
-                self.args = {}
-                self.decode_func(func)
-                print("Done")
-
-    def decode_func(self, func):
+    def decode_func_in_json(self, json, fname):
+        try:
+            for i in range(len(json)):
+                if json[i]["func"] == fname:
+                    func_json = json[i]
+                    break
+                
+            self.obligation_generator = ObilgationGenerator()
+            print("Make proof obligations for " + func_json["func"] + "...")
+            self.args = {}
+            self.decode_func(func_json)
+            print("Done")
+        except:
+            raise Exception("Function " + fname + " was not detected in json file")
+        
+    def decode_func(self, func_json):
         """
         Generates proof obligation for a function specification
 
         Args:
             func (dict): dictionary of arguments and statements for a function
         """
-        for arg in func["args"]:
+        for arg in func_json["args"]:
             # TODO: Handle argument/function types to make appropriate Z3 objects
             if True:
                 self.args[arg["name"]] = Function(arg["name"], IntSort(), IntSort())
         # Check arguments and create variables that are needed there (with any pre-conditions if flagged)
         # Make a PO for summary if flagged
         # OR go through statements of function
-        for stmt in func["statements"]:
-            ob = self.decode_statement(func["func"], stmt)
+        for stmt in func_json["statements"]:
+            ob = self.decode_statement(func_json["func"], stmt)
             ob = simplify(And(ob))
             self.solver.add(ob)
 
     def decode_statement(self, fname, stmt):
         e = stmt[EXPTYPE]
+        
         if e == "defineExp":
             # TODO: Change handling of lhs and rhs
             # Need to separate handling of logic/variable names and generation of obligations
@@ -105,6 +111,7 @@ class JSONInterpreter:
                 return rhs
             qstate = self.obligation_generator.make_qstate()
             return self.obligation_generator.obligation_quantum_assignment(qstate, rhs)
+        
         if e == "iteExp":
             # TODO: Get cond and work out variables used
             # TODO: Get statement matrix
@@ -116,6 +123,7 @@ class JSONInterpreter:
             self.obligation_generator.get_and_update_q_mem(stmt["cond"]["arg"])
             qstate = self.obligation_generator.make_qstate()
             return self.obligation_generator.obligation_quantum_assignment(qstate, rhs)
+        
         if e == "returnExp":
             # TODO: Handle different function returns (e.g. quantum, classical)
             val = self.obligation_generator.obligation_value(stmt["value"])
@@ -124,7 +132,7 @@ class JSONInterpreter:
             classical = True
             if classical:
                 return [Int(fname + "_ret") == self.obligation_generator.get_cvar(val)]
-            pass
+        
         raise Exception("TODO: statement " + e)
 
 
@@ -132,12 +140,14 @@ class JSONInterpreter:
         # TODO: Change handling of variables (return location or the reference perhaps?)
         if isinstance(exp, str): return exp
         e = exp[EXPTYPE]
+        
         if e == "varDecl":
             # TODO: Check this is right
             return self.decode_expression(exp["value"])
+        
         if e == "indexExp":
             print(exp["var"], exp["index"]["value"])
-            pass
+            
         if e == "callExp":
             # TODO: Handle non-Pauli gates/multiple variables
             arg = self.decode_expression(exp["arg"])
@@ -154,13 +164,16 @@ class JSONInterpreter:
                 arg)
             obs = lambda var: self.obligation_generator.get_and_update_q_mem(var, arg)
             return lambda var: self.obligation_generator.obligation_operation(op, obs(var))
+
         if e == "litExp":
             val = exp["value"]
             return val
+
         if e == "typeChangeExp":
             # Change obligations from literals depending on type
             val = self.decode_expression(exp["expr"])
             return lambda var: self.obligation_generator.obligation_quantum_literal(var, exp["type"], val)
+
         raise Exception("TODO: expression " + e)
     
     def _matrix_from_op(self, op):
@@ -169,4 +182,5 @@ class JSONInterpreter:
         if op == "X": return X
         if op == "Y": return Y
         if op == "Z'": return Z
+        # if isinstance(op, dict): return self.decode_expression(op)
         raise Exception("OpError: operation " + str(op) + " does not exist.")
