@@ -1,5 +1,5 @@
 from SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
-from SilSpeqZ3FlagInterpreter import SilSpeqZ3FlagInterpreter
+from SilSpeqZ3FlagVisitor import SilSpeqZ3FlagVisitor
 import SilSpeqParser as ssp
 from z3 import *
 
@@ -8,7 +8,7 @@ symbols = ("examples/symbols.spq", 'test')
 def flag_example(arg=symbols):
     parser = ssp.SilSpeqParser()
     tree = parser.parse_file(arg[0])
-    itp = SilSpeqZ3FlagInterpreter()
+    itp = SilSpeqZ3FlagVisitor()
     itp.visit(tree)
     print(itp.oracles, itp.quantum_out)
 
