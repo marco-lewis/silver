@@ -2,7 +2,6 @@ from lark.visitors import *
 from lark import Token
 from z3 import *
 
-# TODO: Rename Interpreter to Visitor
 class SilSpeqZ3FlagVisitor(Visitor):
     oracles = []
     quantum_out = False

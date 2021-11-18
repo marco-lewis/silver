@@ -52,10 +52,11 @@ class SilSpeqZ3Interpreter(Interpreter):
     @visit_children_decor
     def post(self, stmts):
         if not(stmts == [[]]):
-            obl = And([wrap[0] for wrap in filter(None, stmts[0])])
+            obls = [wrap[0] for wrap in filter(None, stmts[0])]
+            post_obl = And(obls)
             t = Bool('meas_cert')
-            obl = And(obl, t == self.__meas_cert)
-            return simplify(Not(obl))
+            post_obl = And(post_obl, t == self.__meas_cert)
+            return simplify(Not(post_obl))
         return True
         
     # Handling definitions and statements
@@ -166,7 +167,7 @@ class SilSpeqZ3Interpreter(Interpreter):
 
     @visit_children_decor
     def equiv(self, lexprs):
-        return Equiv(lexprs[0], lexprs[1])
+        return lexprs[0] == lexprs[1]
     
     @visit_children_decor
     def lnot(self, lexpr):
