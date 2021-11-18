@@ -19,9 +19,13 @@ class ObilgationGenerator:
     def get_prev_quantum_mem(self):
         return self.__prev_quantum_mem
     
+    def set_prev_quantum_mem(self, mem):
+        self.__prev_quantum_mem = mem
+    
     def get_and_update_q_mem(self, var, old_var = None):
         qstate = self.make_qstate()
         self.update_quantum_memory(var, old_var)
+        self.update_prev_quantum_memory()
         return qstate
     
     def handle_type(self, reg, type):
@@ -34,7 +38,6 @@ class ObilgationGenerator:
                 while isinstance(size, dict):
                     size = size["value"]
                 self.q_memory.ammend_size(reg, size)
-        pass
     
     def __single_type(self, type):
         return type == "B" or type == "𝔹"
@@ -47,8 +50,9 @@ class ObilgationGenerator:
         if not(old_var == None) and not(var == old_var):
             self.q_memory.update_reg(old_var, var)
         self.q_memory.iterate_var(var)
-        names = self.q_memory.get_obligation_variables()
-        self.__prev_quantum_mem = [Complex(name) for name in names]
+        
+    def update_prev_quantum_memory(self):
+        self.set_prev_quantum_mem(self.make_qstate())
 
     def new_cvar(self, var):
         self.__cvars[var] = Int(var + "_0")
@@ -78,16 +82,20 @@ class ObilgationGenerator:
         if self.q_memory.is_empty():
             raise Exception('OblError: qstate is empty')
         elif self.q_memory.is_single():
+            self.update_prev_quantum_memory()
             return [1 if i == literal else 0 for i in range(0, 2**self.q_memory.get_total_size())]
         else:
             out = []
             mem_point = 0
-            for i in range(2**self.q_memory.get_total_size()):
-                if i % 2**loc == literal:
+            mem_size = self.q_memory.get_total_size()
+            print(self.__prev_quantum_mem)
+            for i in range(2**mem_size):
+                if i >> (mem_size - loc + 1) % 2**(loc) == literal:
                     out.append(self.__prev_quantum_mem[mem_point])
                     mem_point += 1
                 else:
                     out.append(0)
+            self.update_prev_quantum_memory()
             return out
         
     # TODO: Handle measurement differently
@@ -114,7 +122,6 @@ class ObilgationGenerator:
         self.q_memory.measure_reg(var)
         if not(self.q_memory.is_empty()):
             self.get_prev_quantum_mem()
-            pass
 
         if with_certainty:
             return self.obligation_qmeas_with_cert(var, obligations, probs)
