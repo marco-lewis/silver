@@ -88,7 +88,6 @@ class ObilgationGenerator:
             out = []
             mem_point = 0
             mem_size = self.q_memory.get_total_size()
-            print(self.__prev_quantum_mem)
             for i in range(2**mem_size):
                 if i >> (mem_size - loc + 1) % 2**(loc) == literal:
                     out.append(self.__prev_quantum_mem[mem_point])
