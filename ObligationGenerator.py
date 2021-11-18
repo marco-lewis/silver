@@ -61,39 +61,32 @@ class ObilgationGenerator:
     def get_cvar(self, var):
         return self.__cvars[var]
     
-    def make_qubit_operation(self, op, var):
-        q_loc = self.q_memory.get_loc(var)
+    def make_qubit_operation(self, op, q_loc):
         size = self.q_memory.get_total_size()
         out = [[1]]
         for i in range(size):
-            out = kronecker(out, ID) if not(q_loc == i) else kronecker(out, op)
+            out = kronecker(out, ID) if not(size - 1 - q_loc == i) else kronecker(out, op)
         return out
 
     def obligation_quantum_assignment(self, lhs, rhs):
         return [lhs[i] == rhs[i] for i in range(len(lhs))]
 
-    def obligation_quantum_literal(self, var, type, literal = 0):
+    def obligation_quantum_literal(self, q_data, type, literal = 0):
+        var = q_data[0]        
         if not(self.q_memory.is_stored(var)):
             self.q_memory.append(var, 1)
             self.handle_type(var, type)
 
-        loc = self.q_memory.get_loc(var)
         self.update_quantum_memory(var)
+        lit_vec = [1 if i == literal else 0 for i in range(0, 2**self.q_memory.get_size(var))]
         if self.q_memory.is_empty():
             raise Exception('OblError: qstate is empty')
         elif self.q_memory.is_single():
             self.update_prev_quantum_memory()
-            return [1 if i == literal else 0 for i in range(0, 2**self.q_memory.get_total_size())]
+            return lit_vec
         else:
-            out = []
-            mem_point = 0
-            mem_size = self.q_memory.get_total_size()
-            for i in range(2**mem_size):
-                if i >> (mem_size - loc + 1) % 2**(loc) == literal:
-                    out.append(self.__prev_quantum_mem[mem_point])
-                    mem_point += 1
-                else:
-                    out.append(0)
+            out = kronecker([self.__prev_quantum_mem], 
+                            [lit_vec])[0]
             self.update_prev_quantum_memory()
             return out
         

@@ -20,6 +20,7 @@ Fix quantum registers so they are better
 
 from z3 import *
 from Prog import *
+from QuantumMemory import QuantumRegister
 from QuantumOps import *
 from ObligationGenerator import ObilgationGenerator
 from complex import Complex, _to_complex
@@ -69,14 +70,15 @@ class JSONInterpreter:
                 if json[i]["func"] == fname:
                     func_json = json[i]
                     break
-                
-            self.obligation_generator = ObilgationGenerator()
-            print("Make proof obligations for " + func_json["func"] + "...")
-            self.args = {}
-            self.decode_func(func_json)
-            print("Done")
         except:
             raise Exception("Function " + fname + " was not detected in json file")
+                        
+        self.obligation_generator = ObilgationGenerator()
+        print("Make proof obligations for " + func_json["func"] + "...")
+        self.args = {}
+        self.decode_func(func_json)
+        print("Done")
+
         
     def decode_func(self, func_json):
         """
@@ -127,7 +129,7 @@ class JSONInterpreter:
         if e == "returnExp":
             # TODO: Handle different function returns (e.g. quantum, classical)
             val = self.obligation_generator.obligation_value(stmt["value"])
-            if val == []:
+            if val == [] or isinstance(val, dict):
                 return True
             classical = True
             if classical:
@@ -138,7 +140,10 @@ class JSONInterpreter:
 
     def decode_expression(self, exp):
         # TODO: Change handling of variables (return location or the reference perhaps?)
-        if isinstance(exp, str): return exp
+        if isinstance(exp, str): 
+            if self.obligation_generator.q_memory.is_stored(exp):
+                return (exp, self.obligation_generator.q_memory.get_loc(exp))
+            return (exp, 0)
         e = exp[EXPTYPE]
         
         if e == "varDecl":
@@ -146,23 +151,30 @@ class JSONInterpreter:
             return self.decode_expression(exp["value"])
         
         if e == "indexExp":
-            print(exp["var"], exp["index"]["value"])
-            
+            loc = self.obligation_generator.q_memory.get_loc(exp["var"], self.decode_expression(exp["index"]))
+            return (exp["var"], loc)
+            raise Exception("Index does not exist")
         if e == "callExp":
-            # TODO: Handle non-Pauli gates/multiple variables
+            # TODO: Handle function calls
+            # TODO: Handle multiple variables
+            # TODO: Handle non-Pauli gates (single)
+            # TODO: Handle index argument
             arg = self.decode_expression(exp["arg"])
+            
             if any(exp["op"] == key for key in self.args):
                 # TODO: Not hardcode operation to return
                 return self.obligation_generator.make_qubit_operation(
                     [[_to_complex(1 - 2 * self.args[exp["op"]](0)), 0],
                      [0, _to_complex(1 - 2 * self.args[exp["op"]](1))]],
-                    arg)
+                    arg[1])
+            
             if exp["op"] == "measure":
                 return self.obligation_generator.obligation_quantum_measurement(arg, with_certainty= self.__meas_cert)
+            
             op = self.obligation_generator.make_qubit_operation(
                 self._matrix_from_op(exp["op"]), 
-                arg)
-            obs = lambda var: self.obligation_generator.get_and_update_q_mem(var, arg)
+                arg[1])
+            obs = lambda var: self.obligation_generator.get_and_update_q_mem(var, arg[0])
             return lambda var: self.obligation_generator.obligation_operation(op, obs(var))
 
         if e == "litExp":

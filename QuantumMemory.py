@@ -73,8 +73,9 @@ class QuantumMemory:
             if key == reg:
                 if offset >= qreg.size:
                     raise ValueError("Offset is larger than register size")
-                return loc + offset    
+                return loc + offset
             loc += qreg.size
+        return None
             
     def get_reg_string(self, reg):
         return self.q_mem[reg].__str__()
