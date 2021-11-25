@@ -24,6 +24,10 @@ class SilVer:
             self.generate_speq_file(file)
             raise Exception("New SilSpeq file created, you should add your specification before continuing")
         
+    def reset(self):
+        self.solver.reset()
+        self.json_interp = JSONInterpreter(self.solver)
+        
     def check_solver_sat(self):
         solver_sat = self.solver.check()
         if solver_sat == sat:
