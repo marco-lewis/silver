@@ -29,6 +29,7 @@ class SilVer:
         self.json_interp = JSONInterpreter(self.solver)
         
     def check_solver_sat(self):
+        print("Checking satisfiability...")
         solver_sat = self.solver.check()
         if solver_sat == sat:
             m = self.solver.model()
@@ -62,7 +63,9 @@ class SilVer:
         self.check_speq_exists(file)
         spq_name = self.get_speq_file_name(file)
         self.check_flags(spq_name)
+        print("Generating SilSpeq proof obligations...")
         self.generate_speq_obligations(spq_name, func)
+        print("Generating proof obligations from AST...")
         self.generate_json_obligations(file, func)
         
         self.check_solver_sat()

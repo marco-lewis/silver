@@ -12,6 +12,9 @@ if sys.version_info.major >= 3:
     from functools import reduce
 from z3 import *
 
+def to_complex(a):
+    return _to_complex(a)
+
 def _to_complex(a):
     if isinstance(a, ComplexExpr):
         return a
@@ -61,6 +64,8 @@ class ComplexExpr:
 
     def inv(self):
         den = self.r*self.r + self.i*self.i
+        if den == 0:
+            return ComplexExpr(0, 0)
         return ComplexExpr(self.r/den, -self.i/den)
     
     def len_sqr(self):

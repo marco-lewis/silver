@@ -17,7 +17,14 @@ ROTY = lambda r: [[np.cos(r/2), np.sin(r/2)],
 ROTZ = lambda r: [[np.cos(r/2), 0-I * np.sin(r/2)], 
                   [I * np.sin(r/2) ,np.cos(r/2)]]
 
-PHASE = lambda r: np.array(np.exp(1j*r))
+def EXP(r):
+     if r == 0:
+          return 1
+     if r == np.pi:
+          return -1
+     return np.cos(r) + I * np.sin(r)
+
+PHASE = lambda r: EXP(r)
 
 CNOT = [[1,0,0,0], 
         [0,1,0,0], 

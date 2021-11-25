@@ -67,8 +67,14 @@ class ObilgationGenerator:
         for i in range(size):
             out = kronecker(out, ID) if not(size - 1 - q_loc == i) else kronecker(out, op)
         return out
+    
+    def make_phase_op(self, cond, phase, size = 1):
+        return [[to_complex(1 - cond(i)) + phase * cond(i) if i == j 
+                else 0 for j in range(2**size)] for i in range(2**size)]
 
     def obligation_quantum_assignment(self, lhs, rhs):
+        if len(lhs) != len(rhs):
+            raise Exception("LengthError: lengths of lists don't match")
         return [lhs[i] == rhs[i] for i in range(len(lhs))]
 
     def obligation_quantum_literal(self, q_data, type, literal = 0):
@@ -126,7 +132,7 @@ class ObilgationGenerator:
         value = Int('meas_' + var)
         obligations += [Implies(1 == probs[i], value == i)
                         for i in range(len(probs))]
-        return lambda lhs: obligations + [self.new_cvar(lhs) == value]
+        return lambda lhs: obligations + [self.new_cvar(lhs[0]) == value]
     
     # TODO: unsat on 50/50 chance, need a way to handle this just in case
     def obligation_qmeas_whp(self, var, obligations, probs):
