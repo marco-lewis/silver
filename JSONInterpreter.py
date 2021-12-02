@@ -7,10 +7,7 @@ Quantum variables only
 
 TODO
 Handle quantum operations with multiple qubits
-Handle return
-Handle types of measurement
 Handle conditionals (if statements with quantum)
-Import SilSpeq obligations
 Deutsch algorithm verification
 Deutsch-Jozsa algorithm verification
 For loop handling
