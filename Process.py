@@ -1,4 +1,4 @@
-import Command
+from Command import *
 
 # Stores the command and memory together as a process
 class Process():
@@ -11,9 +11,11 @@ class Process():
 
 
 class QuantumProcess(Process):
+    command = QuantumCommand()
     def __init__(self) -> None:
         super().__init__()
 
+# IGNORE UNTIL QUANTUM DONE
 # Store classical commands as Obligations?
 class ClassicalProcess(Process):
     def __init__(self) -> None:
