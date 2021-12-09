@@ -30,7 +30,28 @@ class QINIT(Instruction):
         return "QINIT(" + repr(self.__value) + ", " + repr(self.__size) + ")"
         
 class QOP(Instruction):
-    pass
+    def __init__(self, operation, out_var=None) -> None:
+        super().__init__()
+        self.__operation = operation
+        
+    @property
+    def operation(self):
+        return self.__operation
+
+    @operation.setter
+    def operation(self, value):
+        self.__operation = value
+        
+    @property
+    def arg(self):
+        return self.__arg
+
+    @arg.setter
+    def arg(self, value):
+        self.__arg = value
+
+    def __repr__(self) -> str:
+        return "QOP(" + repr(self.__operation) + ")"
 
 class QMEAS(Instruction):
     pass

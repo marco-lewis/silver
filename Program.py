@@ -14,7 +14,6 @@ class Program():
         pass
     
     def add_quantum_process(self, command, new_memory):
-        print(command)
         self.quantum_processes[self.current_time] = QuantumProcess(end_memory=new_memory, command=command) 
         self.classical_processes[self.current_time] = None
         self.current_time += 1

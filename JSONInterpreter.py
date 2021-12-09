@@ -10,6 +10,7 @@ from z3 import *
 from Command import *
 from Instruction import *
 from Program import Program
+from QuantumMemory import QuantumMemory
 from QuantumOps import *
 from utils import *
 
@@ -52,6 +53,7 @@ class JSONInterpreter:
         for stmt in func_json["statements"]:
             self.decode_statement(func_json["func"], stmt)
             print(self.program)
+            print()
             
             
     def decode_statement(self, fname, stmt):
@@ -62,8 +64,19 @@ class JSONInterpreter:
             rhs = self.decode_expression(stmt["rhs"])
             if isinstance(rhs, QINIT):
                 command = QuantumCommand(out_vars=[lhs], instruction=rhs)
-                new_memory = self.program.get_current_quantum_memory()
+                new_memory = QuantumMemory()
+                new_memory.q_mem = copy.deepcopy(self.program.get_current_quantum_memory().q_mem)
                 new_memory.append(lhs, rhs.value)
+                self.program.add_quantum_process(command, new_memory)
+                return 0
+            if isinstance(rhs, QOP):
+                arg = rhs.arg
+                command = QuantumCommand(in_vars=arg, out_vars=lhs,instruction= rhs)
+                new_memory = QuantumMemory()
+                new_memory.q_mem = copy.deepcopy(self.program.get_current_quantum_memory().q_mem)
+                if arg != lhs:
+                    new_memory.update_reg(arg, lhs)
+                new_memory.iterate_reg(lhs)
                 self.program.add_quantum_process(command, new_memory)
                 return 0
             
@@ -71,8 +84,7 @@ class JSONInterpreter:
             pass
         
         if e == "callExp":
-            op = self._matrix_from_op(stmt["op"])
-            arg = self.decode_expression(stmt["arg"])
+            print(stmt)
         
         if e == "iteExp":
             pass
@@ -93,7 +105,12 @@ class JSONInterpreter:
         if e == "indexExp":
             pass
         if e == "callExp":
-            pass
+            op = exp["op"]
+            arg = exp["arg"]
+            if self.is_quantum_op(op):
+                inst = QOP(op)
+                inst.arg = arg
+                return inst
         
         if e == "litExp":
             val = exp["value"]
@@ -121,3 +138,6 @@ class JSONInterpreter:
     
     def is_function(self, type):
         return False
+    
+    def is_quantum_op(self, op):
+        return (op == "Y") or (op == "X") or (op == "Z'") or (op == "H")
