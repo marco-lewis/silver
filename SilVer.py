@@ -18,7 +18,6 @@ class SilVer:
         self.speq_z3_itp = SilSpeqZ3Interpreter()
         self.speq_flag_itp = SilSpeqZ3FlagVisitor()
     
-    # TODO: Similar process from example.py 
     def check_speq_exists(self, file):
         if not(exists(self.get_speq_file_name(file))):
             self.generate_speq_file(file)
