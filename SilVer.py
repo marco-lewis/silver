@@ -12,7 +12,7 @@ from z3.z3 import Solver, sat, unsat
 class SilVer:
     def __init__(self):
         self.solver = Solver()
-        self.json_interp = JSONInterpreter(self.solver)
+        self.json_interp = JSONInterpreter()
         self.speq_parser = SilSpeqParser()
         # TODO: Move so that Interpreters are only function specific
         self.speq_z3_itp = SilSpeqZ3Interpreter()
@@ -26,7 +26,7 @@ class SilVer:
         
     def reset(self):
         self.solver.reset()
-        self.json_interp = JSONInterpreter(self.solver)
+        self.json_interp = JSONInterpreter()
         
     def check_solver_sat(self):
         print("Checking satisfiability...")

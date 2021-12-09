@@ -4,7 +4,7 @@ from Command import *
 class Process():
     command = Command()
     # Change {} to a Memory() class?
-    memory = {}
+    start_memory = {}
     
     def __init__(self) -> None:
         pass
