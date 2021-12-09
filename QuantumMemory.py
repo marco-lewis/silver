@@ -9,6 +9,9 @@ class QuantumRegister:
 
     def __str__(self):
         return str(self.var) + "_v" + str(self.version)
+    
+    def __repr__(self) -> str:
+        return "QuantumRegister(" + repr(self.var) + "," + repr(self.size) + "," + repr(self.version) + ")" 
 
 class QuantumMemory:
     q_mem = {}
@@ -85,3 +88,6 @@ class QuantumMemory:
 
     def get_version(self, var):
         return self.q_mem[var].version
+    
+    def __repr__(self) -> str:
+        return "QuantumMemory(" + repr(self.q_mem) + ")"

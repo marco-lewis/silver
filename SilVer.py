@@ -45,7 +45,6 @@ class SilVer:
         tree = self.speq_parser.parse_file(file)
         self.speq_flag_itp.visit(tree)
         
-        self.json_interp.set_meas_cert(self.speq_flag_itp.meas_cert)
         self.speq_z3_itp.set_meas_cert(self.speq_flag_itp.meas_cert)
         
         if self.speq_flag_itp.quantum_out:
