@@ -64,16 +64,14 @@ class JSONInterpreter:
             rhs = self.decode_expression(stmt["rhs"])
             if isinstance(rhs, QINIT):
                 command = QuantumCommand(out_vars=[lhs], instruction=rhs)
-                new_memory = QuantumMemory()
-                new_memory.q_mem = copy.deepcopy(self.program.get_current_quantum_memory().q_mem)
+                new_memory = self.get_quantum_memory_copy()
                 new_memory.append(lhs, rhs.value)
                 self.program.add_quantum_process(command, new_memory)
                 return 0
             if isinstance(rhs, QOP):
                 arg = rhs.arg
                 command = QuantumCommand(in_vars=arg, out_vars=lhs,instruction= rhs)
-                new_memory = QuantumMemory()
-                new_memory.q_mem = copy.deepcopy(self.program.get_current_quantum_memory().q_mem)
+                new_memory = self.get_quantum_memory_copy()
                 if arg != lhs:
                     new_memory.update_reg(arg, lhs)
                 new_memory.iterate_reg(lhs)
@@ -141,3 +139,8 @@ class JSONInterpreter:
     
     def is_quantum_op(self, op):
         return (op == "Y") or (op == "X") or (op == "Z'") or (op == "H")
+    
+    def get_quantum_memory_copy(self):
+        new_memory = QuantumMemory()
+        new_memory.q_mem = copy.deepcopy(self.program.get_current_quantum_memory().q_mem)
+        return new_memory
