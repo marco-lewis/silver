@@ -82,13 +82,17 @@ class JSONInterpreter:
             pass
         
         if e == "callExp":
-            print(stmt)
+            pass
         
         if e == "iteExp":
             pass
                     
         if e == "returnExp":
-            pass
+            # TODO: Have attributes only in command or in_vars?
+            # TODO: Separate quantum return from classical?
+            command = QuantumCommand(in_vars=stmt['value'], instruction=RETURN(stmt['value']))
+            self.program.add_quantum_process(command, QuantumMemory())
+            return 0
         
         raise Exception("TODO: statement " + e)
 

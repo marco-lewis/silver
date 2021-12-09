@@ -22,7 +22,7 @@ class QINIT(Instruction):
     def value(self):
         return self.__value
 
-    @size.setter
+    @value.setter
     def value(self, value):
         self.__value = value
         
@@ -56,5 +56,19 @@ class QOP(Instruction):
 class QMEAS(Instruction):
     pass
 
+# TODO: Leave empty with no attributes?
 class RETURN(Instruction):
-    pass
+    def __init__(self, values) -> None:
+        super().__init__()
+        self.__values = values
+        
+    @property
+    def values(self):
+        return self.__values
+
+    @values.setter
+    def values(self, values):
+        self.__values = values
+        
+    def __repr__(self) -> str:
+        return "RETURN(" + repr(self.__values) + ")"
