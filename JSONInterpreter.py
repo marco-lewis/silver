@@ -65,7 +65,7 @@ class JSONInterpreter:
             if isinstance(rhs, QINIT):
                 command = QuantumCommand(out_vars=[lhs], instruction=rhs)
                 new_memory = self.get_quantum_memory_copy()
-                new_memory.append(lhs, rhs.value)
+                new_memory.append(lhs, rhs.size)
                 self.program.add_quantum_process(command, new_memory)
                 return 0
             if isinstance(rhs, QOP):

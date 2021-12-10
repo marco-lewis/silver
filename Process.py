@@ -2,7 +2,7 @@ from Command import *
 
 # Stores the command and memory together as a process
 class Process():
-    # Change {} to a Memory() class?    
+    # Change {} to a Memory() class?
     def __init__(self, end_memory = {}, command = Command()) -> None:
         self.end_memory = end_memory
         self.command = command
