@@ -1,4 +1,5 @@
 from Command import *
+from QuantumMemory import QuantumMemory
 
 # Stores the command and memory together as a process
 class Process():
@@ -9,7 +10,8 @@ class Process():
 
 class QuantumProcess(Process):
     command = QuantumCommand()
-    def __init__(self, end_memory = {}, command = Command()) -> None:
+    end_memory = QuantumMemory()
+    def __init__(self, end_memory = QuantumMemory(), command = Command()) -> None:
         super().__init__(end_memory, command)
         
     def __repr__(self) -> str:

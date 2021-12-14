@@ -37,13 +37,14 @@ class JSONInterpreter:
                     break
         except:
             raise Exception("Function " + fname + " was not detected in json file")
-        self.make_program(func_json)
+        return self.make_program(func_json)
         
     def make_program(self, func_json):
         print("Make Program for " + func_json["func"] + "...")
         self.args = {}
-        self.decode_func(func_json)
+        prog = self.decode_func(func_json)
         print("Done")
+        return prog
         
     def decode_func(self, func_json):
         for arg in func_json["args"]:
@@ -52,8 +53,7 @@ class JSONInterpreter:
         
         for stmt in func_json["statements"]:
             self.decode_statement(func_json["func"], stmt)
-            print(self.program)
-            print()
+        return self.program
             
             
     def decode_statement(self, fname, stmt):

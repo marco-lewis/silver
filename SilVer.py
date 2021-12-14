@@ -3,11 +3,15 @@ from JSONInterpreter import JSONInterpreter
 import json as json
 from os.path import splitext
 import re
+from ObligationGenerator import ObilgationGenerator
+from Process import Process
+from Program import Program
+from QuantumMemory import QuantumMemory
 from silspeq.SilSpeqParser import SilSpeqParser
 from silspeq.SilSpeqZ3FlagVisitor import SilSpeqZ3FlagVisitor
 from silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
 from utils import generate_silspeq_from_func
-from z3.z3 import Solver, sat, unsat
+from z3.z3 import Real, Solver, sat, unsat
 
 class SilVer:
     def __init__(self):
@@ -61,10 +65,19 @@ class SilVer:
         self.check_speq_exists(file)
         spq_name = self.get_speq_file_name(file)
         self.check_flags(spq_name)
+        
+        print("Adding isqrt2...")
+        isqrt2 = Real("isqrt2")
+        self.solver.add(1/(isqrt2 ** 2) == 2, isqrt2 > 0)
+        
         print("Generating SilSpeq proof obligations...")
         self.generate_speq_obligations(spq_name, func)
-        print("Generating proof obligations from AST...")
-        self.generate_json_obligations(file, func)
+        
+        print("Generating Program from AST...")
+        prog = self.generate_json_program(file, func)
+        
+        print("Generating proof obligations from Program")
+        self.generate_program_obligations(prog)
         
         self.check_solver_sat()
     
@@ -96,9 +109,29 @@ class SilVer:
                                  self.get_speq_file_name(silq_json_file))
         speq_gen.generate_speq_file()
                 
-    def generate_json_obligations(self, silq_json_file, func):
+    def generate_json_program(self, silq_json_file, func):
         silq_json = self.getJSON(silq_json_file)
-        self.json_interp.decode_func_in_json(silq_json, func)
+        prog = self.json_interp.decode_func_in_json(silq_json, func)
+        return prog
+    
+    def generate_program_obligations(self, prog : Program):
+        obs = []
+        ob_gen = ObilgationGenerator()
+        for time in range(prog.current_time):
+            if prog.quantum_processes[time]:
+                prev_memory = self.get_prev_quantum_memory(prog, time)
+                process_obligation = ob_gen.make_quantum_process_obligation(prog.quantum_processes[time], prev_memory)
+                obs += process_obligation
+            else:
+                # TODO: Handle classical obligation
+                pass
+            pass
+        self.solver.add(obs)
+    
+    def get_prev_quantum_memory(self, prog : Program, time):
+        if time != 0:
+            return prog.quantum_processes[time - 1].end_memory
+        return QuantumMemory()
 
 class SpeqGenerator():
     def __init__(self, silq_json, speq_file):

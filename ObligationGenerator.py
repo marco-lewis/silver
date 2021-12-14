@@ -1,9 +1,11 @@
 from z3 import *
+from Instruction import *
+from Process import QuantumProcess
 from QuantumMemory import QuantumMemory
 from complex import *
 from ComplexVector import *
 from utils import *
-from QuantumOps import ID
+from QuantumOps import *
 
 # Currently handles single variable, want to change to handle multiple variables
 # TODO: Checks for valid sizes of inputs
@@ -11,15 +13,43 @@ from QuantumOps import ID
 class ObilgationGenerator:
     def __init__(self):
         pass
-        
-    def make_qstate(self):
+    
+    def make_quantum_process_obligation(self, q_process : QuantumProcess, prev_mem : QuantumMemory):
+        instruction = q_process.command.instruction
+        if isinstance(instruction, QINIT):
+            lhs = self.quantum_memory_to_literals(q_process.end_memory)
+            rhs = self.qinit_obligation(instruction, prev_mem)
+            return self.obligation_quantum_assignment(lhs, rhs)
+        if isinstance(instruction, QOP):
+            lhs = self.quantum_memory_to_literals(q_process.end_memory)
+            rhs = self.qop_obligation(instruction, prev_mem)
+            return self.obligation_quantum_assignment(lhs, rhs)
+        if isinstance(instruction, RETURN):
+            return [True]
+        raise Exception("GenerationError: Unable to make obligation for instruction ", instruction)
+    
+    def quantum_memory_to_literals(self, memory : QuantumMemory):
+        return [Complex(string) for string in memory.get_obligation_variables()]
+    
+    def qinit_obligation(self, instruction : QINIT, prev_mem : QuantumMemory):
+        if prev_mem.is_empty():
+            return self.obligation_quantum_literal(instruction.size, instruction.value)
+        # TODO: Handle non-empty quantum memory
+        prev_mem.get_obligation_variables()
         pass
     
+    def qop_obligation(self, instruction : QOP, prev_mem : QuantumMemory):
+        # TODO: Handle non-standard operations
+        loc = prev_mem.get_loc(instruction.arg)
+        matrix = self.matrix_from_string(instruction.operation)
+        op = self.make_qubit_operation(matrix, loc, prev_mem.get_total_size())
+        return self.obligation_operation(op, self.quantum_memory_to_literals(prev_mem))
+        
     def make_qubit_operation(self, op, q_loc, size):
         out = [[1]]
         for i in range(size):
             out = kronecker(out, ID) if not(size - 1 - q_loc == i) else kronecker(out, op)
-        pass
+        return out
     
     def make_phase_op(self, cond, phase, size = 1):
         return [[to_complex(1 - cond(i)) + phase * cond(i) if i == j 
@@ -30,10 +60,8 @@ class ObilgationGenerator:
             raise Exception("LengthError: lengths of lists don't match")
         return [lhs[i] == rhs[i] for i in range(len(lhs))]
 
-    def obligation_quantum_literal(self, q_data, size, type, literal = 0):
-        var = q_data[0]
-        lit_vec = [1 if i == literal else 0 for i in range(0, 2**size)]
-        pass
+    def obligation_quantum_literal(self, size, literal = 0):
+        return [1 if i == literal else 0 for i in range(0, 2**size)]
             
     # TODO: Handle measurement differently
     def obligation_quantum_measurement(self, var, with_certainty = False, with_hp = False):
@@ -48,6 +76,12 @@ class ObilgationGenerator:
     
     def obligation_operation(self, operation, obligations):
         obs = []
-        for row in operation:
-            obs.append(Sum([row[col] * obligations[col] for col in range(len(row))]))
-        pass
+        [obs.append(Sum([to_complex(row[col]) * obligations[col] for col in range(len(row))])) for row in operation]
+        return obs
+    
+    def matrix_from_string(self, op):
+        if op == 'X': return X
+        if op == 'Y': return Y
+        if op == 'Z\'': return Z
+        if op == 'H': return H
+        raise Exception("ConversionError: no matrix for " + op)
