@@ -6,12 +6,10 @@ from QuantumMemory import QuantumMemory
 # As advance program, update memory for each command
 # Then convert program to proof obligations using the ObligationGenerator
 class Program():
-    current_time = 0
-    quantum_processes = {}
-    classical_processes = {}
-    
     def __init__(self) -> None:
-        pass
+        self.current_time = 0
+        self.quantum_processes = {}
+        self.classical_processes = {}  
     
     def add_quantum_process(self, command, new_memory):
         self.quantum_processes[self.current_time] = QuantumProcess(end_memory=new_memory, command=command) 

@@ -32,8 +32,10 @@ class SilVer:
         self.json_interp = JSONInterpreter()
         
     def check_solver_sat(self):
+        return self.solver.check()
+        
+    def print_solver_sat(self, solver_sat):
         print("Checking satisfiability...")
-        solver_sat = self.solver.check()
         if solver_sat == sat:
             m = self.solver.model()
             print("Counterexample found")
@@ -61,25 +63,26 @@ class SilVer:
             # 4a) Produce obligation/sat(?) files for correct functions
         pass
     
-    def verify_func(self, file, func):
+    def verify_func(self, file, func, verbose=False):
+        print("Verifying " + func + " in " + file)
         self.check_speq_exists(file)
         spq_name = self.get_speq_file_name(file)
         self.check_flags(spq_name)
         
-        print("Adding isqrt2...")
+        if verbose: print("Adding isqrt2...")
         isqrt2 = Real("isqrt2")
         self.solver.add(1/(isqrt2 ** 2) == 2, isqrt2 > 0)
         
-        print("Generating SilSpeq proof obligations...")
+        if verbose: print("Generating SilSpeq proof obligations...")
         self.generate_speq_obligations(spq_name, func)
         
-        print("Generating Program from AST...")
+        if verbose: print("Generating Program from AST...")
         prog = self.generate_json_program(file, func)
-        
-        print("Generating proof obligations from Program")
+
+        if verbose: print("Generating proof obligations from Program")
         self.generate_program_obligations(prog)
         
-        self.check_solver_sat()
+        return self.check_solver_sat()
     
     def getJSON(self, silq_json_file):
         """
