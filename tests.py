@@ -9,5 +9,5 @@ def check(json_file, func, model=False):
     
 check("test_singlevar.json", "main")
 check("test_unitary.json", "main")
+check("uint.json", "uint_test")
 check("types.json", "main")
-check("uint.json", "main")
