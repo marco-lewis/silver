@@ -43,7 +43,7 @@ class ObilgationGenerator:
     
     def qop_obligation(self, instruction : QOP, prev_mem : QuantumMemory):
         # TODO: Handle non-standard operations
-        loc = prev_mem.get_loc(instruction.arg)
+        loc = prev_mem.get_loc(instruction.arg.variable, instruction.arg.index)
         matrix = self.matrix_from_string(instruction.operation)
         op = self.make_qubit_operation(matrix, loc, prev_mem.get_total_size())
         return self.obligation_operation(op, self.quantum_memory_to_literals(prev_mem))

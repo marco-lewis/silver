@@ -12,6 +12,7 @@ from Instruction import *
 from Program import Program
 from QuantumMemory import QuantumMemory
 from QuantumOps import *
+from VarRef import VarRef
 from utils import *
 
 class JSONInterpreter:
@@ -39,11 +40,11 @@ class JSONInterpreter:
             raise Exception("Function " + fname + " was not detected in json file")
         return self.make_program(func_json)
         
-    def make_program(self, func_json):
-        print("Make Program for " + func_json["func"] + "...")
+    def make_program(self, func_json, verbose = False):
+        if verbose: print("Make Program for " + func_json["func"] + "...")
         self.args = {}
         prog = self.decode_func(func_json)
-        print("Done")
+        if verbose: print("Done")
         return prog
         
     def decode_func(self, func_json):
@@ -65,16 +66,16 @@ class JSONInterpreter:
             if isinstance(rhs, QINIT):
                 command = QuantumCommand(out_vars=[lhs], instruction=rhs)
                 new_memory = self.get_quantum_memory_copy()
-                new_memory.append(lhs, rhs.size)
+                new_memory.append(lhs.variable, rhs.size)
                 self.program.add_quantum_process(command, new_memory)
                 return 0
             if isinstance(rhs, QOP):
                 arg = rhs.arg
-                command = QuantumCommand(in_vars=arg, out_vars=lhs,instruction= rhs)
+                command = QuantumCommand(in_vars=arg, out_vars=lhs, instruction= rhs)
                 new_memory = self.get_quantum_memory_copy()
                 if arg != lhs:
-                    new_memory.update_reg(arg, lhs)
-                new_memory.iterate_reg(lhs)
+                    new_memory.update_reg(arg.variable, lhs.variable)
+                new_memory.iterate_reg(lhs.variable)
                 self.program.add_quantum_process(command, new_memory)
                 return 0
             
@@ -99,16 +100,20 @@ class JSONInterpreter:
 
     def decode_expression(self, exp):
         if isinstance(exp, str):
-            return exp
+            return VarRef(exp)
 
         e = exp[EXPTYPE]
         if e == "varDecl":
             pass
         if e == "indexExp":
-            pass
+            # TODO: Handle non-const index
+            idx = self.decode_expression(exp["index"])
+            var_ref = self.decode_expression(exp["var"])
+            var_ref.index = idx
+            return var_ref
         if e == "callExp":
             op = exp["op"]
-            arg = exp["arg"]
+            arg = self.decode_expression(exp["arg"])
             if self.is_quantum_op(op):
                 inst = QOP(op)
                 inst.arg = arg
@@ -134,6 +139,11 @@ class JSONInterpreter:
     def interpret_type(self, type):
         if type == "𝔹" or type == "B":
             return 1
+        if 'typeObj' in type:
+            if type['typeObj'] == 'uint':
+                return self.decode_expression(type['size'])
+            pass
+        raise Exception("TypeError: unable to handle type ", type)
         
     def is_classical(self, type):
         return False
