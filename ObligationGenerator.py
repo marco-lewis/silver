@@ -17,6 +17,7 @@ class ObilgationGenerator:
     def make_quantum_process_obligation(self, q_process : QuantumProcess, prev_mem : QuantumMemory):
         instruction = q_process.command.instruction
         if isinstance(instruction, QINIT):
+            print(prev_mem, q_process.end_memory)
             lhs = self.quantum_memory_to_literals(q_process.end_memory)
             rhs = self.qinit_obligation(instruction, prev_mem)
             return self.obligation_quantum_assignment(lhs, rhs)
@@ -34,9 +35,12 @@ class ObilgationGenerator:
     def qinit_obligation(self, instruction : QINIT, prev_mem : QuantumMemory):
         if prev_mem.is_empty():
             return self.obligation_quantum_literal(instruction.size, instruction.value)
-        # TODO: Handle non-empty quantum memory
-        prev_mem.get_obligation_variables()
-        pass
+        lits = self.quantum_memory_to_literals(prev_mem)
+        obs = []
+        for i in range(2**(prev_mem.get_total_size())):
+            obs += [0 if i != instruction.value else lits[j] for j in range(2**instruction.size)]
+        print(obs)
+        return obs
     
     def qop_obligation(self, instruction : QOP, prev_mem : QuantumMemory):
         # TODO: Handle non-standard operations
