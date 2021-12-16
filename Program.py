@@ -9,11 +9,13 @@ class Program():
     def __init__(self) -> None:
         self.current_time = 0
         self.quantum_processes = {}
-        self.classical_processes = {}  
-    
-    def add_quantum_process(self, command, new_memory):
+        self.classical_processes = {}
+        self.controls = {}
+        
+    def add_quantum_process(self, command, new_memory, controls = []):
         self.quantum_processes[self.current_time] = QuantumProcess(end_memory=new_memory, command=command) 
         self.classical_processes[self.current_time] = None
+        self.controls[self.current_time] = controls
         self.current_time += 1
 
     def add_classical_process(self, command, memory):
@@ -27,4 +29,4 @@ class Program():
     def __str__(self) -> str:
         quantum_str = self.quantum_processes.__str__()
         classical_str = self.classical_processes.__str__()
-        return "Quantum: " + quantum_str + "\nClassical: " + classical_str
+        return "Quantum: " + quantum_str + "\nClassical: " + classical_str + "\nControls: " + str(self.controls)

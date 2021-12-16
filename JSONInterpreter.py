@@ -7,13 +7,14 @@ Quantum variables only
 '''
 
 from z3 import *
+from utils import *
+
 from Command import *
 from Instruction import *
 from Program import Program
 from QuantumMemory import QuantumMemory
 from QuantumOps import *
 from VarRef import VarRef
-from utils import *
 
 class JSONInterpreter:
     isqrt2 = Real("isqrt2")
@@ -42,17 +43,19 @@ class JSONInterpreter:
         
     def make_program(self, func_json, verbose = False):
         if verbose: print("Make Program for " + func_json["func"] + "...")
-        self.args = {}
+        self.func_arg = {}
         prog = self.decode_func(func_json)
         if verbose: print("Done")
         return prog
         
     def decode_func(self, func_json):
         for arg in func_json["args"]:
-            # TODO: Handle args in program
-            pass
+            # TODO: Handle non-function args in program
+            func = Function(arg['name'], convert_type_to_Z3_literal(arg['type']))
+            self.func_arg[arg['name']] = func
         
         for stmt in func_json["statements"]:
+            self.controls = []
             self.decode_statement(func_json["func"], stmt)
         return self.program
             
@@ -67,26 +70,46 @@ class JSONInterpreter:
                 command = QuantumCommand(out_vars=[lhs], instruction=rhs)
                 new_memory = self.get_quantum_memory_copy()
                 new_memory.append(lhs.variable, rhs.size)
-                self.program.add_quantum_process(command, new_memory)
+                self.program.add_quantum_process(command, new_memory, self.controls)
                 return 0
             if isinstance(rhs, QOP):
                 arg = rhs.arg
-                command = QuantumCommand(in_vars=arg, out_vars=lhs, instruction= rhs)
+                command = QuantumCommand(in_vars=arg, out_vars=lhs, instruction=rhs)
                 new_memory = self.get_quantum_memory_copy()
                 if arg != lhs:
                     new_memory.update_reg(arg.variable, lhs.variable)
                 new_memory.iterate_reg(lhs.variable)
-                self.program.add_quantum_process(command, new_memory)
+                self.program.add_quantum_process(command, new_memory, self.controls)
                 return 0
             
         if e == "compoundExp":
-            pass
+            for stmt in stmt["statements"]:
+                self.decode_statement(fname, stmt)
+            return 0
         
         if e == "callExp":
-            pass
+            # TODO: Move repeated code
+            # Handle PHASE
+            op = stmt['op']
+            arg = self.decode_expression(stmt['arg'])
+            if self.is_quantum_op(op):
+                pass
+            if self.is_phase(op):
+                inst = QPHASE(arg)
+                command = QuantumCommand(instruction=inst)
+                new_memory = self.get_quantum_memory_copy()
+                new_memory.iterate_all()
+                self.program.add_quantum_process(command, new_memory, controls=copy.deepcopy(self.controls))
+                return 0
         
         if e == "iteExp":
-            pass
+            # TODO: Handle decode of cond separately
+            cond = self.decode_expression(stmt['cond'])
+            self.controls.append(cond)
+            self.decode_statement(fname, stmt['then'])
+            # self.decode_statement(fname, stmt['othw'])
+            self.controls.pop()
+            return 0
                     
         if e == "returnExp":
             # TODO: Have attributes only in command or in_vars?
@@ -100,6 +123,7 @@ class JSONInterpreter:
 
     def decode_expression(self, exp):
         if isinstance(exp, str):
+            if exp == "pi": return math.pi
             return VarRef(exp)
 
         e = exp[EXPTYPE]
@@ -116,6 +140,10 @@ class JSONInterpreter:
             arg = self.decode_expression(exp["arg"])
             if self.is_quantum_op(op):
                 inst = QOP(op)
+                inst.arg = arg
+                return inst
+            if self.is_arg(op):
+                inst = QOP(self.func_arg[op])
                 inst.arg = arg
                 return inst
         
@@ -137,14 +165,20 @@ class JSONInterpreter:
         raise Exception("TODO: expression " + e)
     
     def interpret_type(self, type):
-        if type == "𝔹" or type == "B":
-            return 1
         if 'typeObj' in type:
+            if type['typeObj'] == "𝔹" or type['typeObj'] == "B":
+                return 1
             if type['typeObj'] == 'uint':
                 return self.decode_expression(type['size'])
             pass
+        # Deprecrated (need to update JSONs if this still used)
+        if type == "𝔹" or type == "B":
+            return 1
         raise Exception("TypeError: unable to handle type ", type)
         
+    def is_arg(self, ref):
+        return ref in self.func_arg
+
     def is_classical(self, type):
         return False
     
@@ -153,6 +187,9 @@ class JSONInterpreter:
     
     def is_quantum_op(self, op):
         return (op == "Y") or (op == "X") or (op == "Z'") or (op == "H")
+    
+    def is_phase(self, op):
+        return (op == "phase")
     
     def get_quantum_memory_copy(self):
         new_memory = QuantumMemory()

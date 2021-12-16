@@ -57,6 +57,10 @@ class QuantumMemory:
         
     def iterate_reg(self, var):
         self.q_mem[var].iterate()
+    
+    def iterate_all(self):
+        for key in self.q_mem:
+            self.q_mem[key].iterate()
 
     def is_empty(self):
         return self.q_mem == {}

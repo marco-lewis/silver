@@ -1,3 +1,4 @@
+from math import floor
 from z3 import *
 from Instruction import *
 from Process import QuantumProcess
@@ -14,7 +15,7 @@ class ObilgationGenerator:
     def __init__(self):
         pass
     
-    def make_quantum_process_obligation(self, q_process : QuantumProcess, prev_mem : QuantumMemory):
+    def make_quantum_process_obligation(self, q_process : QuantumProcess, prev_mem : QuantumMemory, controls : list):
         instruction = q_process.command.instruction
         if isinstance(instruction, QINIT):
             lhs = self.quantum_memory_to_literals(q_process.end_memory)
@@ -22,7 +23,11 @@ class ObilgationGenerator:
             return self.obligation_quantum_assignment(lhs, rhs)
         if isinstance(instruction, QOP):
             lhs = self.quantum_memory_to_literals(q_process.end_memory)
-            rhs = self.qop_obligation(instruction, prev_mem)
+            rhs = self.qop_obligation(instruction, prev_mem, controls)
+            return self.obligation_quantum_assignment(lhs, rhs)
+        if isinstance(instruction, QPHASE):
+            lhs = self.quantum_memory_to_literals(q_process.end_memory)
+            rhs = self.qphase_obligation(instruction, prev_mem, controls)
             return self.obligation_quantum_assignment(lhs, rhs)
         if isinstance(instruction, RETURN):
             # TODO: Correctly handle return statements (might need more from SilVer)
@@ -41,11 +46,27 @@ class ObilgationGenerator:
             obs += [0 if i != instruction.value else lits[j] for j in range(2**instruction.size)]
         return obs
     
-    def qop_obligation(self, instruction : QOP, prev_mem : QuantumMemory):
+    def qop_obligation(self, instruction : QOP, prev_mem : QuantumMemory, controls : list):
         # TODO: Handle non-standard operations
         loc = prev_mem.get_loc(instruction.arg.variable, instruction.arg.index)
         matrix = self.matrix_from_string(instruction.operation)
         op = self.make_qubit_operation(matrix, loc, prev_mem.get_total_size())
+        for control in controls:
+            if isinstance(control, QOP):
+                if prev_mem.is_stored(control.arg.variable):
+                    control_loc = prev_mem.get_loc(control.arg.variable)
+                    op = self.make_qubit_control_operation(op, prev_mem.get_total_size(), control.operation, control_loc)
+        return self.obligation_operation(op, self.quantum_memory_to_literals(prev_mem))
+    
+    def qphase_obligation(self, instruction : QPHASE, prev_mem : QuantumMemory, controls : list):
+        # TODO: Handle non-standard operations
+        phase = PHASE(instruction.phase)
+        op = [[phase if i == j else 0 for j in range(2**prev_mem.get_total_size())] for i in range(2**prev_mem.get_total_size())]
+        for control in controls:
+            if isinstance(control, QOP):
+                if prev_mem.is_stored(control.arg.variable):
+                    control_loc = prev_mem.get_loc(control.arg.variable)
+                    op = self.make_qubit_control_operation(op, prev_mem.get_total_size(), control.operation, control_loc)
         return self.obligation_operation(op, self.quantum_memory_to_literals(prev_mem))
         
     def make_qubit_operation(self, op, q_loc, size):
@@ -53,10 +74,10 @@ class ObilgationGenerator:
         for i in range(size):
             out = kronecker(out, ID) if not(size - 1 - q_loc == i) else kronecker(out, op)
         return out
-    
-    def make_phase_op(self, cond, phase, size = 1):
-        return [[to_complex(1 - cond(i)) + phase * cond(i) if i == j 
-                else 0 for j in range(2**size)] for i in range(2**size)]
+
+    # TODO: Check correct; use If(...) Z3 expression???
+    def make_qubit_control_operation(self, op, size, cond, control_loc):
+        return [[delta(i,j) + cond(floor(i/2**control_loc))*(op[i][j] - delta(i,j)) for j in range(2**size)] for i in range(2**size)]
 
     def obligation_quantum_assignment(self, lhs, rhs):
         if len(lhs) != len(rhs):

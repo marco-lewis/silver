@@ -9,7 +9,7 @@ from QuantumMemory import QuantumMemory
 from silspeq.SilSpeqParser import SilSpeqParser
 from silspeq.SilSpeqZ3FlagVisitor import SilSpeqZ3FlagVisitor
 from silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
-from z3.z3 import Real, Solver, sat, unsat
+from z3.z3 import *
 from SpeqGenerator import SpeqGenerator
 
 class SilVer:
@@ -78,7 +78,9 @@ class SilVer:
         if verbose: print("Generating Program from AST...")
         prog = self.generate_json_program(file, func)
 
-        if verbose: print("Generating proof obligations from Program")
+        if verbose: 
+            print("Generating proof obligations from Program")
+            print(prog)
         self.generate_program_obligations(prog)
         
         return self.check_solver_sat()
@@ -122,7 +124,7 @@ class SilVer:
         for time in range(prog.current_time):
             if prog.quantum_processes[time]:
                 prev_memory = self.get_prev_quantum_memory(prog, time)
-                process_obligation = ob_gen.make_quantum_process_obligation(prog.quantum_processes[time], prev_memory)
+                process_obligation = ob_gen.make_quantum_process_obligation(prog.quantum_processes[time], prev_memory, prog.controls[time])
                 obs += process_obligation
             else:
                 # TODO: Handle classical obligation

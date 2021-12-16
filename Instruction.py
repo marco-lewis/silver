@@ -30,9 +30,10 @@ class QINIT(Instruction):
         return "QINIT(" + repr(self.__value) + ", " + repr(self.__size) + ")"
         
 class QOP(Instruction):
-    def __init__(self, operation, out_var=None) -> None:
+    def __init__(self, operation, arg=None) -> None:
         super().__init__()
         self.__operation = operation
+        self.__arg = arg
         
     @property
     def operation(self):
@@ -51,10 +52,34 @@ class QOP(Instruction):
         self.__arg = value
 
     def __repr__(self) -> str:
-        return "QOP(" + repr(self.__operation) + ")"
+        return "QOP(" + repr(self.__operation) + ", " + repr(self.__arg) + ")"
+
+class QPHASE(Instruction):
+    def __init__(self, phase) -> None:
+        super().__init__()
+        self.__phase = phase
+        
+    @property
+    def phase(self):
+        return self.__phase
+
+    @phase.setter
+    def phase(self, phase):
+        self.__phase = phase
 
 class QMEAS(Instruction):
-    pass
+    def __init__(self, variable) -> None:
+        super().__init__()
+        self.__variable = variable
+        
+    @property
+    def variable(self):
+        return self.__variable
+
+    @variable.setter
+    def variable(self, value):
+        self.__variable = value
+
 
 # TODO: Leave empty with no attributes?
 class RETURN(Instruction):
