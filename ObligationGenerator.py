@@ -7,6 +7,7 @@ from complex import *
 from ComplexVector import *
 from utils import *
 from QuantumOps import *
+from MeasureOptions import HIGH_PROB, CERTAINTY, SPECIFIC_VALUE
 
 # Currently handles single variable, want to change to handle multiple variables
 # TODO: Checks for valid sizes of inputs
@@ -29,10 +30,12 @@ class ObilgationGenerator:
             lhs = self.quantum_memory_to_literals(q_process.end_memory)
             rhs = self.qphase_obligation(instruction, prev_mem, controls)
             return self.obligation_quantum_assignment(lhs, rhs)
+        if isinstance(instruction, QMEAS):
+            return self.obligation_quantum_measurement(instruction, prev_mem)
         if isinstance(instruction, RETURN):
             # TODO: Correctly handle return statements (might need more from SilVer)
             return [True]
-        raise Exception("GenerationError: Unable to make obligation for instruction ", instruction)
+        raise Exception("GenerationError: Unable to make obligation for instruction " +  repr(instruction))
     
     def quantum_memory_to_literals(self, memory : QuantumMemory):
         return [Complex(string) for string in memory.get_obligation_variables()]
@@ -88,15 +91,53 @@ class ObilgationGenerator:
         return [1 if i == literal else 0 for i in range(0, 2**size)]
             
     # TODO: Handle measurement differently
-    def obligation_quantum_measurement(self, var, with_certainty = False, with_hp = False):
-        pass
+    def obligation_quantum_measurement(self, instruction : QMEAS, prev_memory : QuantumMemory, measure_option=HIGH_PROB):
+        measured_variable_ref = instruction.variable_ref
+        variable = measured_variable_ref.variable
+        index = measured_variable_ref.index
+        
+        loc = prev_memory.get_loc(variable, index)
+        size = prev_memory.get_size(variable)
+        prob_strs = ["Pr_" + prev_memory.get_reg_string(variable) + "_" + str(i) 
+                 for i in range(2**size)]
+        probs_z3_vars = [Real(p) for p in prob_strs]
+
+        obligations = []
+        obligations.append(And([And(p <= 1, p >= 0) for p in probs_z3_vars]))
+        obligations.append(Sum(probs_z3_vars) == 1)
+        
+        # Calculate probabilities based on amplitudes of memory
+        memory_obligation_variables = [Complex(memory_str) for memory_str in prev_memory.get_obligation_variables()]
+        for i in range(len(probs_z3_vars)):
+            mem_locs = [x for x in range(2**prev_memory.get_total_size()) if not(x^(i<<loc))]
+            s = [memory_obligation_variables[i].len_sqr() for i in mem_locs]
+            obligations.append(probs_z3_vars[i] == Sum(s))
+            
+        if measure_option == HIGH_PROB:
+            meas_obligations = self.obligation_qmeas_with_high_prob(variable, probs_z3_vars)
+        if measure_option == CERTAINTY:
+            meas_obligations = self.obligation_qmeas_with_certainty(variable, probs_z3_vars)
+        if measure_option == SPECIFIC_VALUE:
+            meas_obligations = self.obligation_qmeas_with_specific_value(variable, probs_z3_vars)
+            
+        return obligations + meas_obligations
     
-    def obligation_qmeas_with_cert(self, var, obligations, probs):
-        pass
+    def obligation_qmeas_with_specific_value(self, var, probs_z3_vars):
+        raise Exception("ObligationError: function not implemented yet")
+    
+    def obligation_qmeas_with_certainty(self, var, probs_z3_vars):
+        raise Exception("ObligationError: function not implemented yet")
     
     # TODO: unsat on 50/50 chance, need a way to handle this just in case
-    def obligation_qmeas_whp(self, var, obligations, probs):
-        pass
+    def obligation_qmeas_with_high_prob(self, var, probs_z3_vars):
+        max_prob = Real('hprob_' + var)
+        value = Int('meas_' + var)
+        obligations = [Or([max_prob == p for p in probs_z3_vars])]
+        obligations.append(And([max_prob >= p for p in probs_z3_vars]))
+        obligations += [Implies(max_prob == probs_z3_vars[i], value == i)
+                        for i in range(len(probs_z3_vars))]
+        
+        return obligations
     
     def obligation_operation(self, operation, obligations):
         obs = []

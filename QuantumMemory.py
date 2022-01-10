@@ -23,10 +23,10 @@ class QuantumMemory:
         if not(type(size) == int):
             raise TypeError("Size is not an int")
 
-    def get_obligation_variables(self):
+    def get_obligation_variables(self) -> list[str]:
         return self.__generate_strings()
 
-    def __generate_strings(self):
+    def __generate_strings(self) -> list[str]:
         q_mem = self.q_mem
         out = []
         for key, qreg in q_mem.items():

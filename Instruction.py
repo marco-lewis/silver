@@ -74,20 +74,20 @@ class QPHASE(Instruction):
         return "QPHASE(" + repr(self.__phase) + ")"
 
 class QMEAS(Instruction):
-    def __init__(self, variable) -> None:
+    def __init__(self, variable_ref) -> None:
         super().__init__()
-        self.__variable = variable
+        self.__variable_ref = variable_ref
         
     @property
-    def variable(self):
-        return self.__variable
+    def variable_ref(self):
+        return self.__variable_ref
 
-    @variable.setter
+    @variable_ref.setter
     def variable(self, value):
-        self.__variable = value
+        self.__variable_ref = value
         
     def __repr__(self) -> str:
-        return "QMEAS(" + repr(self.__variable) + ")"
+        return "QMEAS(" + repr(self.__variable_ref) + ")"
 
 
 # TODO: Leave empty with no attributes?

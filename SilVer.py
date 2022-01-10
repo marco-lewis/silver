@@ -83,6 +83,8 @@ class SilVer:
             print(prog)
         self.generate_program_obligations(prog)
         
+        if verbose: print(self.solver)
+        
         return self.check_solver_sat()
     
     def getJSON(self, silq_json_file):
@@ -126,7 +128,7 @@ class SilVer:
                 prev_memory = self.get_prev_quantum_memory(prog, time)
                 process_obligation = ob_gen.make_quantum_process_obligation(prog.quantum_processes[time], prev_memory, prog.controls[time])
                 obs += process_obligation
-            else:
+            if prog.classical_processes[time]:
                 # TODO: Handle classical obligation
                 pass
             pass
