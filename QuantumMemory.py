@@ -42,7 +42,6 @@ class QuantumMemory:
 
     def append(self, var, size):
         self.verify_size(size)
-
         self.q_mem[var] = QuantumRegister(var, size, 0)
 
     def ammend_size(self, var, new_size):

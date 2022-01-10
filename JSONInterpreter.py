@@ -81,6 +81,13 @@ class JSONInterpreter:
                 new_memory.iterate_reg(lhs.variable)
                 self.program.add_quantum_process(command, new_memory, self.controls)
                 return 0
+            if isinstance(rhs, QMEAS):
+                command = QuantumCommand(in_vars=rhs.variable, out_vars=lhs, instruction=rhs)
+                # TODO: Move into program statement?
+                new_memory = self.get_quantum_memory_copy()
+                new_memory.measure_reg(rhs.variable.variable)
+                self.program.add_quantum_to_classical(command, new_memory, rhs.variable.variable, self.controls)
+                return 0
             
         if e == "compoundExp":
             for stmt in stmt["statements"]:
@@ -146,7 +153,9 @@ class JSONInterpreter:
                 inst = QOP(self.func_arg[op])
                 inst.arg = arg
                 return inst
-        
+            if op == 'measure':
+                inst = QMEAS(arg)
+                return inst
         if e == "litExp":
             val = exp["value"]
             return val

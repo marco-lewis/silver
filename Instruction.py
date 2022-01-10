@@ -1,6 +1,9 @@
 class Instruction():
     def __init__(self) -> None:
         pass
+    
+    def __repr__(self) -> str:
+        return "Instruction()"
 
 class QINIT(Instruction):
     def __init__(self, value, size) -> None:
@@ -65,7 +68,10 @@ class QPHASE(Instruction):
 
     @phase.setter
     def phase(self, phase):
-        self.__phase = phase
+        self.__phase = phase#
+    
+    def __repr__(self) -> str:
+        return "QPHASE(" + repr(self.__phase) + ")"
 
 class QMEAS(Instruction):
     def __init__(self, variable) -> None:
@@ -79,6 +85,9 @@ class QMEAS(Instruction):
     @variable.setter
     def variable(self, value):
         self.__variable = value
+        
+    def __repr__(self) -> str:
+        return "QMEAS(" + repr(self.__variable) + ")"
 
 
 # TODO: Leave empty with no attributes?

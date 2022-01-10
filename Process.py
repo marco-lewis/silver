@@ -1,3 +1,4 @@
+from ClassicalMemory import ClassicalMemory
 from Command import *
 from QuantumMemory import QuantumMemory
 
@@ -17,8 +18,9 @@ class QuantumProcess(Process):
     def __repr__(self) -> str:
         return "QuantumProcess(" + repr(self.end_memory) + "," + repr(self.command) + ")"
 
-# IGNORE UNTIL QUANTUM DONE
-# Store classical commands as Obligations?
 class ClassicalProcess(Process):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, end_memory = ClassicalMemory(), command = Command()) -> None:
+        super().__init__(end_memory, command)
+        
+    def __repr__(self) -> str:
+        return "ClassicalProcess(" + repr(self.end_memory) + "," + repr(self.command) + ")"

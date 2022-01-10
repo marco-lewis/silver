@@ -1,7 +1,7 @@
 from Instruction import Instruction
 from QuantumOps import *
 
-
+# TODO: Consider removing commands in general
 class Command():
     def __init__(self) -> None:
         pass
@@ -24,10 +24,13 @@ class QuantumCommand(Command):
 # IGNORE UNTIL QUANTUM DONE
 # Stores operation to be performed, variables used and where they are being assigned to
 class ClassicalCommand(Command):
-    command = None
+    instruction = None
     
     in_vars = None
     out_vars = None
     
-    def __init__(self) -> None:
-        pass
+    def __init__(self, instruction = Instruction()) -> None:
+        self.instruction = instruction
+        
+    def __repr__(self) -> str:
+        return "ClassicalCommand(" + repr(self.in_vars) + "," + repr(self.out_vars) + "," + repr(self.instruction) +")"
