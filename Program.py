@@ -25,14 +25,14 @@ class Program():
         self.classical_processes[self.current_time] = ClassicalProcess(end_memory=self.copy_current_classical_memory(), instruction=Instruction())
         self.controls[self.current_time] = controls
         self.current_time += 1
-
-    def add_quantum_to_classical(self, instruction : Instruction, new_quantum_memory, new_c_var, controls = []):
+        
+    # TODO: Change name to just measurement process?
+    def add_quantum_to_classical(self, instruction : Instruction, new_quantum_memory, classical_instruction : Instruction, controls = []):
         self.quantum_processes[self.current_time] = QuantumProcess(end_memory=new_quantum_memory, instruction=instruction)
         new_c_mem = self.copy_current_classical_memory()
-        new_c_mem.add_var(new_c_var)
-        q_var = instruction.variable_ref.variable
+        new_c_mem.add_var(classical_instruction.classical_ref.variable)
         
-        self.classical_processes[self.current_time] = ClassicalProcess(end_memory=new_c_mem ,instruction=CMEAS(q_var, new_c_var))
+        self.classical_processes[self.current_time] = ClassicalProcess(end_memory=new_c_mem ,instruction=classical_instruction)
         self.controls[self.current_time] = controls
         self.current_time += 1
     

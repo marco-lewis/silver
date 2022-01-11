@@ -1,4 +1,5 @@
 from genericpath import exists
+from ClassicalMemory import ClassicalMemory
 from Instruction import Instruction
 from JSONInterpreter import JSONInterpreter
 import json as json
@@ -121,6 +122,7 @@ class SilVer:
         return prog
     
     def generate_program_obligations(self, prog : Program):
+        obs : list[BoolRef]
         obs = []
         ob_gen = ObilgationGenerator()
         for time in range(prog.current_time):
@@ -130,8 +132,9 @@ class SilVer:
                 obs += process_obligation
             if prog.classical_processes[time].instruction != Instruction():
                 # TODO: Handle classical obligation
-                print(prog.classical_processes[time])
-                pass
+                prev_memory = self.get_prev_classical_memory(prog, time)
+                classical_obligation = ob_gen.make_classical_process_obligation(prog.classical_processes[time], prev_memory, prog.controls[time])
+                obs += classical_obligation
             pass
         self.solver.add(obs)
     
@@ -139,3 +142,8 @@ class SilVer:
         if time != 0:
             return prog.quantum_processes[time - 1].end_memory
         return QuantumMemory()
+    
+    def get_prev_classical_memory(self, prog : Program, time):
+        if time != 0:
+            return prog.classical_processes[time - 1].end_memory
+        return ClassicalMemory()

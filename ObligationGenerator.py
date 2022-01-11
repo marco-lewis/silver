@@ -1,7 +1,8 @@
 from math import floor
 from z3 import *
+from ClassicalMemory import ClassicalMemory
 from Instruction import *
-from Process import QuantumProcess
+from Process import ClassicalProcess, QuantumProcess
 from QuantumMemory import QuantumMemory
 from complex import *
 from ComplexVector import *
@@ -16,7 +17,18 @@ class ObilgationGenerator:
     def __init__(self):
         pass
     
-    def make_quantum_process_obligation(self, q_process : QuantumProcess, prev_mem : QuantumMemory, controls : list):
+    def make_classical_process_obligation(self, c_process : ClassicalProcess, prev_mem : ClassicalMemory, control : list) -> list[BoolRef]:
+        instruction = c_process.instruction
+        if isinstance(instruction, CMEAS):
+            return self.cmeas_obligation(instruction, prev_mem, c_process.end_memory)
+        raise Exception("GenerationError: Unable to make obligation for instruction " +  repr(instruction))
+    
+    def cmeas_obligation(self, instruction: CMEAS, prev_memory : ClassicalMemory, end_memory : ClassicalMemory):
+        meas = Int('meas_' + instruction.quantum_ref.variable)
+        value = Int(end_memory.get_obligation_variable(instruction.classical_ref.variable))
+        return [value == meas]
+    
+    def make_quantum_process_obligation(self, q_process : QuantumProcess, prev_mem : QuantumMemory, controls : list) -> list[BoolRef]:
         instruction = q_process.instruction
         if isinstance(instruction, QINIT):
             lhs = self.quantum_memory_to_literals(q_process.end_memory)
@@ -92,9 +104,9 @@ class ObilgationGenerator:
             
     # TODO: Handle measurement differently
     def obligation_quantum_measurement(self, instruction : QMEAS, prev_memory : QuantumMemory, measure_option=HIGH_PROB):
-        measured_variable_ref = instruction.variable_ref
-        variable = measured_variable_ref.variable
-        index = measured_variable_ref.index
+        quantum_ref = instruction.quantum_ref
+        variable = quantum_ref.variable
+        index = quantum_ref.index
         
         loc = prev_memory.get_loc(variable, index)
         size = prev_memory.get_size(variable)

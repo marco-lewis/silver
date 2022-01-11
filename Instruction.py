@@ -1,3 +1,6 @@
+from VarRef import VarRef
+
+
 class Instruction():
     def __init__(self) -> None:
         pass
@@ -97,29 +100,32 @@ class QPHASE(Instruction):
         return "QPHASE(" + repr(self.__phase) + ")"
 
 class QMEAS(Instruction):
-    def __init__(self, variable_ref, measured_variable=None) -> None:
+    __quantum_ref : VarRef
+    __classical_ref : VarRef
+    
+    def __init__(self, quantum_ref, classical_ref=VarRef(None)) -> None:
         super().__init__()
-        self.__variable_ref = variable_ref
-        self.__measured_variable = measured_variable
+        self.__quantum_ref = quantum_ref
+        self.__classical_ref = classical_ref
         
     @property
-    def variable_ref(self):
-        return self.__variable_ref
+    def quantum_ref(self):
+        return self.__quantum_ref
 
-    @variable_ref.setter
-    def variable(self, value):
-        self.__variable_ref = value
+    @quantum_ref.setter
+    def quantum_ref(self, value):
+        self.__quantum_ref = value
         
     @property
-    def measured_variable(self):
-        return self.__measured_variable
+    def classical_ref(self):
+        return self.__classical_ref
 
-    @measured_variable.setter
-    def measured_variable(self, value):
-        self.__measured_variable = value
+    @classical_ref.setter
+    def classical_ref(self, value):
+        self.__classical_ref = value
         
     def __repr__(self) -> str:
-        return "QMEAS(" + repr(self.__variable_ref) + ")"
+        return "QMEAS(" + repr(self.__quantum_ref) + ")"
 
 class CMEAS(Instruction):
     def __init__(self, quantum_ref, classical_ref) -> None:

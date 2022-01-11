@@ -82,12 +82,13 @@ class JSONInterpreter:
                 self.program.add_quantum_process(instruction, new_memory, self.controls)
                 return 0
             if isinstance(rhs, QMEAS):
-                rhs.measured_variable = lhs
+                rhs.classical_ref = lhs
                 instruction = rhs
                 # TODO: Move into program statement?
                 new_memory = self.get_quantum_memory_copy()
-                new_memory.measure_reg(instruction.variable.variable)
-                self.program.add_quantum_to_classical(instruction, new_memory, rhs.variable.variable, self.controls)
+                new_memory.measure_reg(instruction.quantum_ref.variable)
+                classical_instruction = CMEAS(instruction.quantum_ref, lhs)
+                self.program.add_quantum_to_classical(instruction, new_memory, classical_instruction, self.controls)
                 return 0
             
         if e == "compoundExp":
