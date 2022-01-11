@@ -6,12 +6,21 @@ class Instruction():
         return "Instruction()"
 
 class QINIT(Instruction):
-    def __init__(self, value, size) -> None:
+    def __init__(self, value, size, variable=None) -> None:
         super().__init__()
         if value >= 2**size:
             raise Exception("InstructionError: Value provided is greater than representation.")
+        self.__variable = variable
         self.__value = value
         self.__size = size
+    
+    @property
+    def variable(self):
+        return self.__variable
+
+    @variable.setter
+    def variable(self, value):
+        self.__variable = value
     
     @property
     def size(self):
@@ -33,10 +42,11 @@ class QINIT(Instruction):
         return "QINIT(" + repr(self.__value) + ", " + repr(self.__size) + ")"
         
 class QOP(Instruction):
-    def __init__(self, operation, arg=None) -> None:
+    def __init__(self, operation, arg=None, out=None) -> None:
         super().__init__()
         self.__operation = operation
         self.__arg = arg
+        self.__out = out
         
     @property
     def operation(self):
@@ -54,8 +64,16 @@ class QOP(Instruction):
     def arg(self, value):
         self.__arg = value
 
+    @property
+    def out(self):
+        return self.__out
+
+    @out.setter
+    def out(self, value):
+        self.__out = value
+
     def __repr__(self) -> str:
-        return "QOP(" + repr(self.__operation) + ", " + repr(self.__arg) + ")"
+        return "QOP(" + repr(self.__operation) + ", " + repr(self.__arg) + ", " + repr(self.__out) + ")"
 
 class QPHASE(Instruction):
     def __init__(self, phase) -> None:
@@ -74,9 +92,10 @@ class QPHASE(Instruction):
         return "QPHASE(" + repr(self.__phase) + ")"
 
 class QMEAS(Instruction):
-    def __init__(self, variable_ref) -> None:
+    def __init__(self, variable_ref, measured_variable=None) -> None:
         super().__init__()
         self.__variable_ref = variable_ref
+        self.__measured_variable = measured_variable
         
     @property
     def variable_ref(self):
@@ -85,6 +104,14 @@ class QMEAS(Instruction):
     @variable_ref.setter
     def variable(self, value):
         self.__variable_ref = value
+        
+    @property
+    def measured_variable(self):
+        return self.__measured_variable
+
+    @measured_variable.setter
+    def measured_variable(self, value):
+        self.__measured_variable = value
         
     def __repr__(self) -> str:
         return "QMEAS(" + repr(self.__variable_ref) + ")"

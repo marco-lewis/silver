@@ -5,31 +5,34 @@ from QuantumMemory import QuantumMemory
 
 # Class for representation of programs from Silq
 # Should convert JSON into processes
-# As advance program, update memory for each command
+# As advance program, update memory for each instruction
 # Then convert program to proof obligations using the ObligationGenerator
 class Program():
+    quantum_processes : dict[int, QuantumProcess]
+    classical_processes : dict[int, ClassicalProcess]
+    
     def __init__(self) -> None:
         self.current_time = 0
         self.quantum_processes = {}
         self.classical_processes = {}
         self.controls = {}
 
-    def add_classical_process(self, command, memory):
+    def add_classical_process(self, instruction, memory):
         pass
             
-    def add_quantum_process(self, command, new_memory, controls = []):
-        self.quantum_processes[self.current_time] = QuantumProcess(end_memory=new_memory, command=command) 
-        self.classical_processes[self.current_time] = ClassicalProcess(end_memory=self.copy_current_classical_memory() ,command=ClassicalCommand())
+    def add_quantum_process(self, instruction : Instruction, new_memory, controls = []):
+        self.quantum_processes[self.current_time] = QuantumProcess(end_memory=new_memory, instruction=instruction) 
+        self.classical_processes[self.current_time] = ClassicalProcess(end_memory=self.copy_current_classical_memory(), instruction=Instruction())
         self.controls[self.current_time] = controls
         self.current_time += 1
 
-    def add_quantum_to_classical(self, command : Command, new_quantum_memory, new_c_var, controls = []):
-        self.quantum_processes[self.current_time] = QuantumProcess(end_memory=new_quantum_memory, command=command)
+    def add_quantum_to_classical(self, instruction : Instruction, new_quantum_memory, new_c_var, controls = []):
+        self.quantum_processes[self.current_time] = QuantumProcess(end_memory=new_quantum_memory, instruction=instruction)
         new_c_mem = self.copy_current_classical_memory()
         new_c_mem.add_var(new_c_var)
-        q_var = command.instruction.variable_ref.variable
+        q_var = instruction.variable_ref.variable
         
-        self.classical_processes[self.current_time] = ClassicalProcess(end_memory=new_c_mem ,command=ClassicalCommand(instruction=CMEAS(q_var, new_c_var)))
+        self.classical_processes[self.current_time] = ClassicalProcess(end_memory=new_c_mem ,instruction=CMEAS(q_var, new_c_var))
         self.controls[self.current_time] = controls
         self.current_time += 1
     

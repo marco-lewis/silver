@@ -1,26 +1,26 @@
 from ClassicalMemory import ClassicalMemory
-from Command import *
+from Instruction import Instruction
 from QuantumMemory import QuantumMemory
 
-# Stores the command and memory together as a process
+# Stores the instruction and memory together as a process
 class Process():
     # Change {} to a Memory() class?
-    def __init__(self, end_memory = {}, command = Command()) -> None:
+    def __init__(self, instruction : Instruction, end_memory = {}) -> None:
         self.end_memory = end_memory
-        self.command = command
+        self.instruction = instruction
 
 class QuantumProcess(Process):
-    command = QuantumCommand()
+    instruction = Instruction()
     end_memory = QuantumMemory()
-    def __init__(self, end_memory = QuantumMemory(), command = Command()) -> None:
-        super().__init__(end_memory, command)
+    def __init__(self, instruction : Instruction, end_memory = QuantumMemory()) -> None:
+        super().__init__(instruction = instruction, end_memory=end_memory)
         
     def __repr__(self) -> str:
-        return "QuantumProcess(" + repr(self.end_memory) + "," + repr(self.command) + ")"
+        return "QuantumProcess(" + repr(self.instruction) + "," + repr(self.end_memory) + ")"
 
 class ClassicalProcess(Process):
-    def __init__(self, end_memory = ClassicalMemory(), command = Command()) -> None:
-        super().__init__(end_memory, command)
-        
+    def __init__(self, instruction : Instruction, end_memory = ClassicalMemory()) -> None:
+        super().__init__(instruction = instruction, end_memory=end_memory)
+                
     def __repr__(self) -> str:
-        return "ClassicalProcess(" + repr(self.end_memory) + "," + repr(self.command) + ")"
+        return "ClassicalProcess(" + repr(self.instruction) + "," + repr(self.end_memory) + ")"

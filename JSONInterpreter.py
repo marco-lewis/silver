@@ -9,7 +9,6 @@ Quantum variables only
 from z3 import *
 from utils import *
 
-from Command import *
 from Instruction import *
 from Program import Program
 from QuantumMemory import QuantumMemory
@@ -67,26 +66,28 @@ class JSONInterpreter:
             lhs = self.decode_expression(stmt["lhs"])
             rhs = self.decode_expression(stmt["rhs"])
             if isinstance(rhs, QINIT):
-                command = QuantumCommand(out_vars=[lhs], instruction=rhs)
+                instruction = rhs
+                instruction.variable = lhs
                 new_memory = self.get_quantum_memory_copy()
                 new_memory.append(lhs.variable, rhs.size)
-                self.program.add_quantum_process(command, new_memory, self.controls)
+                self.program.add_quantum_process(instruction, new_memory, self.controls)
                 return 0
             if isinstance(rhs, QOP):
-                arg = rhs.arg
-                command = QuantumCommand(in_vars=arg, out_vars=lhs, instruction=rhs)
+                rhs.out = lhs
+                instruction = rhs
                 new_memory = self.get_quantum_memory_copy()
-                if arg != lhs:
-                    new_memory.update_reg(arg.variable, lhs.variable)
+                if instruction.arg != instruction.out:
+                    new_memory.update_reg(rhs.arg.variable, lhs.variable)
                 new_memory.iterate_reg(lhs.variable)
-                self.program.add_quantum_process(command, new_memory, self.controls)
+                self.program.add_quantum_process(instruction, new_memory, self.controls)
                 return 0
             if isinstance(rhs, QMEAS):
-                command = QuantumCommand(in_vars=rhs.variable, out_vars=lhs, instruction=rhs)
+                rhs.measured_variable = lhs
+                instruction = rhs
                 # TODO: Move into program statement?
                 new_memory = self.get_quantum_memory_copy()
-                new_memory.measure_reg(rhs.variable.variable)
-                self.program.add_quantum_to_classical(command, new_memory, rhs.variable.variable, self.controls)
+                new_memory.measure_reg(instruction.variable.variable)
+                self.program.add_quantum_to_classical(instruction, new_memory, rhs.variable.variable, self.controls)
                 return 0
             
         if e == "compoundExp":
@@ -102,11 +103,10 @@ class JSONInterpreter:
             if self.is_quantum_op(op):
                 pass
             if self.is_phase(op):
-                inst = QPHASE(arg)
-                command = QuantumCommand(instruction=inst)
+                instruction = QPHASE(arg)
                 new_memory = self.get_quantum_memory_copy()
                 new_memory.iterate_all()
-                self.program.add_quantum_process(command, new_memory, controls=copy.deepcopy(self.controls))
+                self.program.add_quantum_process(instruction, new_memory, controls=copy.deepcopy(self.controls))
                 return 0
         
         if e == "iteExp":
@@ -121,8 +121,8 @@ class JSONInterpreter:
         if e == "returnExp":
             # TODO: Have attributes only in command or in_vars?
             # TODO: Separate quantum return from classical?
-            command = QuantumCommand(in_vars=stmt['value'], instruction=RETURN(stmt['value']))
-            self.program.add_quantum_process(command, QuantumMemory())
+            instruction = RETURN(stmt['value'])
+            self.program.add_quantum_process(instruction, QuantumMemory())
             return 0
         
         raise Exception("TODO: statement " + e)

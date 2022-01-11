@@ -17,7 +17,7 @@ class ObilgationGenerator:
         pass
     
     def make_quantum_process_obligation(self, q_process : QuantumProcess, prev_mem : QuantumMemory, controls : list):
-        instruction = q_process.command.instruction
+        instruction = q_process.instruction
         if isinstance(instruction, QINIT):
             lhs = self.quantum_memory_to_literals(q_process.end_memory)
             rhs = self.qinit_obligation(instruction, prev_mem)
