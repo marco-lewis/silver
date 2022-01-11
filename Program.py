@@ -1,4 +1,5 @@
 from copy import deepcopy
+from Instruction import CMEAS
 from Process import *
 from QuantumMemory import QuantumMemory
 
@@ -22,12 +23,13 @@ class Program():
         self.controls[self.current_time] = controls
         self.current_time += 1
 
-    def add_quantum_to_classical(self, command, new_quantum_memory, new_c_var, controls = []):
+    def add_quantum_to_classical(self, command : Command, new_quantum_memory, new_c_var, controls = []):
         self.quantum_processes[self.current_time] = QuantumProcess(end_memory=new_quantum_memory, command=command)
         new_c_mem = self.copy_current_classical_memory()
         new_c_mem.add_var(new_c_var)
+        q_var = command.instruction.variable_ref.variable
         
-        self.classical_processes[self.current_time] = ClassicalProcess(end_memory=new_c_mem ,command=ClassicalCommand())
+        self.classical_processes[self.current_time] = ClassicalProcess(end_memory=new_c_mem ,command=ClassicalCommand(instruction=CMEAS(q_var, new_c_var)))
         self.controls[self.current_time] = controls
         self.current_time += 1
     

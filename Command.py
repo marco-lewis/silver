@@ -3,13 +3,15 @@ from QuantumOps import *
 
 # TODO: Consider removing commands in general
 class Command():
+    in_vars = None
+    out_vars = None
     def __init__(self) -> None:
         pass
     
 
 # Stores the operation, variables (with renaming) and what controls are on the operation
 class QuantumCommand(Command):
-    instruction = None    
+    instruction = None
     in_vars = None
     out_vars = None
     

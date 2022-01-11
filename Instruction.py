@@ -89,6 +89,30 @@ class QMEAS(Instruction):
     def __repr__(self) -> str:
         return "QMEAS(" + repr(self.__variable_ref) + ")"
 
+class CMEAS(Instruction):
+    def __init__(self, quantum_ref, classical_ref) -> None:
+        super().__init__()
+        self.__quantum_ref = quantum_ref
+        self.__classical_ref = classical_ref
+        
+    @property
+    def quantum_ref(self):
+        return self.__quantum_ref
+    
+    @quantum_ref.setter
+    def quantum_ref(self, value):
+        self.__quantum_ref = value
+
+    @property
+    def classical_ref(self):
+        return self.__classical_ref
+    
+    @classical_ref.setter
+    def classical_ref(self, value):
+        self.__classical_ref = value
+        
+    def __repr__(self) -> str:
+        return "CMEAS(" + repr(self.__quantum_ref) + ", " + repr(self.__classical_ref) + ")"
 
 # TODO: Leave empty with no attributes?
 class RETURN(Instruction):

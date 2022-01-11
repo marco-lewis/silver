@@ -130,6 +130,7 @@ class SilVer:
                 obs += process_obligation
             if prog.classical_processes[time]:
                 # TODO: Handle classical obligation
+                # print(prog.classical_processes[time])
                 pass
             pass
         self.solver.add(obs)
