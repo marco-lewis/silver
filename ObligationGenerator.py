@@ -12,6 +12,7 @@ from MeasureOptions import HIGH_PROB, CERTAINTY, SPECIFIC_VALUE
 
 # Currently handles single variable, want to change to handle multiple variables
 # TODO: Checks for valid sizes of inputs
+# TODO: Handle return statements differently based on quantum or classical
 
 class ObilgationGenerator:
     def __init__(self):
@@ -21,6 +22,12 @@ class ObilgationGenerator:
         instruction = c_process.instruction
         if isinstance(instruction, CMEAS):
             return self.cmeas_obligation(instruction, prev_mem, c_process.end_memory)
+        if isinstance(instruction, RETURN):
+            # TODO: fetch return variables differently depending on what is being returned
+            print(instruction.value_refs)
+            to_return = Int(prev_mem.get_obligation_variable(instruction.value_refs[0].variable))
+            return_z3var = Int(instruction.function_name + "_ret")
+            return [return_z3var == to_return]
         raise Exception("GenerationError: Unable to make obligation for instruction " +  repr(instruction))
     
     def cmeas_obligation(self, instruction: CMEAS, prev_memory : ClassicalMemory, end_memory : ClassicalMemory):
@@ -45,7 +52,6 @@ class ObilgationGenerator:
         if isinstance(instruction, QMEAS):
             return self.obligation_quantum_measurement(instruction, prev_mem)
         if isinstance(instruction, RETURN):
-            # TODO: Correctly handle return statements (might need more from SilVer)
             return [True]
         raise Exception("GenerationError: Unable to make obligation for instruction " +  repr(instruction))
     

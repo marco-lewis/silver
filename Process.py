@@ -19,6 +19,9 @@ class QuantumProcess(Process):
         return "QuantumProcess(" + repr(self.instruction) + "," + repr(self.end_memory) + ")"
 
 class ClassicalProcess(Process):
+    instruction : Instruction
+    end_memory : ClassicalMemory
+    
     def __init__(self, instruction : Instruction, end_memory = ClassicalMemory()) -> None:
         super().__init__(instruction = instruction, end_memory=end_memory)
                 

@@ -7,6 +7,7 @@ Quantum variables only
 '''
 
 from z3 import *
+from ClassicalMemory import ClassicalMemory
 from utils import *
 
 from Instruction import *
@@ -121,9 +122,12 @@ class JSONInterpreter:
                     
         if e == "returnExp":
             # TODO: Have attributes only in command or in_vars?
-            # TODO: Separate quantum return from classical?
-            instruction = RETURN(stmt['value'])
-            self.program.add_quantum_process(instruction, QuantumMemory())
+            # TODO: Check whether quantum return or classical return
+            vals = self.decode_expression(stmt['value'])
+            instruction = RETURN(vals, fname)
+            if all([self.program.is_variable_ref_quantum(val) for val in vals]): 
+                self.program.add_quantum_process(instruction, QuantumMemory())
+            else: self.program.add_classical_process(instruction, ClassicalMemory())
             return 0
         
         raise Exception("TODO: statement " + e)
@@ -133,6 +137,8 @@ class JSONInterpreter:
         if isinstance(exp, str):
             if exp == "pi": return math.pi
             return VarRef(exp)
+        if isinstance(exp, list):
+            return [self.decode_expression(e) for e in exp]
 
         e = exp[EXPTYPE]
         if e == "varDecl":
@@ -160,6 +166,8 @@ class JSONInterpreter:
         if e == "litExp":
             val = exp["value"]
             return val
+        if e == "tupleExp":
+            return self.decode_expression(exp["values"])
 
         if e == "typeChangeExp":
             val = self.decode_expression(exp["expr"])

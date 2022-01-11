@@ -154,17 +154,26 @@ class CMEAS(Instruction):
 
 # TODO: Leave empty with no attributes?
 class RETURN(Instruction):
-    def __init__(self, values) -> None:
+    def __init__(self, value_refs, function_name) -> None:
         super().__init__()
-        self.__values = values
+        self.__value_refs = value_refs
+        self.__function_name = function_name
         
     @property
-    def values(self):
-        return self.__values
+    def value_refs(self):
+        return self.__value_refs
 
-    @values.setter
-    def values(self, values):
-        self.__values = values
+    @value_refs.setter
+    def value_refs(self, value):
+        self.__value_refs = value
+        
+    @property
+    def function_name(self):
+        return self.__function_name
+    
+    @function_name.setter
+    def function_name(self, value):
+        self.__function_name = value
         
     def __repr__(self) -> str:
-        return "RETURN(" + repr(self.__values) + ")"
+        return "RETURN(" + repr(self.__value_refs) + ", " + repr(self.__function_name) + ")"

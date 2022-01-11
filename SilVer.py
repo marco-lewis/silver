@@ -126,7 +126,7 @@ class SilVer:
         obs = []
         ob_gen = ObilgationGenerator()
         for time in range(prog.current_time):
-            if prog.quantum_processes[time]:
+            if prog.quantum_processes[time].instruction != Instruction():
                 prev_memory = self.get_prev_quantum_memory(prog, time)
                 process_obligation = ob_gen.make_quantum_process_obligation(prog.quantum_processes[time], prev_memory, prog.controls[time])
                 obs += process_obligation
