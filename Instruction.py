@@ -4,6 +4,11 @@ class Instruction():
     
     def __repr__(self) -> str:
         return "Instruction()"
+    
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
 
 class QINIT(Instruction):
     def __init__(self, value, size, variable=None) -> None:

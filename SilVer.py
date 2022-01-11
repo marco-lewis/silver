@@ -1,16 +1,16 @@
 from genericpath import exists
+from Instruction import Instruction
 from JSONInterpreter import JSONInterpreter
 import json as json
 from os.path import splitext
 from ObligationGenerator import ObilgationGenerator
-from Process import Process
 from Program import Program
 from QuantumMemory import QuantumMemory
 from silspeq.SilSpeqParser import SilSpeqParser
 from silspeq.SilSpeqZ3FlagVisitor import SilSpeqZ3FlagVisitor
 from silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
-from z3.z3 import *
 from SpeqGenerator import SpeqGenerator
+from z3.z3 import *
 
 class SilVer:
     def __init__(self):
@@ -128,9 +128,9 @@ class SilVer:
                 prev_memory = self.get_prev_quantum_memory(prog, time)
                 process_obligation = ob_gen.make_quantum_process_obligation(prog.quantum_processes[time], prev_memory, prog.controls[time])
                 obs += process_obligation
-            if prog.classical_processes[time]:
+            if prog.classical_processes[time].instruction != Instruction():
                 # TODO: Handle classical obligation
-                # print(prog.classical_processes[time])
+                print(prog.classical_processes[time])
                 pass
             pass
         self.solver.add(obs)
