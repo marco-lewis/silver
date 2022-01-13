@@ -6,17 +6,18 @@ from Process import ClassicalProcess, QuantumProcess
 from QuantumMemory import QuantumMemory
 from complex import *
 from ComplexVector import *
+from silspeq.SilSpeqZ3Interpreter import Equiv
 from utils import *
 from QuantumOps import *
-from MeasureOptions import HIGH_PROB, CERTAINTY, SPECIFIC_VALUE
+from MeasureOptions import MEASURE_OPTION, HIGH_PROB, CERTAINTY, SPECIFIC_VALUE
 
 # Currently handles single variable, want to change to handle multiple variables
 # TODO: Checks for valid sizes of inputs
 # TODO: Handle return statements differently based on quantum or classical
 
 class ObilgationGenerator:
-    def __init__(self):
-        pass
+    def __init__(self, config = {}):
+        self.__config = config
     
     def make_classical_process_obligation(self, c_process : ClassicalProcess, prev_mem : ClassicalMemory, control : list) -> list[BoolRef]:
         instruction = c_process.instruction
@@ -24,7 +25,6 @@ class ObilgationGenerator:
             return self.cmeas_obligation(instruction, prev_mem, c_process.end_memory)
         if isinstance(instruction, RETURN):
             # TODO: fetch return variables differently depending on what is being returned
-            print(instruction.value_refs)
             to_return = Int(prev_mem.get_obligation_variable(instruction.value_refs[0].variable))
             return_z3var = Int(instruction.function_name + "_ret")
             return [return_z3var == to_return]
@@ -50,7 +50,7 @@ class ObilgationGenerator:
             rhs = self.qphase_obligation(instruction, prev_mem, controls)
             return self.obligation_quantum_assignment(lhs, rhs)
         if isinstance(instruction, QMEAS):
-            return self.obligation_quantum_measurement(instruction, prev_mem)
+            return self.obligation_quantum_measurement(instruction, prev_mem, self.__config[MEASURE_OPTION])
         if isinstance(instruction, RETURN):
             return [True]
         raise Exception("GenerationError: Unable to make obligation for instruction " +  repr(instruction))
@@ -144,7 +144,13 @@ class ObilgationGenerator:
         raise Exception("ObligationError: function not implemented yet")
     
     def obligation_qmeas_with_certainty(self, var, probs_z3_vars):
-        raise Exception("ObligationError: function not implemented yet")
+        meas_cert = Bool('meas_cert')
+        value = Int('meas_' + var)
+        obligations = [Equiv(Or([p == 1 for p in probs_z3_vars]), meas_cert == True)]
+        obligations += [Implies(1 == probs_z3_vars[i], value == i)
+                        for i in range(len(probs_z3_vars))]
+
+        return obligations
     
     # TODO: unsat on 50/50 chance, need a way to handle this just in case
     def obligation_qmeas_with_high_prob(self, var, probs_z3_vars):

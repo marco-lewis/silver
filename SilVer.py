@@ -4,6 +4,7 @@ from Instruction import Instruction
 from JSONInterpreter import JSONInterpreter
 import json as json
 from os.path import splitext
+from MeasureOptions import MEASURE_OPTION, CERTAINTY, HIGH_PROB, MeasureOptions
 from ObligationGenerator import ObilgationGenerator
 from Program import Program
 from QuantumMemory import QuantumMemory
@@ -21,6 +22,7 @@ class SilVer:
         # TODO: Move so that Interpreters are only function specific
         self.speq_z3_itp = SilSpeqZ3Interpreter()
         self.speq_flag_itp = SilSpeqZ3FlagVisitor()
+        self.config = {}
     
     def check_speq_exists(self, file):
         if not(exists(self.get_speq_file_name(file))):
@@ -50,6 +52,8 @@ class SilVer:
         tree = self.speq_parser.parse_file(file)
         self.speq_flag_itp.visit(tree)
         
+        if self.speq_flag_itp.meas_cert: self.config[MEASURE_OPTION] = CERTAINTY
+        else: self.config[MEASURE_OPTION] = HIGH_PROB
         self.speq_z3_itp.set_meas_cert(self.speq_flag_itp.meas_cert)
         
         if self.speq_flag_itp.quantum_out:
@@ -124,7 +128,7 @@ class SilVer:
     def generate_program_obligations(self, prog : Program):
         obs : list[BoolRef]
         obs = []
-        ob_gen = ObilgationGenerator()
+        ob_gen = ObilgationGenerator(self.config)
         for time in range(prog.current_time):
             if prog.quantum_processes[time].instruction != Instruction():
                 prev_memory = self.get_prev_quantum_memory(prog, time)

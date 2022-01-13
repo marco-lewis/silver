@@ -8,7 +8,7 @@ def check(json_file, func, expected, verbose=False):
         print("Test passed as expected")
     if sat != expected:
         raise Exception("SatError: Expected " + str(expected) + " but got " + str(sat))
-    if verbose:
+    if verbose and sat == z3.sat:
         print(silver.solver.model())
     
 check("test_singlevar.json", "main", z3.sat)
