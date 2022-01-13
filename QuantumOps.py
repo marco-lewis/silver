@@ -1,14 +1,21 @@
 import numpy as np
 from complex import I
+from z3 import Real
 
 ID = [[1,0],
       [0,1]]
+ID_N = lambda n: [[1 if i == j else 0 for j in range(n)] for i in range(n)]
+
 X = [[0,1],
      [1,0]]
 Y = [[0, I],
      [0-I, 0]]
 Z = [[1,0],
      [0,-1]]
+
+isqrt2 = Real('isqrt2')
+H = [[isqrt2, isqrt2],
+     [isqrt2, -isqrt2]]
 
 ROTX = lambda r: [[np.cos(r/2), I * np.sin(r/2)], 
                   [0-I * np.sin(r/2), np.cos(r/2)]]

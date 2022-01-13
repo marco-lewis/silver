@@ -1,6 +1,6 @@
 class QuantumRegister:
-    def __init__(self, reg, size, version = 0):
-        self.reg = reg
+    def __init__(self, var, size, version = 0):
+        self.var = var
         self.size = size
         self.version = version
 
@@ -8,7 +8,10 @@ class QuantumRegister:
         self.version += 1
 
     def __str__(self):
-        return str(self.reg) + "_v" + str(self.version)
+        return str(self.var) + "_v" + str(self.version)
+    
+    def __repr__(self) -> str:
+        return "QuantumRegister(" + repr(self.var) + "," + repr(self.size) + "," + repr(self.version) + ")" 
 
 class QuantumMemory:
     q_mem = {}
@@ -20,10 +23,10 @@ class QuantumMemory:
         if not(type(size) == int):
             raise TypeError("Size is not an int")
 
-    def get_obligation_variables(self):
+    def get_obligation_variables(self) -> list[str]:
         return self.__generate_strings()
 
-    def __generate_strings(self):
+    def __generate_strings(self) -> list[str]:
         q_mem = self.q_mem
         out = []
         for key, qreg in q_mem.items():
@@ -32,28 +35,31 @@ class QuantumMemory:
                 tok = self.__make_token(qreg, i)
                 t += [obl + "|" + tok for obl in out] if not(out == []) else [tok]
             out = t
-        return t
+        return out
 
-    def __make_token(self, qreg, num):
-        return qreg.__str__() + "q" + str(num)
+    def __make_token(self, qvar, num):
+        return qvar.__str__() + "q" + str(num)
 
-    def append(self, reg, size):
+    def append(self, var, size):
         self.verify_size(size)
+        self.q_mem[var] = QuantumRegister(var, size, 0)
 
-        self.q_mem[reg] = QuantumRegister(reg, size, 0)
-
-    def ammend_size(self, reg, new_size):
+    def ammend_size(self, var, new_size):
         self.verify_size(new_size)
-        self.q_mem[reg].size = new_size
+        self.q_mem[var].size = new_size
         
-    def update_reg(self, prev_reg, new_reg):
-        self.q_mem = {new_reg if k == prev_reg else k:v for k,v in self.q_mem.items()}
+    def update_reg(self, prev_var, new_var):
+        self.q_mem = {new_var if k == prev_var else k:v for k,v in self.q_mem.items()}
         
-    def measure_reg(self, reg):
-        del self.q_mem[reg]
+    def measure_reg(self, var):
+        del self.q_mem[var]
         
-    def iterate_var(self, reg):
-        self.q_mem[reg].iterate()
+    def iterate_reg(self, var):
+        self.q_mem[var].iterate()
+    
+    def iterate_all(self):
+        for key in self.q_mem:
+            self.q_mem[key].iterate()
 
     def is_empty(self):
         return self.q_mem == {}
@@ -61,27 +67,30 @@ class QuantumMemory:
     def is_single(self):
         return len(self.q_mem) == 1
 
-    def is_stored(self, reg):
-        return self.q_mem.__contains__(reg)
+    def is_stored(self, var):
+        return self.q_mem.__contains__(var)
     
-    def get_size(self, reg):
-        return self.q_mem[reg].size
+    def get_size(self, var):
+        return self.q_mem[var].size
 
-    def get_loc(self, reg, offset = 0):
+    def get_loc(self, var, offset = 0):
         loc = 0
         for key, qreg in self.q_mem.items():
-            if key == reg:
+            if key == var:
                 if offset >= qreg.size:
-                    raise ValueError("Offset is larger than register size")
+                    raise ValueError("Offset is larger than varister size")
                 return loc + offset
             loc += qreg.size
         return None
             
-    def get_reg_string(self, reg):
-        return self.q_mem[reg].__str__()
+    def get_reg_string(self, var):
+        return self.q_mem[var].__str__()
         
     def get_total_size(self):
-        return sum(reg.size for key, reg in self.q_mem.items())
+        return sum(qreg.size for key, qreg in self.q_mem.items())
 
-    def get_version(self, reg):
-        return self.q_mem[reg].version
+    def get_version(self, var):
+        return self.q_mem[var].version
+    
+    def __repr__(self) -> str:
+        return "QuantumMemory(" + repr(self.q_mem) + ")"

@@ -1,5 +1,11 @@
+import re
+from z3 import *
+
 EXPTYPE = "expType"
 TYPEOBJ = "typeObj"
+
+def delta(i, j):
+    return 1 if i == j else 0
 
 def kronecker(matrix1, matrix2):
     """
@@ -49,3 +55,17 @@ def generate_silspeq_from_func(func, args, ret):
         speq = speq[:-1]
     speq += ")->(" + ret + ")\npre{\n\n}\npost{\n\n}"
     return speq
+
+def convert_type_to_Z3_literal(type):
+    if (re.match("[N|ℕ]", type)):
+        return IntSort()
+    if (re.match("[B|𝔹]", type)):
+        return IntSort()
+    if (re.match(r".*(→.*)+",type)):
+        types = [convert_type_to_Z3_literal(arg_type)
+                    for arg_type in re.split(r"→", type)]
+        return tuple(types)
+    if (re.match(r"[¬, const, qfree].*", type)):
+        split = re.split(r"[¬, const, qfree]", type, maxsplit=1)[1]
+        return convert_type_to_Z3_literal(split)
+    raise Exception("TypeTODO: " + type)
