@@ -1,4 +1,4 @@
-../silq/silq --ast-dump $1
+silq --ast-dump $1
 file_name="${1#*/}"
 file_name="${file_name%\.*}"
 new_loc="tests/${file_name}.json"
