@@ -1,9 +1,13 @@
 from genericpath import exists
+import json as json
+from os.path import splitext
+import subprocess
+
+from z3.z3 import *
+
 from ClassicalMemory import ClassicalMemory
 from Instruction import Instruction
 from JSONInterpreter import JSONInterpreter
-import json as json
-from os.path import splitext
 from MeasureOptions import MEASURE_OPTION, CERTAINTY, HIGH_PROB, MeasureOptions
 from ObligationGenerator import ObilgationGenerator
 from Program import Program
@@ -12,7 +16,6 @@ from silspeq.SilSpeqParser import SilSpeqParser
 from silspeq.SilSpeqZ3FlagVisitor import SilSpeqZ3FlagVisitor
 from silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
 from SpeqGenerator import SpeqGenerator
-from z3.z3 import *
 
 class SilVer:
     def __init__(self):
@@ -59,7 +62,13 @@ class SilVer:
         if self.speq_flag_itp.quantum_out:
             pass
     
-    def verify_file(self, file):
+    def verify_slq_file(self, silq_file):
+        # Call silq with this command to get ast
+        # Make sure ast is stored in a hidden folder
+        # Run one of the other commands on this file
+        pass
+    
+    def verify_json_file(self, file):
         # 1) Check file is a valid JSON file
         # 2) Generate speq file if it doesn't already exist
         # 3) Rank functions by looking into JSON
