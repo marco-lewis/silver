@@ -125,7 +125,7 @@ class JSONInterpreter:
             # TODO: Check whether quantum return or classical return
             vals = self.decode_expression(stmt['value'])
             instruction = RETURN(vals, fname)
-            if all([self.program.is_variable_ref_quantum(val) for val in vals]): 
+            if all([self.program.is_variable_ref_quantum(val) for val in vals]):
                 self.program.add_quantum_process(instruction, QuantumMemory())
             else: self.program.add_classical_process(instruction, ClassicalMemory())
             return 0
