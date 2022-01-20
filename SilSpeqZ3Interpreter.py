@@ -13,9 +13,10 @@ FUNC = "FUNC"
 class SilSpeqZ3Interpreter(Interpreter):
     __meas_cert = False
     
-    def __init__(self):
+    def __init__(self, not_post : bool = True):
         self.vars = {}
         self.types = {}
+        self.not_post = not_post
         super().__init__()
 
     def set_meas_cert(self, val):
@@ -56,7 +57,7 @@ class SilSpeqZ3Interpreter(Interpreter):
             post_obl = And(obls)
             t = Bool('meas_cert')
             post_obl = And(post_obl, t == self.__meas_cert)
-            return simplify(Not(post_obl))
+            return Not(post_obl) if self.not_post else post_obl
         return True
         
     # Handling definitions and statements
