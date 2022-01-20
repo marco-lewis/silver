@@ -116,6 +116,9 @@ class SilVer:
         return self.speq_z3_itp.visit(tree)
     
     def check_speq_sat(self, tree):
+        """
+        Given a SilSpeq tree, check that all generated Z3 expressions are satisfiable
+        """
         speq_solver = Solver()
         speq_itp = SilSpeqZ3Interpreter(False)
         obl_dict = speq_itp.visit(tree)
@@ -123,7 +126,7 @@ class SilVer:
             speq_solver.add(obl_dict[func_name])
             sat = speq_solver.check()
             if not(sat == z3.sat):
-                raise Exception("SilSpeqError: one of your SilSpeq files is unsatisfiable. Check there are no contradictions in your specificaiton.")
+                raise Exception("SilSpeqError: one of your SilSpeq functions is unsatisfiable. Check there are no contradictions in your specificaiton.")
             speq_solver.reset()
             
     def add_func_speq_to_solver(self, speq_obs, func):
