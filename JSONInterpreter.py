@@ -6,6 +6,7 @@ Integers for now only
 Quantum variables only
 '''
 
+from lib2to3.pgen2.token import RIGHTSHIFT
 from z3 import *
 from ClassicalMemory import ClassicalMemory
 from utils import *
@@ -128,6 +129,16 @@ class JSONInterpreter:
             if all([self.program.is_variable_ref_quantum(val) for val in vals]):
                 self.program.add_quantum_process(instruction, QuantumMemory())
             else: self.program.add_classical_process(instruction, ClassicalMemory())
+            return 0
+        
+        if e == "forgetExp":
+            # TODO: Handle classical/quantum forget, assume quantum for now
+            variable = self.decode_expression(stmt['var'])
+            value = self.decode_expression(stmt['val'])
+            instruction = QFORGET(variable, value)
+            new_memory = self.get_quantum_memory_copy()
+            new_memory.measure_reg(variable.variable)
+            self.program.add_quantum_process(instruction, new_memory, self.controls)
             return 0
         
         raise Exception("TODO: statement " + e)

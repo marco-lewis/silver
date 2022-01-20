@@ -99,6 +99,31 @@ class QPHASE(Instruction):
     def __repr__(self) -> str:
         return "QPHASE(" + repr(self.__phase) + ")"
 
+class QFORGET(Instruction):
+    def __init__(self, variable, value) -> None:
+        super().__init__()
+        self.__variable = variable
+        self.__value = value
+        
+    @property
+    def variable(self):
+        return self.__variable
+
+    @variable.setter
+    def variable(self, value):
+        self.__variable = value
+        
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, value):
+        self.__value = value
+        
+    def __repr__(self) -> str:
+        return "QFORGET(" + ")"
+
 class QMEAS(Instruction):
     __quantum_ref : VarRef
     __classical_ref : VarRef
