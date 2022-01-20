@@ -70,18 +70,17 @@ class JSONInterpreter:
             if isinstance(rhs, QINIT):
                 instruction = rhs
                 instruction.variable = lhs
-                new_memory = self.get_quantum_memory_copy()
-                new_memory.append(lhs.variable, rhs.size)
-                self.program.add_quantum_process(instruction, new_memory, self.controls)
+                self.add_qinit(instruction)
                 return 0
             if isinstance(rhs, QOP):
                 rhs.out = lhs
                 instruction = rhs
-                new_memory = self.get_quantum_memory_copy()
-                if instruction.arg != instruction.out:
-                    new_memory.update_reg(rhs.arg.variable, lhs.variable)
-                new_memory.iterate_reg(lhs.variable)
-                self.program.add_quantum_process(instruction, new_memory, self.controls)
+                if isinstance(instruction.arg, QINIT):
+                    qinit = instruction.arg
+                    qinit.variable = instruction.out
+                    self.add_qinit(qinit)
+                    instruction.arg = instruction.out
+                self.add_qop(instruction)
                 return 0
             if isinstance(rhs, QMEAS):
                 rhs.classical_ref = lhs
@@ -188,10 +187,21 @@ class JSONInterpreter:
             if self.is_classical(type):
                 pass
             else:
-                # Class?
                 return QINIT(val, self.interpret_type(type))
 
         raise Exception("TODO: expression " + e)
+    
+    def add_qinit(self, instruction : QINIT):
+        new_memory = self.get_quantum_memory_copy()
+        new_memory.append(instruction.variable.variable, instruction.size)
+        self.program.add_quantum_process(instruction, new_memory, self.controls)    
+    
+    def add_qop(self, instruction : QOP):
+        new_memory = self.get_quantum_memory_copy()
+        if instruction.arg != instruction.out:
+            new_memory.update_reg(instruction.arg.variable, instruction.out.variable)
+        new_memory.iterate_reg(instruction.out.variable)
+        self.program.add_quantum_process(instruction, new_memory, self.controls)
     
     def interpret_type(self, type):
         if 'typeObj' in type:

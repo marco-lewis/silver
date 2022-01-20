@@ -1,4 +1,4 @@
-import deutsch_oracles;
+// import deutsch_oracles;
 
 def deutsch(f: B !-> lifted B){
     q := 0:B;
@@ -16,5 +16,5 @@ def deutsch(f: B !-> lifted B){
 }
 
 def main(){
-    return deutsch(f3_oracle);
+    // return deutsch(f3_oracle);
 }

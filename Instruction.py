@@ -47,7 +47,7 @@ class QINIT(Instruction):
         self.__value = value
         
     def __repr__(self) -> str:
-        return "QINIT(" + repr(self.__value) + ", " + repr(self.__size) + ")"
+        return "QINIT(" + repr(self.__value) + ", " + repr(self.__size) + ", " + repr(self.variable) + ")"
         
 class QOP(Instruction):
     def __init__(self, operation, arg=None, out=None) -> None:
