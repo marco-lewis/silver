@@ -122,7 +122,7 @@ class QFORGET(Instruction):
         self.__value = value
         
     def __repr__(self) -> str:
-        return "QFORGET(" + ")"
+        return "QFORGET(" + repr(self.variable) + ", " + repr(self.value) + ")"
 
 class QMEAS(Instruction):
     __quantum_ref : VarRef

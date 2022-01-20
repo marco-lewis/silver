@@ -51,6 +51,19 @@ class ObilgationGenerator:
             return self.obligation_quantum_assignment(lhs, rhs)
         if isinstance(instruction, QMEAS):
             return self.obligation_quantum_measurement(instruction, prev_mem, self.__config[MEASURE_OPTION])
+        if isinstance(instruction, QFORGET):
+            # TODO: Handle non-last entry case
+            prev_vars = self.quantum_memory_to_literals(prev_mem)
+            new_vars = self.quantum_memory_to_literals(q_process.end_memory)
+            terms = []
+            for i in range(len(prev_vars)):
+                terms += [0] if i != instruction.value else [prev_vars[i].len_sqr()]
+            s = Sum(terms)
+            obs = [Implies(s != 1, False)]
+            if new_vars != []:
+                for i in range(len(new_vars)):
+                    obs += []
+            return obs
         if isinstance(instruction, RETURN):
             return [True]
         raise Exception("GenerationError: Unable to make obligation for instruction " +  repr(instruction))

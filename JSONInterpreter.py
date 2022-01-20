@@ -3,7 +3,7 @@ Goal: Take in JSON and generate a Program from it
 Assumptions:
 Variable is only one used in a function
 Integers for now only
-Quantum variables only
+(Mostly) Quantum variables only
 '''
 
 from lib2to3.pgen2.token import RIGHTSHIFT
