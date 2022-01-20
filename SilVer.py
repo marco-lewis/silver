@@ -112,17 +112,20 @@ class SilVer:
         
     def get_speq_obs(self, file):
         tree = self.speq_parser.parse_file(file)
-        self.check_speq_sat(self, tree)
+        self.check_speq_sat(tree)
         return self.speq_z3_itp.visit(tree)
     
     def check_speq_sat(self, tree):
         speq_solver = Solver()
         speq_itp = SilSpeqZ3Interpreter(False)
-        speq_solver.add(speq_itp.visit(tree))
-        sat = speq_solver.check()
-        if not(sat == z3.sat):
-            raise Exception("SilSpeqError: one of your SilSpeq files is unsatisfiable. Check there are no contradictions in your specificaiton.")
-        
+        obl_dict = speq_itp.visit(tree)
+        for func_name in obl_dict:
+            speq_solver.add(obl_dict[func_name])
+            sat = speq_solver.check()
+            if not(sat == z3.sat):
+                raise Exception("SilSpeqError: one of your SilSpeq files is unsatisfiable. Check there are no contradictions in your specificaiton.")
+            speq_solver.reset()
+            
     def add_func_speq_to_solver(self, speq_obs, func):
         self.solver.add(speq_obs[func])
         
