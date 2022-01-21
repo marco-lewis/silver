@@ -1,3 +1,6 @@
+from VarRef import VarRef
+
+
 class QuantumRegister:
     def __init__(self, var, size, version = 0):
         self.var = var
@@ -82,6 +85,9 @@ class QuantumMemory:
                 return loc + offset
             loc += qreg.size
         return None
+    
+    def get_loc_from_VarRef(self, var_ref :VarRef):
+        return self.get_loc(var_ref.variable, var_ref.index)        
             
     def get_reg_string(self, var):
         return self.q_mem[var].__str__()

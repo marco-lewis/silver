@@ -88,6 +88,7 @@ class JSONInterpreter:
                 # TODO: Move into program statement?
                 new_memory = self.get_quantum_memory_copy()
                 new_memory.measure_reg(instruction.quantum_ref.variable)
+                new_memory.iterate_all()
                 classical_instruction = CMEAS(instruction.quantum_ref, lhs)
                 self.program.add_quantum_to_classical(instruction, new_memory, classical_instruction, self.controls)
                 return 0
@@ -137,6 +138,7 @@ class JSONInterpreter:
             instruction = QFORGET(variable, value)
             new_memory = self.get_quantum_memory_copy()
             new_memory.measure_reg(variable.variable)
+            new_memory.iterate_all()
             self.program.add_quantum_process(instruction, new_memory, self.controls)
             return 0
         

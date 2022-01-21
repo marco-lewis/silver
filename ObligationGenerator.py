@@ -55,14 +55,18 @@ class ObilgationGenerator:
             # TODO: Handle non-last entry case
             prev_vars = self.quantum_memory_to_literals(prev_mem)
             new_vars = self.quantum_memory_to_literals(q_process.end_memory)
-            terms = []
+            loc = prev_mem.get_loc_from_VarRef(instruction.variable)
+            
+            prev_vars_at_value = []
             for i in range(len(prev_vars)):
-                terms += [0] if i != instruction.value else [prev_vars[i].len_sqr()]
-            s = Sum(terms)
+                if i >> loc == instruction.value:
+                    prev_vars_at_value += [prev_vars[i]]
+
+            s = simplify(Sum([q.len_sqr() for q in prev_vars_at_value]))
             obs = [Implies(s != 1, False)]
             if new_vars != []:
                 for i in range(len(new_vars)):
-                    obs += []
+                    obs += [new_vars[i] == prev_vars_at_value[i]]
             return obs
         if isinstance(instruction, RETURN):
             return [True]
