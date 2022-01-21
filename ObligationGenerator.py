@@ -52,22 +52,7 @@ class ObilgationGenerator:
         if isinstance(instruction, QMEAS):
             return self.obligation_quantum_measurement(instruction, prev_mem, self.__config[MEASURE_OPTION])
         if isinstance(instruction, QFORGET):
-            # TODO: Handle non-last entry case
-            prev_vars = self.quantum_memory_to_literals(prev_mem)
-            new_vars = self.quantum_memory_to_literals(q_process.end_memory)
-            loc = prev_mem.get_loc_from_VarRef(instruction.variable)
-            
-            prev_vars_at_value = []
-            for i in range(len(prev_vars)):
-                if i >> loc == instruction.value:
-                    prev_vars_at_value += [prev_vars[i]]
-
-            s = simplify(Sum([q.len_sqr() for q in prev_vars_at_value]))
-            obs = [Implies(s != 1, False)]
-            if new_vars != []:
-                for i in range(len(new_vars)):
-                    obs += [new_vars[i] == prev_vars_at_value[i]]
-            return obs
+            return self.obligation_quantum_forget(q_process, prev_mem)
         if isinstance(instruction, RETURN):
             return [True]
         raise Exception("GenerationError: Unable to make obligation for instruction " +  repr(instruction))
@@ -179,6 +164,24 @@ class ObilgationGenerator:
                         for i in range(len(probs_z3_vars))]
         
         return obligations
+    
+    def obligation_quantum_forget(self, q_process : QuantumProcess, prev_mem : QuantumMemory):
+        instruction : QFORGET = q_process.instruction
+        prev_vars = self.quantum_memory_to_literals(prev_mem)
+        new_vars = self.quantum_memory_to_literals(q_process.end_memory)
+        loc = prev_mem.get_loc_from_VarRef(instruction.variable)
+        
+        prev_vars_at_value = []
+        for i in range(len(prev_vars)):
+            if i >> loc == instruction.value:
+                prev_vars_at_value += [prev_vars[i]]
+
+        s = simplify(Sum([q.len_sqr() for q in prev_vars_at_value]))
+        obs = [Implies(s != 1, False)]
+        if new_vars != []:
+            for i in range(len(new_vars)):
+                obs += [new_vars[i] == prev_vars_at_value[i]]
+        return obs
     
     def obligation_operation(self, operation, obligations):
         obs = []
