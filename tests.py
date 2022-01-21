@@ -18,7 +18,5 @@ check("test_unitary.json", "main", z3.sat)
 check("uint.json", "uint_test", z3.sat)
 check("types.json", "main", z3.sat)
 check("deutsch.json", "deutsch", z3.unsat)
-# Possibly not working
 check("deutsch_anc.json", "deutsch", z3.unsat)
-# Not working yet
 check("deutsch_anc2.json", "deutsch", z3.unsat)

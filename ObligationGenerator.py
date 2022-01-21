@@ -98,7 +98,7 @@ class ObilgationGenerator:
             out = kronecker(out, ID) if not(size - 1 - q_loc == i) else kronecker(out, op)
         return out
 
-    # TODO: Check correct; use If(...) Z3 expression???
+    # TODO: Check process
     def make_qubit_control_operation(self, op, size, cond, control_loc):
         return [[delta(i,j) + cond(floor(i/2**control_loc))*(op[i][j] - delta(i,j)) for j in range(2**size)] for i in range(2**size)]
 
@@ -185,7 +185,8 @@ class ObilgationGenerator:
     
     def obligation_operation(self, operation, obligations):
         obs = []
-        [obs.append(Sum([to_complex(row[col]) * obligations[col] for col in range(len(row))])) for row in operation]
+        for row in operation:
+            obs.append(Sum([to_complex(row[col]) * obligations[col] for col in range(len(row))]))
         return obs
     
     def matrix_from_string(self, op):
