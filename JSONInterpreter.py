@@ -90,7 +90,7 @@ class JSONInterpreter:
                 new_memory.measure_reg(instruction.quantum_ref.variable)
                 new_memory.iterate_all()
                 classical_instruction = CMEAS(instruction.quantum_ref, lhs)
-                self.program.add_quantum_to_classical(instruction, new_memory, classical_instruction, self.controls)
+                self.program.add_quantum_to_classical(instruction, new_memory, classical_instruction, copy.deepcopy(self.controls))
                 return 0
             
         if e == "compoundExp":
@@ -115,6 +115,7 @@ class JSONInterpreter:
         if e == "iteExp":
             # TODO: Handle decode of cond separately
             cond = self.decode_expression(stmt['cond'])
+            print(cond)
             self.controls.append(cond)
             self.decode_statement(fname, stmt['then'])
             # self.decode_statement(fname, stmt['othw'])
@@ -196,14 +197,14 @@ class JSONInterpreter:
     def add_qinit(self, instruction : QINIT):
         new_memory = self.get_quantum_memory_copy()
         new_memory.append(instruction.variable.variable, instruction.size)
-        self.program.add_quantum_process(instruction, new_memory, self.controls)    
+        self.program.add_quantum_process(instruction, new_memory, copy.deepcopy(self.controls))    
     
     def add_qop(self, instruction : QOP):
         new_memory = self.get_quantum_memory_copy()
         if instruction.arg != instruction.out:
             new_memory.update_reg(instruction.arg.variable, instruction.out.variable)
         new_memory.iterate_reg(instruction.out.variable)
-        self.program.add_quantum_process(instruction, new_memory, self.controls)
+        self.program.add_quantum_process(instruction, new_memory, copy.deepcopy(self.controls))
     
     def interpret_type(self, type):
         if 'typeObj' in type:

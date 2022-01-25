@@ -64,13 +64,15 @@ class ObilgationGenerator:
         if prev_mem.is_empty():
             return self.obligation_quantum_literal(instruction.size, instruction.value)
         lits = self.quantum_memory_to_literals(prev_mem)
-        obs = []
+        obligations = []
         for i in range(2**(prev_mem.get_total_size())):
-            obs += [0 if i != instruction.value else lits[j] for j in range(2**instruction.size)]
-        return obs
+            obligations += [0 if i != instruction.value else lits[j] for j in range(2**instruction.size)]
+        return obligations
     
     def qop_obligation(self, instruction : QOP, prev_mem : QuantumMemory, controls : list):
+        # BUG: Control doesn't produce right one for CNOT
         # TODO: Handle non-standard operations
+        # TODO: Handle multiple controls
         loc = prev_mem.get_loc(instruction.arg.variable, instruction.arg.index)
         matrix = self.matrix_from_string(instruction.operation)
         op = self.make_qubit_operation(matrix, loc, prev_mem.get_total_size())
@@ -177,17 +179,17 @@ class ObilgationGenerator:
                 prev_vars_at_value += [prev_vars[i]]
 
         s = simplify(Sum([q.len_sqr() for q in prev_vars_at_value]))
-        obs = [Implies(s != 1, False)]
+        obligations = [Implies(s != 1, False)]
         if new_vars != []:
             for i in range(len(new_vars)):
-                obs += [new_vars[i] == prev_vars_at_value[i]]
-        return obs
+                obligations += [new_vars[i] == prev_vars_at_value[i]]
+        return obligations
     
     def obligation_operation(self, operation, obligations):
-        obs = []
+        out_obligations = []
         for row in operation:
-            obs.append(Sum([to_complex(row[col]) * obligations[col] for col in range(len(row))]))
-        return obs
+            out_obligations.append(Sum([to_complex(row[col]) * obligations[col] for col in range(len(row))]))
+        return out_obligations
     
     def matrix_from_string(self, op):
         if op == 'X': return X
