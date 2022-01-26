@@ -13,6 +13,8 @@ def check(json_file, func, expected, verbose=False):
     if verbose and sat == z3.sat:
         print(silver.solver.model())
     
+# Programs that take a long time to check Program obl. sat
+# types, deutsch_anc
 check("test_singlevar.json", "main", z3.sat)
 check("test_unitary.json", "main", z3.sat)
 check("uint.json", "uint_test", z3.sat)
