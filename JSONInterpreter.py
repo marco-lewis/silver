@@ -115,7 +115,6 @@ class JSONInterpreter:
         if e == "iteExp":
             # TODO: Handle decode of cond separately
             cond = self.decode_expression(stmt['cond'])
-            print(cond)
             self.controls.append(cond)
             self.decode_statement(fname, stmt['then'])
             # self.decode_statement(fname, stmt['othw'])
