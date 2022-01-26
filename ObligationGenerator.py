@@ -75,12 +75,17 @@ class ObilgationGenerator:
         # TODO: Handle multiple controls
         loc = prev_mem.get_loc(instruction.arg.variable, instruction.arg.index)
         matrix = self.matrix_from_string(instruction.operation)
-        op = self.make_qubit_operation(matrix, loc, prev_mem.get_total_size())
-        for control in controls:
+        if controls == []:
+            op = self.make_qubit_operation(matrix, loc, prev_mem.get_total_size())
+        if len(controls) == 1:
+            control = controls[0]
             if isinstance(control, QOP):
                 if prev_mem.is_stored(control.arg.variable):
                     control_loc = prev_mem.get_loc(control.arg.variable)
-                    op = self.make_qubit_control_operation(op, prev_mem.get_total_size(), control.operation, control_loc)
+                    op = self.make_qubit_control_operation(matrix, prev_mem.get_total_size(), control.operation, control_loc)
+                    if control_loc == 0:
+                        op = dot(dot(SWAP, op), SWAP)
+                        op = [[simplify(el) for el in r] for r in op]
         return self.obligation_operation(op, self.quantum_memory_to_literals(prev_mem))
     
     def qphase_obligation(self, instruction : QPHASE, prev_mem : QuantumMemory, controls : list):
@@ -91,7 +96,7 @@ class ObilgationGenerator:
             if isinstance(control, QOP):
                 if prev_mem.is_stored(control.arg.variable):
                     control_loc = prev_mem.get_loc(control.arg.variable)
-                    op = self.make_qubit_control_operation(op, prev_mem.get_total_size(), control.operation, control_loc)
+                    op = self.make_qphase_control_operation(op, prev_mem.get_total_size(), control.operation, control_loc)
         return self.obligation_operation(op, self.quantum_memory_to_literals(prev_mem))
         
     def make_qubit_operation(self, op, q_loc, size):
@@ -102,7 +107,15 @@ class ObilgationGenerator:
 
     # TODO: Check process
     def make_qubit_control_operation(self, op, size, cond, control_loc):
-        return [[delta(i,j) + cond(floor(i/2**control_loc))*(op[i][j] - delta(i,j)) for j in range(2**size)] for i in range(2**size)]
+        mat = []
+        for y in range(size):
+            t = [[delta(i,j) + cond(y) * (op[i-y*size][j - y*size] - delta(i,j)) for j in range(2)] for i in range(2)]
+            t = kronecker([[1 if x == y else 0 for x in range(size)]], t)
+            mat += t
+        return mat
+    
+    def make_qphase_control_operation(self, op, size, cond, control_loc):
+        return [[delta(i,j) + cond(floor(i//2**control_loc))*(op[i//2][i//2] - delta(i,j)) for j in range(2**size)] for i in range(2**size)]
 
     def obligation_quantum_assignment(self, lhs, rhs):
         if len(lhs) != len(rhs):
