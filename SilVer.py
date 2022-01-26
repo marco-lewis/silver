@@ -89,16 +89,20 @@ class SilVer:
         if verbose: print("Generating SilSpeq proof obligations...")
         self.generate_speq_obligations(spq_name, func)
         
-        if verbose: print("Generating Program from AST...")
+        if verbose:
+            print("SilSpeq proof obligations generated and satisfiable")
+            print("Generating Program from AST...")    
         prog = self.generate_json_program(file, func)
 
         if verbose: 
-            print("Generating proof obligations from Program")
+            print("Generating proof obligations from Program...")
             print(prog)
         self.generate_program_obligations(prog)
         
-        if verbose: print(self.solver)
-        
+        if verbose: 
+            print("Program obligations generated and satisfiable")
+            print(self.solver)
+        print("Verifying program with specification...")           
         return self.check_solver_sat()
     
     def getJSON(self, silq_json_file):
@@ -164,7 +168,16 @@ class SilVer:
                 classical_obligation = ob_gen.make_classical_process_obligation(prog.classical_processes[time], prev_memory, prog.controls[time])
                 obs += classical_obligation
             pass
+        self.check_gen_obs_sat(obs)
         self.solver.add(obs)
+        
+    def check_gen_obs_sat(self, obs):
+        s = Solver()
+        s.add(obs)
+        print(obs)
+        sat = s.check()
+        if sat != z3.sat:
+            raise Exception("ObGenError: generated obligations from Silq program are invalid. BUG")
     
     def get_prev_quantum_memory(self, prog : Program, time):
         if time != 0:
