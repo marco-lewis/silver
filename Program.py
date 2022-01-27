@@ -8,6 +8,8 @@ from VarRef import VarRef
 # Should convert JSON into processes
 # As advance program, update memory for each instruction
 # Then convert program to proof obligations using the ObligationGenerator
+
+# TODO: Classical memory isn't getting copied over correctly
 class Program():
     quantum_processes : dict[int, QuantumProcess]
     classical_processes : dict[int, ClassicalProcess]
@@ -29,7 +31,8 @@ class Program():
             
     def add_quantum_process(self, instruction : Instruction, new_memory : QuantumMemory, controls = []):
         self.quantum_processes[self.current_time] = QuantumProcess(end_memory=new_memory, instruction=instruction) 
-        self.classical_processes[self.current_time] = ClassicalProcess(end_memory=self.copy_current_classical_memory(), instruction=Instruction())
+        c_mem = self.copy_current_classical_memory()
+        self.classical_processes[self.current_time] = ClassicalProcess(end_memory=c_mem, instruction=Instruction())
         self.controls[self.current_time] = controls
         self.iterate_time()
         
@@ -51,7 +54,7 @@ class Program():
     def copy_current_classical_memory(self):
         try:
             classical_mem = ClassicalMemory()
-            classical_mem.c_mem = deepcopy(self.classical_processes[self.current_time - 1].end_memory)
+            classical_mem.registers = deepcopy(self.classical_processes[self.current_time - 1].end_memory.registers)
             return classical_mem
         except:
             return ClassicalMemory()
@@ -59,7 +62,7 @@ class Program():
     def copy_current_quantum_memory(self):
         try:
             quantum_memory = QuantumMemory()
-            quantum_memory.q_mem = deepcopy(self.quantum_processes[self.current_time - 1].end_memory)
+            quantum_memory.registers = deepcopy(self.quantum_processes[self.current_time - 1].end_memory.registers)
             return quantum_memory
         except:
             return QuantumMemory()
@@ -68,7 +71,7 @@ class Program():
         try:
             # TODO: change to handle lists/multiple variables
             var = var_ref.variable
-            if self.quantum_processes[self.current_time - 1].end_memory.q_mem[var]:
+            if self.quantum_processes[self.current_time - 1].end_memory.registers[var]:
                 return True
         except:
             return False

@@ -17,7 +17,7 @@ class QuantumRegister:
         return "QuantumRegister(" + repr(self.var) + "," + repr(self.size) + "," + repr(self.version) + ")" 
 
 class QuantumMemory:
-    q_mem = {}
+    registers : dict[str, QuantumRegister] = {}
     
     def __init__(self):
         pass
@@ -30,9 +30,9 @@ class QuantumMemory:
         return self.__generate_strings()
 
     def __generate_strings(self) -> list[str]:
-        q_mem = self.q_mem
+        registers = self.registers
         out = []
-        for key, qreg in q_mem.items():
+        for key, qreg in registers.items():
             t = []
             for i in range(0, 2**qreg.size):
                 tok = self.__make_token(qreg, i)
@@ -45,40 +45,40 @@ class QuantumMemory:
 
     def append(self, var, size):
         self.verify_size(size)
-        self.q_mem[var] = QuantumRegister(var, size, 0)
+        self.registers[var] = QuantumRegister(var, size, 0)
 
     def ammend_size(self, var, new_size):
         self.verify_size(new_size)
-        self.q_mem[var].size = new_size
+        self.registers[var].size = new_size
         
     def update_reg(self, prev_var, new_var):
-        self.q_mem = {new_var if k == prev_var else k:v for k,v in self.q_mem.items()}
+        self.registers = {new_var if k == prev_var else k:v for k,v in self.registers.items()}
         
     def measure_reg(self, var):
-        del self.q_mem[var]
+        del self.registers[var]
         
     def iterate_reg(self, var):
-        self.q_mem[var].iterate()
+        self.registers[var].iterate()
     
     def iterate_all(self):
-        for key in self.q_mem:
-            self.q_mem[key].iterate()
+        for key in self.registers:
+            self.registers[key].iterate()
 
     def is_empty(self):
-        return self.q_mem == {}
+        return self.registers == {}
 
     def is_single(self):
-        return len(self.q_mem) == 1
+        return len(self.registers) == 1
 
     def is_stored(self, var):
-        return self.q_mem.__contains__(var)
+        return self.registers.__contains__(var)
     
     def get_size(self, var):
-        return self.q_mem[var].size
+        return self.registers[var].size
 
     def get_loc(self, var, offset = 0):
         loc = 0
-        for key, qreg in self.q_mem.items():
+        for key, qreg in self.registers.items():
             if key == var:
                 if offset >= qreg.size:
                     raise ValueError("Offset is larger than varister size")
@@ -90,13 +90,13 @@ class QuantumMemory:
         return self.get_loc(var_ref.variable, var_ref.index)        
             
     def get_reg_string(self, var):
-        return self.q_mem[var].__str__()
+        return self.registers[var].__str__()
         
     def get_total_size(self):
-        return sum(qreg.size for key, qreg in self.q_mem.items())
+        return sum(qreg.size for key, qreg in self.registers.items())
 
     def get_version(self, var):
-        return self.q_mem[var].version
+        return self.registers[var].version
     
     def __repr__(self) -> str:
-        return "QuantumMemory(" + repr(self.q_mem) + ")"
+        return "QuantumMemory(" + repr(self.registers) + ")"

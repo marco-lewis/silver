@@ -241,5 +241,5 @@ class JSONInterpreter:
     
     def get_quantum_memory_copy(self):
         new_memory = QuantumMemory()
-        new_memory.q_mem = copy.deepcopy(self.program.get_current_quantum_memory().q_mem)
+        new_memory.registers = copy.deepcopy(self.program.get_current_quantum_memory().registers)
         return new_memory

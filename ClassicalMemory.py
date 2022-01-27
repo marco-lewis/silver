@@ -12,10 +12,12 @@ class ClassicalRegister:
     def __repr__(self) -> str:
         return "ClassicalRegister(" + repr(self.var) + ", " + repr(self.version) + ")"
 
-class ClassicalMemory:    
-    def __init__(self, registers={}) -> None:
-        self.registers = registers
-        
+class ClassicalMemory:
+    registers : dict[str, ClassicalRegister] = {}
+    
+    def __init__(self) -> None:
+        pass
+            
     def get_obligation_variable(self, variable) -> str:
         return str(self.registers[variable]) + "c"
         
