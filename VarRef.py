@@ -1,6 +1,8 @@
 # TODO: Change name to something more appropriate (Z3 has IntRef)
+# If index is none - use whole variable
+# Otherwise just use index
 class VarRef():
-    def __init__(self, variable, index=0) -> None:
+    def __init__(self, variable, index=None) -> None:
         self.__variable = variable
         self.__index = index
     

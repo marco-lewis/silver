@@ -148,6 +148,7 @@ class JSONInterpreter:
     def decode_expression(self, exp):
         if isinstance(exp, str):
             if exp == "pi": return math.pi
+            
             return VarRef(exp)
         if isinstance(exp, list):
             return [self.decode_expression(e) for e in exp]
@@ -191,6 +192,12 @@ class JSONInterpreter:
             else:
                 return QINIT(val, self.interpret_type(type))
 
+        if e == "neqExp":
+            print(exp)
+            lhs = self.decode_expression(exp["left"])
+            rhs = self.decode_expression(exp["right"])
+            return BOOLOP(lhs, lambda l, r: l != r, rhs)
+        
         raise Exception("TODO: expression " + e)
     
     def add_qinit(self, instruction : QINIT):

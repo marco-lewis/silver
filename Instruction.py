@@ -152,6 +152,40 @@ class QMEAS(Instruction):
     def __repr__(self) -> str:
         return "QMEAS(" + repr(self.__quantum_ref) + ")"
 
+class BOOLOP(Instruction):
+    def __init__(self, lhs, comparitor, rhs) -> None:
+        super().__init__()
+        self.__left = lhs
+        self.__right = rhs
+        self.__comparitor = comparitor
+        
+    @property
+    def left(self):
+        return self.__left
+    
+    @left.setter
+    def left(self, value):
+        self.__left = value
+        
+    @property
+    def right(self):
+        return self.__right
+    
+    @right.setter
+    def right(self, value):
+        self.__right = value
+        
+    @property
+    def comparitor(self):
+        return self.__comparitor
+    
+    @comparitor.setter
+    def comparitor(self, value):
+        self.__comparitor = value
+        
+    def __repr__(self) -> str:
+        return "BOOLOP(" + repr(self.left) + "," + repr(self.comparitor) + "," + repr(self.right) + ")"
+
 class CMEAS(Instruction):
     def __init__(self, quantum_ref, classical_ref) -> None:
         super().__init__()

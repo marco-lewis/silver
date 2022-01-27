@@ -57,9 +57,11 @@ def generate_silspeq_from_func(func, args, ret):
     return speq
 
 def convert_type_to_Z3_literal(type):
-    if (re.match("[N|ℕ]", type)):
+    if (re.match(r"[N|ℕ]", type)):
         return IntSort()
-    if (re.match("[B|𝔹]", type)):
+    if (re.match(r"[B|𝔹]", type)):
+        return IntSort()
+    if (re.match(r"uint\[[0-9]+\]", type)):
         return IntSort()
     if (re.match(r".*(→.*)+",type)):
         types = [convert_type_to_Z3_literal(arg_type)
