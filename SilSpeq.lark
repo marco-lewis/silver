@@ -19,6 +19,7 @@
 ?defflag: "oracle"              -> oracle
 
 ?type: NAT                              -> nat
+    | "(" ")"                           -> unit
     | bool                              -> bool
     | "{" "0" "," "1" "}" "^" NUMBER    -> int
     | type ("->" type)+                 -> function

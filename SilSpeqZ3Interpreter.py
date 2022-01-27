@@ -7,6 +7,7 @@ def Equiv(a, b):
     return And(Implies(a, b), Implies(b, a))
 
 NAT = "NAT"
+UNIT = ()
 BOOL = "BOOL"
 FUNC = "FUNC"
 
@@ -71,7 +72,9 @@ class SilSpeqZ3Interpreter(Interpreter):
         
         var = df[0].value
         self.types[var] = df[1]
-        if df[1] == NAT:
+        if df[1] == UNIT:
+            return True
+        elif df[1] == NAT:
             self.vars[var] = Int(var)
             return self.vars[var] >= 0
         elif df[1] == BOOL:
@@ -119,6 +122,9 @@ class SilSpeqZ3Interpreter(Interpreter):
 
     def bool(self, a):
         return BOOL
+    
+    def unit(self, a):
+        return UNIT
     
     @visit_children_decor
     def int(self, n):
