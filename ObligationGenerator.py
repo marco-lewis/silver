@@ -50,8 +50,9 @@ class ObilgationGenerator:
             rhs = self.qphase_obligation(instruction, prev_mem, controls)
             return self.obligation_quantum_assignment(lhs, rhs)
         if isinstance(instruction, QMEAS):
-            return self.obligation_quantum_measurement(instruction, prev_mem, self.__config[MEASURE_OPTION])
+            return self.obligation_quantum_measurement(q_process, prev_mem, self.__config[MEASURE_OPTION])
         if isinstance(instruction, QFORGET):
+            # return [True]
             return self.obligation_quantum_forget(q_process, prev_mem)
         if isinstance(instruction, RETURN):
             return [True]
@@ -70,7 +71,6 @@ class ObilgationGenerator:
         return obligations
     
     def qop_obligation(self, instruction : QOP, prev_mem : QuantumMemory, controls : list):
-        # BUG: Control doesn't produce right one for CNOT
         # TODO: Handle non-standard operations
         # TODO: Handle multiple controls
         loc = prev_mem.get_loc(instruction.arg.variable, instruction.arg.index)
@@ -125,44 +125,60 @@ class ObilgationGenerator:
     def obligation_quantum_literal(self, size, literal = 0):
         return [1 if i == literal else 0 for i in range(0, 2**size)]
             
-    # TODO: Handle measurement differently
-    def obligation_quantum_measurement(self, instruction : QMEAS, prev_memory : QuantumMemory, measure_option=HIGH_PROB):
+    # TODO: Add state after measurement calculated
+    # TODO: Correct probabilities from previous memory
+    def obligation_quantum_measurement(self, q_process : QuantumProcess, prev_memory : QuantumMemory, measure_option=HIGH_PROB):
+        instruction : QMEAS = q_process.instruction
         quantum_ref = instruction.quantum_ref
         variable = quantum_ref.variable
         index = quantum_ref.index
         
+        # Set up labels for probabilities
         loc = prev_memory.get_loc(variable, index)
         size = prev_memory.get_size(variable)
         prob_strs = ["Pr_" + prev_memory.get_reg_string(variable) + "_" + str(i) 
                  for i in range(2**size)]
         probs_z3_vars = [Real(p) for p in prob_strs]
 
+        # Obligations for probabilities
         obligations = []
         obligations.append(And([And(p <= 1, p >= 0) for p in probs_z3_vars]))
         obligations.append(Sum(probs_z3_vars) == 1)
         
         # Calculate probabilities based on amplitudes of memory
         memory_obligation_variables = [Complex(memory_str) for memory_str in prev_memory.get_obligation_variables()]
-        for i in range(len(probs_z3_vars)):
-            mem_locs = [x for x in range(2**prev_memory.get_total_size()) if not(x^(i<<loc))]
-            s = [memory_obligation_variables[i].len_sqr() for i in mem_locs]
-            obligations.append(probs_z3_vars[i] == Sum(s))
+        for meas_value in range(len(probs_z3_vars)):
+            mem_locs = [x for x in range(2**prev_memory.get_total_size()) 
+                        if not((x & 1 << loc) ^ (meas_value << loc))]
+            s = [memory_obligation_variables[l].len_sqr() for l in mem_locs]
+            obligations.append(probs_z3_vars[meas_value] == Sum(s))
             
+        # Measurement options
+        classical_value = Int('meas_' + variable)
         if measure_option == HIGH_PROB:
-            meas_obligations = self.obligation_qmeas_with_high_prob(variable, probs_z3_vars)
+            meas_obligations = self.obligation_qmeas_with_high_prob(variable, probs_z3_vars, classical_value)
         if measure_option == CERTAINTY:
-            meas_obligations = self.obligation_qmeas_with_certainty(variable, probs_z3_vars)
+            meas_obligations = self.obligation_qmeas_with_certainty(variable, probs_z3_vars, classical_value)
         if measure_option == SPECIFIC_VALUE:
             meas_obligations = self.obligation_qmeas_with_specific_value(variable, probs_z3_vars)
             
-        return obligations + meas_obligations
+        # State after measurement
+        # TODO: hangle non-certainty instances (include 1//Sqrt(probs_z3_vars[meas_value]))
+        post_memory = q_process.end_memory
+        post_z3_vars = [Complex(obl_var) for obl_var in post_memory.get_obligation_variables()]
+        post_state_obligations = []
+        for meas_value in range(2**size):
+            mem_locs = [memory_obligation_variables[j] for j in range(len(memory_obligation_variables)) if not((j & 1 << loc) ^ (meas_value << loc))]
+            post_prev_eq = And([post_var == prev_var for (post_var, prev_var) in zip(post_z3_vars, mem_locs)])
+            post_state_obligations.append(Implies(classical_value == meas_value, post_prev_eq))
+
+        return obligations + meas_obligations + post_state_obligations
     
     def obligation_qmeas_with_specific_value(self, var, probs_z3_vars):
         raise Exception("ObligationError: function not implemented yet")
     
-    def obligation_qmeas_with_certainty(self, var, probs_z3_vars):
+    def obligation_qmeas_with_certainty(self, var, probs_z3_vars, value):
         meas_cert = Bool('meas_cert')
-        value = Int('meas_' + var)
         obligations = [Equiv(Or([p == 1 for p in probs_z3_vars]), meas_cert == True)]
         obligations += [Implies(1 == probs_z3_vars[i], value == i)
                         for i in range(len(probs_z3_vars))]
@@ -170,9 +186,8 @@ class ObilgationGenerator:
         return obligations
     
     # TODO: unsat on 50/50 chance, need a way to handle this just in case
-    def obligation_qmeas_with_high_prob(self, var, probs_z3_vars):
+    def obligation_qmeas_with_high_prob(self, var, probs_z3_vars, value):
         max_prob = Real('hprob_' + var)
-        value = Int('meas_' + var)
         obligations = [Or([max_prob == p for p in probs_z3_vars])]
         obligations.append(And([max_prob >= p for p in probs_z3_vars]))
         obligations += [Implies(max_prob == probs_z3_vars[i], value == i)
@@ -185,17 +200,15 @@ class ObilgationGenerator:
         prev_vars = self.quantum_memory_to_literals(prev_mem)
         new_vars = self.quantum_memory_to_literals(q_process.end_memory)
         loc = prev_mem.get_loc_from_VarRef(instruction.variable)
-        
-        prev_vars_at_value = []
-        for i in range(len(prev_vars)):
-            if i >> loc == instruction.value:
-                prev_vars_at_value += [prev_vars[i]]
 
+        # Check probability of value is 1
+        prev_vars_at_value = [prev_vars[i] for i in range(len(prev_vars)) if i >> loc == instruction.value]
         s = simplify(Sum([q.len_sqr() for q in prev_vars_at_value]))
-        obligations = [Implies(s != 1, False)]
+        obligations = [s == 1]
+        
+        # Set new state based on prev. variables
         if new_vars != []:
-            for i in range(len(new_vars)):
-                obligations += [new_vars[i] == prev_vars_at_value[i]]
+            obligations += [new == prev for (new, prev) in zip(new_vars, prev_vars_at_value)]
         return obligations
     
     def obligation_operation(self, operation, obligations):

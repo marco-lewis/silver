@@ -76,7 +76,11 @@ class QuantumMemory:
     def get_size(self, var):
         return self.registers[var].size
 
+    # TODO: Handle None case differently
     def get_loc(self, var, offset = 0):
+        if offset == None:
+            offset = 0
+        
         loc = 0
         for key, qreg in self.registers.items():
             if key == var:
