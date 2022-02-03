@@ -1,3 +1,4 @@
+from os import R_OK
 from lark.visitors import *
 from lark import Token
 from z3 import *
@@ -5,6 +6,14 @@ from z3 import *
 
 def Equiv(a, b):
     return And(Implies(a, b), Implies(b, a))
+
+# Source: https://stackoverflow.com/questions/12472338/flattening-a-list-recursively
+def flatten(S):
+    if S == []:
+        return S
+    if isinstance(S[0], list):
+        return flatten(S[0]) + flatten(S[1:])
+    return S[:1] + flatten(S[1:])
 
 NAT = "NAT"
 UNIT = ()
@@ -55,7 +64,8 @@ class SilSpeqZ3Interpreter(Interpreter):
     def post(self, stmts):
         if not(stmts == [[]]):
             obls = []
-            for obl in stmts[0]:
+            stmts = flatten(stmts)
+            for obl in stmts:
                 if obl != None: obls.append(obl)
             post_obl = And(obls)
             t = Bool('meas_cert')
