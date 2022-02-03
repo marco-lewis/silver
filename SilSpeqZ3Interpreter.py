@@ -54,10 +54,12 @@ class SilSpeqZ3Interpreter(Interpreter):
     @visit_children_decor
     def post(self, stmts):
         if not(stmts == [[]]):
-            obls = [wrap[0] for wrap in filter(None, stmts[0])]
+            obls = []
+            for obl in stmts[0]:
+                if obl != None: obls.append(obl)
             post_obl = And(obls)
             t = Bool('meas_cert')
-            post_obl = And(post_obl, t == self.__meas_cert)
+            post_obl = simplify(And(post_obl, t == self.__meas_cert))
             return Not(post_obl) if self.not_post else post_obl
         return True
         
@@ -89,10 +91,28 @@ class SilSpeqZ3Interpreter(Interpreter):
     # TODO: Test with tuples/arrays types?
     def function_obligation(self, fname, typing):
         self.vars[fname] = Function(fname, [IntSort() for typ in typing])
-        inputs = [Int(fname + '_in' + str(i)) for i in range(0, len(typing[:-1]))]
-        in_obl = And([self.type_obligation(inputs[i], typing[i]) for i in range(0, len(typing[:-1]))])
-        out_obl = ForAll(inputs, self.type_obligation(self.vars[fname](inputs), typing[-1]))
-        return simplify(And(in_obl, out_obl))
+        out_obl = self.mass_out_obl(typing[:-1], fname, typing[-1], [])
+        return simplify(And(out_obl))
+
+    def mass_out_obl(self, in_types, fname, out_type, inputs : list):
+        out = []
+        if in_types == []:
+            return self.type_obligation(self.vars[fname](inputs), out_type)
+        else:
+            for i in range(self.type_size(in_types[0])):
+                temp = inputs
+                temp.append(i)
+                out.append(self.mass_out_obl(in_types[1:], fname, out_type, temp))
+                temp.pop()
+            return out
+
+    def type_size(self, type):
+        if type == NAT:
+            raise Exception("SpeqError: unable to handle NAT argument")
+        elif type == BOOL:
+            return 2
+        else:
+            return 2**type
 
     def type_obligation(self, z3_expr, type):
         if type == NAT:
