@@ -193,7 +193,6 @@ class JSONInterpreter:
                 return QINIT(val, self.interpret_type(type))
 
         if e == "neqExp":
-            print(exp)
             lhs = self.decode_expression(exp["left"])
             rhs = self.decode_expression(exp["right"])
             return BOOLOP(lhs, lambda l, r: l != r, rhs)
