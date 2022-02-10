@@ -19,7 +19,7 @@ from SpeqGenerator import SpeqGenerator
 
 class SilVer:
     def __init__(self):
-        self.solver = Then('simplify', 'elim-term-ite', 'solve-eqs', 'smt').solver()
+        self.solver = Then(Repeat('propagate-values'), 'elim-and', 'elim-uncnstr', 'solve-eqs', 'bit-blast', 'smt').solver()
         self.json_interp = JSONInterpreter()
         self.speq_parser = SilSpeqParser()
         # TODO: Move so that Interpreters are only function specific
@@ -105,8 +105,9 @@ class SilVer:
             print("Program obligations generated and satisfiable")
             print()
             print(self.solver)
-        print("Verifying program with specification...")           
-        return self.check_solver_sat()
+        print("Verifying program with specification...")   
+        sat = self.check_solver_sat()        
+        return sat
     
     def getJSON(self, silq_json_file):
         """
