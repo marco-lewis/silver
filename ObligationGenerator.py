@@ -90,6 +90,7 @@ class ObilgationGenerator:
     
     def qphase_obligation(self, instruction : QPHASE, prev_mem : QuantumMemory, controls : list):
         # TODO: Handle non-standard operations
+        # TODO: Handle more boolops (make general)
         phase = PHASE(instruction.phase)
         op = [[phase if i == j else 0 for j in range(2**prev_mem.get_total_size())] for i in range(2**prev_mem.get_total_size())]
         for control in controls:
@@ -97,6 +98,11 @@ class ObilgationGenerator:
                 if prev_mem.is_stored(control.arg.variable):
                     control_loc = prev_mem.get_loc(control.arg.variable)
                     op = self.make_qphase_control_operation(op, prev_mem.get_total_size(), control.operation, control_loc)
+            if isinstance(control, BOOLOP):
+                if prev_mem.is_stored(control.left.variable):
+                    control_loc = prev_mem.get_loc(control.left.variable)
+                    control_op = lambda l: control.comparitor(l, control.right)
+                    op = self.make_qphase_control_operation(op, prev_mem.get_total_size(), control_op, control_loc)
         return self.obligation_operation(op, self.quantum_memory_to_literals(prev_mem))
         
     def make_qubit_operation(self, op, q_loc, size):
@@ -114,13 +120,14 @@ class ObilgationGenerator:
             mat += t
         return mat
     
+    # TODO: Check with deutsch_anc
     def make_qphase_control_operation(self, op, size, cond, control_loc):
-        return [[delta(i,j) + cond(floor(i//2**control_loc))*(op[i//2][i//2] - delta(i,j)) for j in range(2**size)] for i in range(2**size)]
+        return [[delta(i,j) + cond(floor(i//2**control_loc))*(op[i][j] - delta(i,j)) if i==j else 0 for j in range(2**size)] for i in range(2**size)]
 
     def obligation_quantum_assignment(self, lhs, rhs):
         if len(lhs) != len(rhs):
             raise Exception("LengthError: lengths of lists don't match")
-        return [lhs[i] == rhs[i] for i in range(len(lhs))]
+        return [simplify(lhs[i] == rhs[i]) for i in range(len(lhs))]
 
     def obligation_quantum_literal(self, size, literal = 0):
         return [1 if i == literal else 0 for i in range(0, 2**size)]
@@ -143,13 +150,16 @@ class ObilgationGenerator:
         # Obligations for probabilities
         obligations = []
         obligations.append(And([And(p <= 1, p >= 0) for p in probs_z3_vars]))
-        obligations.append(Sum(probs_z3_vars) == 1)
+        # Z3 BUG: Summation is causing a major slow down
+        # probs_sum = Real("Pr_" + prev_memory.get_reg_string(variable) + "_sum")
+        # obligations.append(probs_sum == Sum(probs_z3_vars))
+        # obligations.append(probs_sum == 1)
         
         # Calculate probabilities based on amplitudes of memory
         memory_obligation_variables = [Complex(memory_str) for memory_str in prev_memory.get_obligation_variables()]
         for meas_value in range(len(probs_z3_vars)):
             mem_locs = [x for x in range(2**prev_memory.get_total_size()) 
-                        if not((x & 1 << loc) ^ (meas_value << loc))]
+                        if (x & (2**(size)- 1<<loc) == (meas_value) << loc)]
             s = [memory_obligation_variables[l].len_sqr() for l in mem_locs]
             obligations.append(probs_z3_vars[meas_value] == Sum(s))
             
@@ -163,14 +173,17 @@ class ObilgationGenerator:
             meas_obligations = self.obligation_qmeas_with_specific_value(variable, probs_z3_vars)
             
         # State after measurement
-        # TODO: hangle non-certainty instances (include 1//Sqrt(probs_z3_vars[meas_value]))
+        # TODO: handle non-certainty instances (include 1//Sqrt(probs_z3_vars[meas_value]))
         post_memory = q_process.end_memory
-        post_z3_vars = [Complex(obl_var) for obl_var in post_memory.get_obligation_variables()]
-        post_state_obligations = []
-        for meas_value in range(2**size):
-            mem_locs = [memory_obligation_variables[j] for j in range(len(memory_obligation_variables)) if not((j & 1 << loc) ^ (meas_value << loc))]
-            post_prev_eq = And([post_var == prev_var for (post_var, prev_var) in zip(post_z3_vars, mem_locs)])
-            post_state_obligations.append(Implies(classical_value == meas_value, post_prev_eq))
+        if not(post_memory.is_empty()):
+            post_z3_vars = [Complex(obl_var) for obl_var in post_memory.get_obligation_variables()]
+            post_state_obligations = []
+            for meas_value in range(2**size):
+                mem_locs = [memory_obligation_variables[j] for j in range(len(memory_obligation_variables)) if not((j & 1 << loc) ^ (meas_value << loc))]
+                post_prev_eq = And([post_var == prev_var for (post_var, prev_var) in zip(post_z3_vars, mem_locs)])
+                post_state_obligations.append(Implies(classical_value == meas_value, post_prev_eq))
+        else:
+            post_state_obligations = []
 
         return obligations + meas_obligations + post_state_obligations
     
@@ -180,7 +193,7 @@ class ObilgationGenerator:
     def obligation_qmeas_with_certainty(self, var, probs_z3_vars, value):
         meas_cert = Bool('meas_cert')
         obligations = [Equiv(Or([p == 1 for p in probs_z3_vars]), meas_cert == True)]
-        obligations += [Implies(1 == probs_z3_vars[i], value == i)
+        obligations += [Equiv(1 == probs_z3_vars[i], value == i)
                         for i in range(len(probs_z3_vars))]
 
         return obligations
@@ -190,7 +203,7 @@ class ObilgationGenerator:
         max_prob = Real('hprob_' + var)
         obligations = [Or([max_prob == p for p in probs_z3_vars])]
         obligations.append(And([max_prob >= p for p in probs_z3_vars]))
-        obligations += [Implies(max_prob == probs_z3_vars[i], value == i)
+        obligations += [Equiv(max_prob == probs_z3_vars[i], value == i)
                         for i in range(len(probs_z3_vars))]
         
         return obligations
@@ -200,11 +213,15 @@ class ObilgationGenerator:
         prev_vars = self.quantum_memory_to_literals(prev_mem)
         new_vars = self.quantum_memory_to_literals(q_process.end_memory)
         loc = prev_mem.get_loc_from_VarRef(instruction.variable)
-
+        
+        obligations = []
+        
         # Check probability of value is 1
         prev_vars_at_value = [prev_vars[i] for i in range(len(prev_vars)) if i >> loc == instruction.value]
         s = simplify(Sum([q.len_sqr() for q in prev_vars_at_value]))
-        obligations = [s == 1]
+        # Z3 BUG: Summation is causing major slow down
+        # forget_sum = Real("forget_" + instruction.variable.variable)
+        # obligations = [s == forget_sum, forget_sum == 1]
         
         # Set new state based on prev. variables
         if new_vars != []:

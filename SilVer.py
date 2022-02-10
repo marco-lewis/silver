@@ -19,7 +19,7 @@ from SpeqGenerator import SpeqGenerator
 
 class SilVer:
     def __init__(self):
-        self.solver = Solver()
+        self.solver = Then('simplify', 'elim-term-ite', 'solve-eqs', 'smt').solver()
         self.json_interp = JSONInterpreter()
         self.speq_parser = SilSpeqParser()
         # TODO: Move so that Interpreters are only function specific
