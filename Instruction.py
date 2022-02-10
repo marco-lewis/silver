@@ -94,7 +94,7 @@ class QPHASE(Instruction):
 
     @phase.setter
     def phase(self, phase):
-        self.__phase = phase#
+        self.__phase = phase
     
     def __repr__(self) -> str:
         return "QPHASE(" + repr(self.__phase) + ")"
