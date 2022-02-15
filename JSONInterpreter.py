@@ -67,6 +67,12 @@ class JSONInterpreter:
         if e == "defineExp":
             lhs = self.decode_expression(stmt["lhs"])
             rhs = self.decode_expression(stmt["rhs"])
+            if isinstance(rhs, int) & isinstance(lhs, VarRef):
+                instruction = CINIT(rhs, None, lhs)
+                new_memory = self.get_classical_memory_copy()
+                new_memory.add_var(lhs.variable)
+                self.program.add_classical_process(instruction, new_memory)
+                return 0
             if isinstance(rhs, QINIT):
                 instruction = rhs
                 instruction.variable = lhs
@@ -241,4 +247,9 @@ class JSONInterpreter:
     def get_quantum_memory_copy(self):
         new_memory = QuantumMemory()
         new_memory.registers = copy.deepcopy(self.program.get_current_quantum_memory().registers)
+        return new_memory
+    
+    def get_classical_memory_copy(self):
+        new_memory = ClassicalMemory()
+        new_memory.registers = copy.deepcopy(self.program.get_current_classical_memory().registers)
         return new_memory

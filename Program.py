@@ -51,6 +51,11 @@ class Program():
             return self.quantum_processes[self.current_time - 1].end_memory
         return QuantumMemory()
     
+    def get_current_classical_memory(self) -> ClassicalMemory:
+        if self.classical_processes:
+            return self.classical_processes[self.current_time - 1].end_memory
+        return ClassicalMemory()
+    
     def copy_current_classical_memory(self):
         try:
             classical_mem = ClassicalMemory()

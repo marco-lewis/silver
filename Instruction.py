@@ -48,6 +48,42 @@ class QINIT(Instruction):
         
     def __repr__(self) -> str:
         return "QINIT(" + repr(self.__value) + ", " + repr(self.__size) + ", " + repr(self.variable) + ")"
+
+class CINIT(Instruction):
+    def __init__(self, value, size, variable=None) -> None:
+        super().__init__()
+        if isinstance(size, int):
+            if value >= 2**size: raise Exception("InstructionError: Value provided is greater than representation.")
+        self.__variable = variable
+        self.__value = value
+        self.__size = size
+    
+    @property
+    def variable(self):
+        return self.__variable
+
+    @variable.setter
+    def variable(self, value):
+        self.__variable = value
+    
+    @property
+    def size(self):
+        return self.__size
+
+    @size.setter
+    def size(self, value):
+        self.__size = value
+    
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, value):
+        self.__value = value
+        
+    def __repr__(self) -> str:
+        return "QINIT(" + repr(self.__value) + ", " + repr(self.__size) + ", " + repr(self.variable) + ")"
         
 class QOP(Instruction):
     def __init__(self, operation, arg=None, out=None) -> None:
