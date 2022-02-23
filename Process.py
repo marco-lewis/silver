@@ -10,9 +10,8 @@ class Process():
         self.instruction = instruction
 
 class QuantumProcess(Process):
-    instruction = Instruction()
     end_memory = QuantumMemory()
-    def __init__(self, instruction : Instruction, end_memory = QuantumMemory()) -> None:
+    def __init__(self, instruction : Instruction = Instruction(), end_memory = QuantumMemory()) -> None:
         super().__init__(instruction = instruction, end_memory=end_memory)
         
     def __repr__(self) -> str:

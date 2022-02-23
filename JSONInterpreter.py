@@ -53,8 +53,15 @@ class JSONInterpreter:
     def decode_func(self, func_json):
         for arg in func_json["args"]:
             # TODO: Handle non-function args in program
-            func = Function(arg['name'], convert_type_to_Z3_literal(arg['type']))
-            self.func_arg[arg['name']] = func
+            z3_type = convert_type_to_Z3_sorts(arg['type'])
+            if isinstance(z3_type, tuple):
+                z3_arg = Function(arg['name'], z3_type)
+                self.func_arg[arg['name']] = z3_arg
+            else:
+                if self.is_quantum(arg['type']):
+                    size = self.interpret_type_size(arg['type'])
+                    self.program.add_quantum_to_initial_memory(arg["name"], size)
+            # TODO: Add function argument to memory of program
         
         for stmt in func_json["statements"]:
             self.controls = []
@@ -230,23 +237,27 @@ class JSONInterpreter:
         new_memory.iterate_reg(instruction.out.variable)
         self.program.add_quantum_process(instruction, new_memory, copy.deepcopy(self.controls))
     
-    def interpret_type(self, type):
+    def interpret_type_size(self, type):
         if 'typeObj' in type:
-            if type['typeObj'] == "𝔹" or type['typeObj'] == "B":
+            if type['typeObj'] == "B" or type['typeObj'] == "𝔹":
                 return 1
             if type['typeObj'] == 'uint':
                 return self.decode_expression(type['size'])
             pass
-        # Deprecrated (need to update JSONs if this still used)
         if type == "𝔹" or type == "B":
             return 1
+        if re.match(r"uint\[[0-9]+\]", type):
+            return int(type.split("[")[1].split("]")[0])
         raise Exception("TypeError: unable to handle type ", type)
         
     def is_arg(self, ref):
         return ref in self.func_arg
 
     def is_classical(self, type):
-        return False
+        return "!" in type
+    
+    def is_quantum(self, type):
+        return not(self.is_classical(type))
     
     def is_function(self, type):
         return False

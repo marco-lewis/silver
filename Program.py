@@ -46,6 +46,12 @@ class Program():
         self.controls[self.current_time] = controls
         self.iterate_time()
         
+    def add_quantum_to_initial_memory(self, var, size):
+        if not(-1 in self.quantum_processes.keys()):
+            self.quantum_processes[-1] = QuantumProcess()
+        self.quantum_processes[-1].end_memory.append(var, size)
+        pass
+        
     def get_current_quantum_memory(self) -> QuantumMemory:
         if self.quantum_processes:
             return self.quantum_processes[self.current_time - 1].end_memory
