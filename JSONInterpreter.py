@@ -6,6 +6,7 @@ Integers for now only
 (Mostly) Quantum variables only
 '''
 
+from cmath import exp
 from lib2to3.pgen2.token import RIGHTSHIFT
 from z3 import *
 from ClassicalMemory import ClassicalMemory
@@ -57,6 +58,7 @@ class JSONInterpreter:
         
         for stmt in func_json["statements"]:
             self.controls = []
+            self.loop_ids = {}
             self.decode_statement(func_json["func"], stmt)
         return self.program
             
@@ -148,13 +150,24 @@ class JSONInterpreter:
             self.program.add_quantum_process(instruction, new_memory, self.controls)
             return 0
         
-        raise Exception("TODO: statement " + e)
+        # Handle: Integers only in range
+        if e == "forExp":
+            l = self.decode_expression(stmt["left"])
+            r = self.decode_expression(stmt["right"])
+            # step = self.decode_expression(stmt["step"])
+            step = int(stmt["step"])
+            for loop_val in range(l,r, step):
+                self.loop_ids[stmt["identifier"]] = loop_val
+                self.decode_statement(fname, stmt['body'])
+            return 0
+        
+        raise Exception("TODO: statement " + e, stmt)
 
 
     def decode_expression(self, exp):
         if isinstance(exp, str):
             if exp == "pi": return math.pi
-            
+            if exp in self.loop_ids.keys(): return self.loop_ids[exp]
             return VarRef(exp)
         if isinstance(exp, list):
             return [self.decode_expression(e) for e in exp]
@@ -203,7 +216,7 @@ class JSONInterpreter:
             rhs = self.decode_expression(exp["right"])
             return BOOLOP(lhs, lambda l, r: l != r, rhs)
         
-        raise Exception("TODO: expression " + e)
+        raise Exception("TODO: expression " + e, exp)
     
     def add_qinit(self, instruction : QINIT):
         new_memory = self.get_quantum_memory_copy()
