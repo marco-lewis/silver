@@ -1,6 +1,8 @@
 import re
 from utils import generate_silspeq_from_func
 
+PROD = "prod"
+
 class SpeqGenerator():
     def __init__(self, silq_json, speq_file):
         self.silq_json = silq_json
@@ -25,8 +27,15 @@ class SpeqGenerator():
         type = retType["typeObj"]
         speq_type = self.convert_type_to_speq_type(type)
         if type == "uint":
-            size = retType["size"]["value"]
+            try:
+                size = retType["size"]["value"]
+            except:
+                size = retType["size"]
             speq_type += "^" + str(size)
+        if speq_type == "prod":
+            l = self.convert_retType(retType['lhs'])
+            r = self.convert_retType(retType['rhs'])
+            speq_type = l + "->" + r
         return speq_type
         
     def convert_type_to_speq_type(self, type : str):
@@ -48,4 +57,6 @@ class SpeqGenerator():
         if (re.match(r"[¬, const, qfree].*", type)):
             split = re.split(r"[¬, const, qfree]", type, maxsplit=1)[1]
             return self.convert_type_to_speq_type(split)
+        if (re.match(r'prod', type)):
+            return PROD
         raise Exception("TypeTODO: " + type)
