@@ -1,4 +1,4 @@
-import dj_oracles;
+// import dj_oracles;
 
 def fixed_dj(f: const uint[3] !->qfree B){
     x := 0:uint[3];
@@ -18,5 +18,5 @@ def fixed_dj(f: const uint[3] !->qfree B){
 }
 
 def main(){
-    return fixed_dj(c_oracle[3]);
+    // return fixed_dj(c_oracle[3]);
 }
