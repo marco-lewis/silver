@@ -1,5 +1,0 @@
-def main(){
-    x := 0 : B;
-    x := H(x);
-    m := measure(x);
-}

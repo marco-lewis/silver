@@ -220,8 +220,8 @@ class ObilgationGenerator:
         prev_vars_at_value = [prev_vars[i] for i in range(len(prev_vars)) if i >> loc == instruction.value]
         s = simplify(Sum([q.len_sqr() for q in prev_vars_at_value]))
         # Z3 BUG: Summation is causing major slow down
-        # forget_sum = Real("forget_" + instruction.variable.variable)
-        # obligations = [s == forget_sum, forget_sum == 1]
+        forget_sum = Real("forget_" + instruction.variable.variable)
+        obligations = [s == forget_sum, forget_sum == 1]
         
         # Set new state based on prev. variables
         if new_vars != []:

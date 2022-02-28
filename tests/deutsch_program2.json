@@ -1,0 +1,128 @@
+[
+    {
+        "args": [
+            {
+                "const": true,
+                "expType": "param",
+                "name": "f",
+                "type": "¬const 𝔹 →qfree 𝔹"
+            }
+        ],
+        "func": "deutsch",
+        "retType": {
+            "typeObj": "B"
+        },
+        "statements": [
+            {
+                "expType": "defineExp",
+                "lhs": "q",
+                "rhs": {
+                    "consume": true,
+                    "expType": "typeChangeExp",
+                    "expr": {
+                        "expType": "litExp",
+                        "value": 1
+                    },
+                    "type": {
+                        "typeObj": "B"
+                    }
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": "anc",
+                "rhs": {
+                    "arg": {
+                        "consume": true,
+                        "expType": "typeChangeExp",
+                        "expr": {
+                            "expType": "litExp",
+                            "value": 1
+                        },
+                        "type": {
+                            "typeObj": "B"
+                        }
+                    },
+                    "expType": "callExp",
+                    "op": "H"
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": "q",
+                "rhs": {
+                    "arg": "q",
+                    "expType": "callExp",
+                    "op": "H"
+                }
+            },
+            {
+                "cond": {
+                    "arg": "q",
+                    "expType": "callExp",
+                    "op": "f"
+                },
+                "expType": "iteExp",
+                "othw": {
+                    "expType": "compoundExp",
+                    "statements": []
+                },
+                "then": {
+                    "expType": "compoundExp",
+                    "statements": [
+                        {
+                            "expType": "defineExp",
+                            "lhs": "anc",
+                            "rhs": {
+                                "arg": "anc",
+                                "expType": "callExp",
+                                "op": "X"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": "q",
+                "rhs": {
+                    "arg": "q",
+                    "expType": "callExp",
+                    "op": "H"
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": "q",
+                "rhs": {
+                    "arg": "q",
+                    "expType": "callExp",
+                    "op": "measure"
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": "anc",
+                "rhs": {
+                    "arg": "anc",
+                    "expType": "callExp",
+                    "op": "H"
+                }
+            },
+            {
+                "expType": "forgetExp",
+                "val": {
+                    "expType": "litExp",
+                    "value": 1
+                },
+                "var": "anc"
+            },
+            {
+                "expType": "returnExp",
+                "value": [
+                    "q"
+                ]
+            }
+        ]
+    }
+]

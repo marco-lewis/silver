@@ -57,11 +57,6 @@ class JSONInterpreter:
             if isinstance(z3_type, tuple):
                 z3_arg = Function(arg['name'], z3_type)
                 self.func_arg[arg['name']] = z3_arg
-            else:
-                if self.is_quantum(arg['type']):
-                    size = self.interpret_type_size(arg['type'])
-                    self.program.add_quantum_to_initial_memory(arg["name"], size)
-            # TODO: Add function argument to memory of program
         
         for stmt in func_json["statements"]:
             self.controls = []
@@ -216,7 +211,7 @@ class JSONInterpreter:
             if self.is_classical(type):
                 pass
             else:
-                return QINIT(val, self.interpret_type(type))
+                return QINIT(val, self.interpret_type_size(type))
 
         if e == "neqExp":
             lhs = self.decode_expression(exp["left"])
