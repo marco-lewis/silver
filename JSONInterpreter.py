@@ -216,7 +216,7 @@ class JSONInterpreter:
             if self.is_classical(type):
                 pass
             else:
-                return QINIT(val, self.interpret_type(type))
+                return QINIT(val, self.interpret_type_size(type))
 
         if e == "neqExp":
             lhs = self.decode_expression(exp["left"])
