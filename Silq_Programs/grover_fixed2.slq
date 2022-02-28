@@ -8,11 +8,10 @@ def groverDiffusion(cand:uint[3]) mfree: uint[3] {
 }
 
 def grover(f:!(const uint[3] -> lifted B)):!N{
-	nIterations:=2:!N;
 	cand:=0:uint[3];
 	for k in [0..3) { cand[k] := H(cand[k]); }
 
-	for k in [0..nIterations){
+	for k in [0..2){
 		b := f(cand);
 		if b {
 			phase(π);
