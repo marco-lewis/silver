@@ -70,6 +70,14 @@ class ObilgationGenerator:
             obligations += [0 if i != instruction.value else lits[j] for j in range(2**instruction.size)]
         return obligations
     
+    def make_quantum_memory_initial_obligations(self, initial_memory : QuantumMemory):
+        lits = self.quantum_memory_to_literals(initial_memory)
+        sum_of_sqrs = 0
+        for i in range(2**(initial_memory.get_total_size())):
+            sum_of_sqrs += lits[i].len_sqr()
+        obligations = [sum_of_sqrs == 1]
+        return obligations
+    
     def qop_obligation(self, instruction : QOP, prev_mem : QuantumMemory, controls : list):
         # TODO: Handle non-standard operations
         # TODO: Handle multiple controls

@@ -19,6 +19,8 @@ class Program():
         self.quantum_processes = {}
         self.classical_processes = {}
         self.controls = {}
+        self.quantum_processes[-1] = QuantumProcess()
+        self.classical_processes[-1] = ClassicalProcess(Instruction())
         
     def iterate_time(self):
         self.current_time += 1
@@ -50,7 +52,13 @@ class Program():
         if not(-1 in self.quantum_processes.keys()):
             self.quantum_processes[-1] = QuantumProcess()
         self.quantum_processes[-1].end_memory.append(var, size)
-        pass
+        return
+    
+    def add_classical_to_initial_memory(self, var, size):
+        if not(-1 in self.classical_processes.keys()):
+            self.classical_processes[-1] = ClassicalProcess()
+        self.classical_processes[-1].end_memory.append(var, size)
+        return
         
     def get_current_quantum_memory(self) -> QuantumMemory:
         if self.quantum_processes:

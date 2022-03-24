@@ -164,6 +164,7 @@ class SilVer:
         for time in range(prog.current_time):
             if prog.quantum_processes[time].instruction != Instruction():
                 prev_memory = self.get_prev_quantum_memory(prog, time)
+                if time == 0: obs += ob_gen.make_quantum_memory_initial_obligations(prev_memory)
                 process_obligation = ob_gen.make_quantum_process_obligation(prog.quantum_processes[time], prev_memory, prog.controls[time])
                 obs += process_obligation
             if prog.classical_processes[time].instruction != Instruction():
@@ -188,11 +189,7 @@ class SilVer:
             raise Exception("ObGenError: generated obligations from Silq program are invalid. BUG")
     
     def get_prev_quantum_memory(self, prog : Program, time):
-        if time != 0:
-            return prog.quantum_processes[time - 1].end_memory
-        return QuantumMemory()
+        return prog.quantum_processes[time - 1].end_memory
     
     def get_prev_classical_memory(self, prog : Program, time):
-        if time != 0:
-            return prog.classical_processes[time - 1].end_memory
-        return ClassicalMemory()
+        return prog.classical_processes[time - 1].end_memory

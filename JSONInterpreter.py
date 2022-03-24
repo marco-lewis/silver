@@ -61,7 +61,6 @@ class JSONInterpreter:
                 if self.is_quantum(arg['type']):
                     size = self.interpret_type_size(arg['type'])
                     self.program.add_quantum_to_initial_memory(arg["name"], size)
-            # TODO: Add function argument to memory of program
         
         for stmt in func_json["statements"]:
             self.controls = []

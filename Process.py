@@ -21,7 +21,7 @@ class ClassicalProcess(Process):
     instruction : Instruction
     end_memory : ClassicalMemory
     
-    def __init__(self, instruction : Instruction, end_memory = ClassicalMemory()) -> None:
+    def __init__(self, instruction : Instruction = Instruction(), end_memory = ClassicalMemory()) -> None:
         super().__init__(instruction = instruction, end_memory=end_memory)
                 
     def __repr__(self) -> str:
