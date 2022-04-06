@@ -5,6 +5,7 @@
 ?funcflags: funcflag ("," funcflag)*
 ?funcflag: "qout"               -> qout
         | "cert"                -> cert
+        | "whp"                 -> highprob
 
 ?pre: "pre" "{" stmts "}" -> pre
 

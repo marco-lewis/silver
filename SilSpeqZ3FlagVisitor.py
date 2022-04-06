@@ -6,6 +6,7 @@ class SilSpeqZ3FlagVisitor(Visitor):
     oracles = []
     quantum_out = False
     meas_cert = False
+    meas_whp = False
     
     def __init__(self):
         super().__init__()
@@ -18,11 +19,12 @@ class SilSpeqZ3FlagVisitor(Visitor):
     
     def qout(self, v):
         self.quantum_out = True
-        pass
         
     def cert(self, v):
         self.meas_cert = True
-        pass
+
+    def whp(self, v):
+        self.meas_whp = True
     
     def oracle(self, v):
         return lambda name: self.oracles.append(name)
