@@ -1,23 +1,38 @@
-def groverDiffusion(cand:uint[3]) mfree: uint[3] {
-	for k in [0..3) { cand[k] := H(cand[k]); }
-	if cand!=0 {
-		phase(π);
-	};
-	for k in [0..3) { cand[k] := H(cand[k]); }
-	return cand;
+// import grover_oracles;
+
+def grover_fixed(f : const uint[3] !->qfree B){
+    x := 0:uint[2];
+    x[0] := H(x[0]);
+    x[1] := H(x[1]);
+    x[2] := H(x[2]);
+    // Oracle
+    if f(x){ phase(pi); }
+    // Diffusion
+    x[0] := H(x[0]);
+    x[1] := H(x[1]);
+    x[1] := H(x[2]);
+    if x!=0{ phase(pi); }
+    x[0] := H(x[0]);
+    x[1] := H(x[1]);
+    x[1] := H(x[2]);
+
+    // Oracle
+    if f(x){ phase(pi); }
+    // Diffusion
+    x[0] := H(x[0]);
+    x[1] := H(x[1]);
+    x[1] := H(x[2]);
+    if x!=0{ phase(pi); }
+    x[0] := H(x[0]);
+    x[1] := H(x[1]);
+    x[1] := H(x[2]);
+
+    x := measure(x);
+    return x;
 }
 
-def grover(f:!(const uint[3] -> lifted B)):!N{
-	cand:=0:uint[3];
-	for k in [0..3) { cand[k] := H(cand[k]); }
 
-	for k in [0..2){
-		b := f(cand);
-		if b {
-			phase(π);
-		}
-		forget(b = f(cand));
-		cand:=groverDiffusion(cand);
-	}
-	return measure(cand) as !N;
+
+def main(){
+
 }
