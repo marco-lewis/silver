@@ -56,11 +56,11 @@ class SilVer:
         self.speq_flag_itp.visit(tree)
         
         if self.speq_flag_itp.meas_cert: self.config[MEASURE_OPTION] = CERTAINTY
+        elif self.speq_flag_itp.meas_whp: self.config[MEASURE_OPTION] = HIGH_PROB
         else: self.config[MEASURE_OPTION] = HIGH_PROB
         self.speq_z3_itp.set_meas_cert(self.speq_flag_itp.meas_cert)
         
-        if self.speq_flag_itp.quantum_out:
-            pass
+        if self.speq_flag_itp.quantum_out: pass
     
     def verify_slq_file(self, silq_file):
         # Call silq with this command to get ast
@@ -99,12 +99,27 @@ class SilVer:
             print("Generating proof obligations from Program...")
             print(prog)
             print()
-        self.generate_program_obligations(prog, verbose)
+        obs = self.generate_program_obligations(prog)
         
-        if verbose: 
-            print("Program obligations generated and satisfiable")
+        if verbose:
+            print("Program obligations generated")
+            print(obs)
             print()
+
+        prog_sat = self.check_gen_obs_sat(obs)
+        if prog_sat != z3.sat:
+            raise Exception("SatError: generated obligations from Silq program are invalid.")
+
+        if verbose:
+            print("Program obligations satisfiable")
+            print()
+
+        self.solver.add(obs)
+        if verbose:
+            print("Full Obligations in Solver")
             print(self.solver)
+            print()
+
         print("Verifying program with specification...")   
         sat = self.check_solver_sat()        
         return sat
@@ -157,7 +172,7 @@ class SilVer:
         prog = self.json_interp.decode_func_in_json(silq_json, func)
         return prog
     
-    def generate_program_obligations(self, prog : Program, verbose=False):
+    def generate_program_obligations(self, prog : Program):
         obs : list[BoolRef]
         obs = []
         ob_gen = ObilgationGenerator(self.config)
@@ -172,21 +187,13 @@ class SilVer:
                 prev_memory = self.get_prev_classical_memory(prog, time)
                 classical_obligation = ob_gen.make_classical_process_obligation(prog.classical_processes[time], prev_memory, prog.controls[time])
                 obs += classical_obligation
-        self.check_gen_obs_sat(obs, verbose)
-        self.solver.add(obs)
+        return obs
         
-    def check_gen_obs_sat(self, obs : list[BoolRef], verbose=False):
+    def check_gen_obs_sat(self, obs : list[BoolRef]):
         s = Solver()
         s.add(obs)
-        if verbose:
-            print("Program Obligations")
-            print(obs)
         sat = s.check()
-        if verbose:
-            print(sat)
-            print()
-        if sat != z3.sat:
-            raise Exception("ObGenError: generated obligations from Silq program are invalid. BUG")
+        return sat
     
     def get_prev_quantum_memory(self, prog : Program, time):
         return prog.quantum_processes[time - 1].end_memory
