@@ -19,6 +19,7 @@ NAT = "NAT"
 UNIT = ()
 BOOL = "BOOL"
 FUNC = "FUNC"
+CLASSICAL = "CLASSICAL"
 
 class SilSpeqZ3Interpreter(Interpreter):
     __meas_cert = False
@@ -160,7 +161,11 @@ class SilSpeqZ3Interpreter(Interpreter):
     def int(self, n):
         if n == []:
             return 1
+        if n[0] == BOOL: return int(n[1])
         return int(n[0].value)
+    
+    def classical(self, a):
+        return CLASSICAL
 
     @visit_children_decor
     def function(self, types):

@@ -21,8 +21,9 @@
 ?type: NAT                              -> nat
     | "(" ")"                           -> unit
     | bool                              -> bool
-    | "{" "0" "," "1" "}" "^" NUMBER    -> int
+    | bool "^" NUMBER                   -> int
     | type ("->" type)+                 -> function
+    | "!" type                          -> classical
 
 ?bool: BOOL
     | "{" "0" "," "1" "}"
@@ -63,8 +64,8 @@
 ?args: (arg ("," arg)*)?        -> args
 ?arg: NAME | NUMBER
 
-TRUE: "⊤"
-FALSE: "⊥"
+TRUE: "⊤" | "tt"
+FALSE: "⊥" | "ff"
 
 BOOL : "B" | "𝔹"
 NAT: "N" | "ℕ"
