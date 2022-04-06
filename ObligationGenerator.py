@@ -72,6 +72,7 @@ class ObilgationGenerator:
     
     def make_quantum_memory_initial_obligations(self, initial_memory : QuantumMemory):
         lits = self.quantum_memory_to_literals(initial_memory)
+        if lits == []: return []
         sum_of_sqrs = 0
         for i in range(2**(initial_memory.get_total_size())):
             sum_of_sqrs += lits[i].len_sqr()
