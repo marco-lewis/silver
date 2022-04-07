@@ -1,0 +1,102 @@
+[
+    {
+        "args": [],
+        "func": "main",
+        "statements": [
+            {
+                "expType": "defineExp",
+                "lhs": "x",
+                "rhs": {
+                    "consume": true,
+                    "expType": "typeChangeExp",
+                    "expr": {
+                        "expType": "litExp",
+                        "value": 0
+                    },
+                    "type": {
+                        "size": {
+                            "expType": "litExp",
+                            "value": 2
+                        },
+                        "typeObj": "uint"
+                    }
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": "q",
+                "rhs": {
+                    "consume": true,
+                    "expType": "typeChangeExp",
+                    "expr": {
+                        "expType": "litExp",
+                        "value": 0
+                    },
+                    "type": {
+                        "size": {
+                            "expType": "litExp",
+                            "value": 2
+                        },
+                        "typeObj": "uint"
+                    }
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": {
+                    "expType": "indexExp",
+                    "index": {
+                        "expType": "litExp",
+                        "value": 0
+                    },
+                    "var": "x"
+                },
+                "rhs": {
+                    "arg": {
+                        "expType": "indexExp",
+                        "index": {
+                            "expType": "litExp",
+                            "value": 0
+                        },
+                        "var": "x"
+                    },
+                    "expType": "callExp",
+                    "op": "H"
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": {
+                    "expType": "indexExp",
+                    "index": {
+                        "expType": "litExp",
+                        "value": 1
+                    },
+                    "var": "q"
+                },
+                "rhs": {
+                    "arg": {
+                        "expType": "indexExp",
+                        "index": {
+                            "expType": "litExp",
+                            "value": 1
+                        },
+                        "var": "q"
+                    },
+                    "expType": "callExp",
+                    "op": "X"
+                }
+            },
+            {
+                "expType": "returnExp",
+                "value": {
+                    "expType": "tupleExp",
+                    "values": [
+                        "x",
+                        "q"
+                    ]
+                }
+            }
+        ]
+    }
+]

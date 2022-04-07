@@ -1,0 +1,7 @@
+uint_test()->(define uint_test_ret:{0,1})
+pre{
+
+}
+post{
+
+}

@@ -1,0 +1,7 @@
+main()->(define main_ret : N)
+pre{
+
+}
+post{
+
+}

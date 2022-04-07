@@ -1,0 +1,15 @@
+main()->(define main_ret:())
+pre{
+
+}
+post{
+
+}
+
+deutsch[cert](define f:{0, 1}->{0, 1})->(define deutsch_ret:{0, 1})
+pre{
+
+}
+post{
+    assert((¬f(0) = f(1)) <-> deutsch_ret = 1)
+}
