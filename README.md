@@ -40,7 +40,7 @@ Development of the SilVer tool for verifying Silq programs using the Z3 SMT solv
 
     which will generate a json file (`<your-program>.json`) in the tests folder.
 
-3. Create a Python file that creates a `SilVer` object and run:
+3. Create a Python file that creates a `silver = SilVer()` object and run:
 
     `silver.verify_func(<json-file-location>,<function-to-verify>)`
     
