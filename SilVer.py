@@ -87,7 +87,8 @@ class SilVer:
         self.solver.add(isqrt2 ** 2 == 1/2, isqrt2 > 0)
         
         if verbose: print("Generating SilSpeq proof obligations...")
-        self.generate_speq_obligations(spq_name, func)
+        speq_obs = self.get_speq_obs(spq_name)
+        self.solver.add(speq_obs[func])
         
         if verbose:
             print("SilSpeq proof obligations generated and satisfiable")
@@ -151,13 +152,6 @@ class SilVer:
             if not(sat == z3.sat):
                 raise Exception("SilSpeqError: one of your SilSpeq functions is unsatisfiable. Check there are no contradictions in your specificaiton.")
             speq_solver.reset()
-            
-    def add_func_speq_to_solver(self, speq_obs, func):
-        self.solver.add(speq_obs[func])
-        
-    def generate_speq_obligations(self, speq_file, func):
-        speq_obs = self.get_speq_obs(speq_file)
-        self.add_func_speq_to_solver(speq_obs, func)
         
     def get_speq_file_name(self, silq_json_file):
         return splitext(silq_json_file)[0] + ".spq"    
