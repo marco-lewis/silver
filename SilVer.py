@@ -82,10 +82,6 @@ class SilVer:
         spq_name = self.get_speq_file_name(file)
         self.check_flags(spq_name)
         
-        if verbose: print("Adding isqrt2...")
-        isqrt2 = Real("isqrt2")
-        self.solver.add(isqrt2 ** 2 == 1/2, isqrt2 > 0)
-        
         if verbose: print("Generating SilSpeq proof obligations...")
         speq_obs = self.get_speq_obs(spq_name)
         self.solver.add(speq_obs[func])
@@ -107,13 +103,14 @@ class SilVer:
             print(obs)
             print()
 
-        prog_sat = self.check_gen_obs_sat(obs)
-        if prog_sat != z3.sat:
-            raise Exception("SatError: generated obligations from Silq program are invalid.")
+        # isqrt2 causing solver to take too long finding sat instance
+        # prog_sat = self.check_gen_obs_sat(obs)
+        # if prog_sat != z3.sat:
+        #     raise Exception("SatError: generated obligations from Silq program are invalid.")
 
-        if verbose:
-            print("Program obligations satisfiable")
-            print()
+        # if verbose:
+        #     print("Program obligations satisfiable")
+        #     print()
 
         self.solver.add(obs)
         if verbose:
@@ -121,10 +118,10 @@ class SilVer:
             print(self.solver)
             print()
 
-        print("Verifying program with specification...")   
+        print("Verifying program with specification...")
         sat = self.check_solver_sat()        
         return sat
-    
+
     def getJSON(self, silq_json_file):
         """
         Reads the JSON silq file and stores the data in fdefs.
@@ -168,7 +165,8 @@ class SilVer:
     
     def generate_program_obligations(self, prog : Program):
         obs : list[BoolRef]
-        obs = []
+        isqrt2 = Real("isqrt2")
+        obs = [isqrt2 ** 2 == 1/2, isqrt2 > 0]
         ob_gen = ObilgationGenerator(self.config)
         for time in range(prog.current_time):
             if prog.quantum_processes[time].instruction != Instruction():
@@ -183,8 +181,9 @@ class SilVer:
                 obs += classical_obligation
         return obs
         
-    def check_gen_obs_sat(self, obs : list[BoolRef]):
+    def check_gen_obs_sat(self, obs : list[BoolRef], timeout=5000):
         s = Solver()
+        s.set(timeout=timeout)
         s.add(obs)
         sat = s.check()
         return sat

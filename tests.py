@@ -15,8 +15,7 @@ def check(json_file, func, expected, verbose=False, stats=True, timeout=5000):
         raise Exception("SatError: Expected " + str(expected) + " but got " + str(sat))
     if stats:
         stats = silver.solver.statistics()
-        print(stats.get_key_value('time'))
-        print(stats.get_key_value('final checks'))
+        print(stats)
 
 # Basic checks that SilVer compiles correctly
 # check("test_singlevar.json", "main", z3.sat)
@@ -34,10 +33,11 @@ def check(json_file, func, expected, verbose=False, stats=True, timeout=5000):
 
 # Verification of Deutsch-Jozsa
 # check("dj_fixed2.json", "fixed_dj", z3.unsat)
-# check("dj_fixed3.json", "fixed_dj", z3.unsat, True)
+# 3 qubits - too slow
+# check("dj_fixed3.json", "fixed_dj", z3.unsat)
 
 # Verification of Grover's Algorithm - Work in Progress
-# 2 qubits
+# 2 qubits - uses certainty
 # check("grover_fixed.json", "grover_fixed", z3.unsat)
-# 3 qubits
+# 3 qubits - problems with high probability
 # check("grover_fixed2.json", "grover_fixed", z3.unsat)
