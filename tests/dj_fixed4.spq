@@ -1,0 +1,26 @@
+main()->(define main_ret:())
+pre{
+
+}
+post{
+
+}
+
+fixed_dj[cert](define f:{0, 1}^4->{0, 1})->(define fixed_dj_ret:{0, 1}^4)
+pre{
+    define y : N
+    define x : {0,1}^4
+    define bal : {0, 1}
+    define const : {0, 1}
+    
+    assert((¬(bal = 1)) <-> const = 1)
+    # assert(SUM[x](f(x)) = y)
+    assert(y = f(0) + f(1) + f(2) + f(3) + f(4) + f(5) + f(6) + f(7) + f(8) + f(9) + f(10) + f(11) + f(12) + f(13) + f(14) + f(15))
+    assert(y = 2^(4-1) | y = 0 | y = 2^4)
+    assert(bal = 1 <-> y = 2^(4-1))
+    assert(const = 1 <-> (y = 0 | y = 2^4))
+}
+post{
+    assert(const = 1 -> fixed_dj_ret = 0)
+    assert(bal = 1 -> ¬(fixed_dj_ret = 0))
+}
