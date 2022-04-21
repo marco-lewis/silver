@@ -124,13 +124,14 @@ class SilVer:
             print()
 
         # isqrt2 causing solver to take too long finding sat instance
-        prog_sat = self.check_gen_obs_sat(prog_obs)
-        if prog_sat != z3.sat:
-            raise Exception("SatError(" + str(prog_sat) + "): generated obligations from Silq program are invalid.")
+        if False:
+            prog_sat = self.check_gen_obs_sat(prog_obs)
+            if prog_sat != z3.sat:
+                raise Exception("SatError(" + str(prog_sat) + "): generated obligations from Silq program are invalid.")
 
-        if verbose:
-            print("Program obligations satisfiable")
-            print()
+            if verbose:
+                print("Program obligations satisfiable")
+                print()
         return prog_obs + speq_obs[func]
 
     def getJSON(self, silq_json_file):
