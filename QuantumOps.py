@@ -1,6 +1,6 @@
 import numpy as np
 from complex import I
-from z3 import Real
+from z3 import Real, Sqrt
 
 ID = [[1,0],
       [0,1]]
@@ -13,7 +13,8 @@ Y = [[0, I],
 Z = [[1,0],
      [0,-1]]
 
-isqrt2 = Real('isqrt2')
+# isqrt2 = Real('isqrt2')
+isqrt2 = 1/Sqrt(2)
 H = [[isqrt2, isqrt2],
      [isqrt2, -isqrt2]]
 

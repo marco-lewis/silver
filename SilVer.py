@@ -18,8 +18,17 @@ from silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
 from SpeqGenerator import SpeqGenerator
 
 class SilVer:
+    __silver_tactic = Then(Repeat('propagate-values'), 
+                        'elim-and',
+                        'elim-uncnstr', 
+                        'solve-eqs', 
+                        'bit-blast', 
+                        'smt', 
+                        "collect-statistics"
+                        )
+
     def __init__(self):
-        self.solver = Then(Repeat('propagate-values'), 'elim-and', 'elim-uncnstr', 'solve-eqs', 'bit-blast', 'smt').solver()
+        self.solver = self.__silver_tactic.solver()
         self.json_interp = JSONInterpreter()
         self.speq_parser = SilSpeqParser()
         # TODO: Move so that Interpreters are only function specific
@@ -75,8 +84,20 @@ class SilVer:
         # 4) Verify functions in order. Stop if something is wrong
             # 4a) Produce obligation/sat(?) files for correct functions
         pass
-    
+
     def verify_func(self, file, func, verbose=False):
+        obs = self.make_obs(file, func, verbose)
+        self.solver.add(obs)
+        if verbose:
+            print("Full Obligations in Solver")
+            print(self.solver)
+            print()
+
+        print("Verifying program with specification...")
+        sat = self.check_solver_sat()
+        return sat
+
+    def make_obs(self, file, func, verbose=False):
         print("Verifying " + func + " in " + file)
         self.check_speq_exists(file)
         spq_name = self.get_speq_file_name(file)
@@ -84,7 +105,6 @@ class SilVer:
         
         if verbose: print("Generating SilSpeq proof obligations...")
         speq_obs = self.get_speq_obs(spq_name)
-        self.solver.add(speq_obs[func])
         
         if verbose:
             print("SilSpeq proof obligations generated and satisfiable")
@@ -96,31 +116,22 @@ class SilVer:
             print("Generating proof obligations from Program...")
             print(prog)
             print()
-        obs = self.generate_program_obligations(prog)
+        prog_obs = self.generate_program_obligations(prog)
         
         if verbose:
             print("Program obligations generated")
-            print(obs)
+            # print(prog_obs)
             print()
 
         # isqrt2 causing solver to take too long finding sat instance
-        # prog_sat = self.check_gen_obs_sat(obs)
-        # if prog_sat != z3.sat:
-        #     raise Exception("SatError: generated obligations from Silq program are invalid.")
+        prog_sat = self.check_gen_obs_sat(prog_obs)
+        if prog_sat != z3.sat:
+            raise Exception("SatError(" + str(prog_sat) + "): generated obligations from Silq program are invalid.")
 
-        # if verbose:
-        #     print("Program obligations satisfiable")
-        #     print()
-
-        self.solver.add(obs)
         if verbose:
-            print("Full Obligations in Solver")
-            print(self.solver)
+            print("Program obligations satisfiable")
             print()
-
-        print("Verifying program with specification...")
-        sat = self.check_solver_sat()        
-        return sat
+        return prog_obs + speq_obs[func]
 
     def getJSON(self, silq_json_file):
         """
@@ -164,9 +175,9 @@ class SilVer:
         return prog
     
     def generate_program_obligations(self, prog : Program):
-        obs : list[BoolRef]
-        isqrt2 = Real("isqrt2")
-        obs = [isqrt2 ** 2 == 1/2, isqrt2 > 0]
+        obs : list[BoolRef] = []
+        # isqrt2 = Real("isqrt2")
+        # obs = [isqrt2 ** 2 == 1/2, isqrt2 > 0]
         ob_gen = ObilgationGenerator(self.config)
         for time in range(prog.current_time):
             if prog.quantum_processes[time].instruction != Instruction():
@@ -182,7 +193,7 @@ class SilVer:
         return obs
         
     def check_gen_obs_sat(self, obs : list[BoolRef], timeout=5000):
-        s = Solver()
+        s = self.__silver_tactic.solver()
         s.set(timeout=timeout)
         s.add(obs)
         sat = s.check()
