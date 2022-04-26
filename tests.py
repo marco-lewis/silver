@@ -45,6 +45,7 @@ def check(json_file, func, expected, verbose=False, stats=True, timeout=5000):
 # check("dj_fixed2.json", "fixed_dj", z3.unsat)
 # check("dj_fixed3.json", "fixed_dj", z3.unsat)
 # check("dj_fixed4.json", "fixed_dj", z3.unsat)
+# check("dj_fixed7.json", "fixed_dj", z3.unsat)
 
 # Verification of Grover's Algorithm - Work in Progress
 # 2 qubits - uses certainty
