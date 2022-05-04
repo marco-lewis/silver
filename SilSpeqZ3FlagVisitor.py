@@ -7,6 +7,7 @@ class SilSpeqZ3FlagVisitor(Visitor):
     quantum_out = False
     meas_cert = False
     meas_whp = False
+    meas_atval = False
     
     def __init__(self):
         super().__init__()
@@ -28,6 +29,9 @@ class SilSpeqZ3FlagVisitor(Visitor):
     
     def oracle(self, v):
         return lambda name: self.oracles.append(name)
+
+    def atvalue(self, v):
+        self.meas_atval = True
         
     def definition(self, v):
         # if isinstance(v[0], type(lambda:0)):

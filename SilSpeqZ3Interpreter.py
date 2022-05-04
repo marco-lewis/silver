@@ -142,6 +142,7 @@ class SilSpeqZ3Interpreter(Interpreter):
     def oracle(self, v): pass
     def cert(self, v): pass
     def whp(self, v): pass
+    def atvalue(self, v): pass
 
     # Handling types
     def nat(self, a):
@@ -253,15 +254,17 @@ class SilSpeqZ3Interpreter(Interpreter):
         return self.handle_token(call[0])([self.handle_token(input) for input in call[1]])
 
     @visit_children_decor
+    # TODO: get sum working nicely works
     def sum(self, expr):
-        body = Lambda([self.token(expr[0])], expr[1])
+        body = lambda x: expr[1](x)
         idx_type = self.types[str(self.token(expr[0]))]
         if idx_type == NAT:
             raise Exception("SumError: can't use natural numbers as a parameter for sum")
         elif idx_type == BOOL:
-            return Sum([body[i] for i in range(0,2)])
+            return Sum([body(i) for i in range(0,2)])
         else:
-            return Sum([body[i] for i in range(0, 2**idx_type)])
+            s = Sum([body(i) for i in range(0, 2**idx_type)])
+            return s
 
     # Handling tokens and fetching Z3 variables
     def handle_token(self, t):

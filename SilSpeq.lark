@@ -6,6 +6,7 @@
 ?funcflag: "qout"               -> qout
         | "cert"                -> cert
         | "whp"                 -> highprob
+        | "atval"               -> atvalue
 
 ?pre: "pre" "{" stmts "}" -> pre
 
