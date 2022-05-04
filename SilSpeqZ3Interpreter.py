@@ -69,8 +69,10 @@ class SilSpeqZ3Interpreter(Interpreter):
             for obl in stmts:
                 if obl != None: obls.append(obl)
             post_obl = And(obls)
-            t = Bool('meas_cert')
-            post_obl = simplify(And(post_obl, t == self.__meas_cert))
+            if self.__meas_cert:
+                t = Bool('meas_cert')
+                post_obl = And(post_obl, t == self.__meas_cert)
+            post_obl = simplify(post_obl)
             return Not(post_obl) if self.not_post else post_obl
         return True
         
