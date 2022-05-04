@@ -3,7 +3,7 @@ import z3
 
 folder = "tests/"
 
-def check(json_file, func, expected, verbose=False, stats=True, timeout=5000):
+def check(json_file, func, expected, verbose=False, stats=True, timeout=60000):
     silver = SilVer()
     silver.solver.set(timeout=timeout)
     sat = silver.verify_func(folder + json_file, func, verbose)
@@ -15,7 +15,7 @@ def check(json_file, func, expected, verbose=False, stats=True, timeout=5000):
         except: pass
     if verbose and sat == z3.unsat:
         print("Unsat Core:")
-        print(silver.solver.unsat_core)
+        print(silver.solver.unsat_core())
     if stats:
         print("Stats")
         stats = silver.solver.statistics()
@@ -38,17 +38,21 @@ def check(json_file, func, expected, verbose=False, stats=True, timeout=5000):
 
 # Verification fail on purpose - gives a model
 # BUG: prog_obl not sat
-# check("deutsch_anc_fail.json", "deutsch", z3.unsat, True)
+# check("deutsch_anc_fail.json", "deutsch", z3.unsat)
 
 # Verification of Deutsch-Jozsa
 # dj_fixed<n> - Deutsch-Jozsa for n-qubits
 # check("dj_fixed2.json", "fixed_dj", z3.unsat)
 # check("dj_fixed3.json", "fixed_dj", z3.unsat)
 # check("dj_fixed4.json", "fixed_dj", z3.unsat)
+check("dj_fixed5.json", "fixed_dj", z3.unsat)
+# check("dj_fixed6.json", "fixed_dj", z3.unsat)
+# Very slow (kinda expected)
 # check("dj_fixed7.json", "fixed_dj", z3.unsat)
 
 # Verification of Grover's Algorithm - Work in Progress
 # 2 qubits - uses certainty
 # check("grover_fixed.json", "grover_fixed", z3.unsat)
-# 3 qubits - problems with high probability
+# 3 qubits - problems with measurement/probability
+# Likely causing check to be unknown
 # check("grover_fixed2.json", "grover_fixed", z3.unsat)

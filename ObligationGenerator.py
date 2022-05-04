@@ -34,21 +34,24 @@ class ObilgationGenerator:
         meas = Int('meas_' + instruction.quantum_ref.variable)
         value = Int(end_memory.get_obligation_variable(instruction.classical_ref.variable))
         return [value == meas]
-    
+
+    # Adding bounds ot the lhs make it harder to find sat instances 
     def make_quantum_process_obligation(self, q_process : QuantumProcess, prev_mem : QuantumMemory, controls : list) -> list[BoolRef]:
         instruction = q_process.instruction
+        lhs = self.quantum_memory_to_literals(q_process.end_memory)
+        obs = []
         if isinstance(instruction, QINIT):
-            lhs = self.quantum_memory_to_literals(q_process.end_memory)
             rhs = self.qinit_obligation(instruction, prev_mem)
-            return self.obligation_quantum_assignment(lhs, rhs)
+            obs += self.obligation_quantum_assignment(lhs, rhs)
+            return obs
         if isinstance(instruction, QOP):
-            lhs = self.quantum_memory_to_literals(q_process.end_memory)
             rhs = self.qop_obligation(instruction, prev_mem, controls)
-            return self.obligation_quantum_assignment(lhs, rhs)
+            obs += self.obligation_quantum_assignment(lhs, rhs)
+            return obs
         if isinstance(instruction, QPHASE):
-            lhs = self.quantum_memory_to_literals(q_process.end_memory)
             rhs = self.qphase_obligation(instruction, prev_mem, controls)
-            return self.obligation_quantum_assignment(lhs, rhs)
+            obs += self.obligation_quantum_assignment(lhs, rhs)
+            return obs
         if isinstance(instruction, QMEAS):
             return self.obligation_quantum_measurement(q_process, prev_mem, self.__config[MEASURE_OPTION])
         if isinstance(instruction, QFORGET):
@@ -159,10 +162,9 @@ class ObilgationGenerator:
         # Obligations for probabilities
         obligations = []
         obligations.append(And([And(p <= 1, p >= 0) for p in probs_z3_vars]))
-        # Z3 BUG: Summation is causing a major slow down
-        # probs_sum = Real("Pr_" + prev_memory.get_reg_string(variable) + "_sum")
-        # obligations.append(probs_sum == Sum(probs_z3_vars))
-        # obligations.append(probs_sum == 1)
+        probs_sum = Real("Pr_" + prev_memory.get_reg_string(variable) + "_sum")
+        obligations.append(probs_sum == Sum(probs_z3_vars))
+        obligations.append(probs_sum == 1)
         
         # Calculate probabilities based on amplitudes of memory
         memory_obligation_variables = [Complex(memory_str) for memory_str in prev_memory.get_obligation_variables()]
@@ -174,12 +176,13 @@ class ObilgationGenerator:
             
         # Measurement options
         classical_value = Int('meas_' + variable)
+        meas_obligations = []
         if measure_option == HIGH_PROB:
             meas_obligations = self.obligation_qmeas_with_high_prob(variable, probs_z3_vars, classical_value)
         if measure_option == CERTAINTY:
             meas_obligations = self.obligation_qmeas_with_certainty(variable, probs_z3_vars, classical_value)
         if measure_option == SPECIFIC_VALUE:
-            meas_obligations = self.obligation_qmeas_with_specific_value(variable, probs_z3_vars)
+            meas_obligations = self.obligation_qmeas_with_specific_value(variable, probs_z3_vars, classical_value)
             
         # State after measurement
         # TODO: handle non-certainty instances (include 1//Sqrt(probs_z3_vars[meas_value]))
@@ -196,25 +199,27 @@ class ObilgationGenerator:
 
         return obligations + meas_obligations + post_state_obligations
     
-    def obligation_qmeas_with_specific_value(self, var, probs_z3_vars):
-        raise Exception("ObligationError: function not implemented yet")
-    
+    def obligation_qmeas_with_specific_value(self, var, probs_z3_vars, value):
+        # raise Exception("ObligationError: function not implemented yet")
+        a = Int('a')
+        max_prob = Real('hprob_' + var)
+        obligations = [And([max_prob >= p for p in probs_z3_vars])]
+        obligations += [Equiv(max_prob == probs_z3_vars[i], a == i)
+                        for i in range(len(probs_z3_vars))]
+        obligations.append(value == a)
+        return obligations
+
     def obligation_qmeas_with_certainty(self, var, probs_z3_vars, value):
         meas_cert = Bool('meas_cert')
         obligations = [Equiv(Or([p == 1 for p in probs_z3_vars]), meas_cert == True)]
         obligations += [Equiv(1 == probs_z3_vars[i], value == i)
                         for i in range(len(probs_z3_vars))]
-
         return obligations
     
-    # TODO: unsat on 50/50 chance, need a way to handle this just in case
+    # TODO: Allow user to specify value for high probability (2/3, 1/2, 9/10...)
     def obligation_qmeas_with_high_prob(self, var, probs_z3_vars, value):
-        max_prob = Real('hprob_' + var)
-        obligations = [Or([max_prob == p for p in probs_z3_vars])]
-        obligations.append(And([max_prob >= p for p in probs_z3_vars]))
-        obligations += [Equiv(max_prob == probs_z3_vars[i], value == i)
+        obligations = [Equiv(2/3 <= probs_z3_vars[i], value == i)
                         for i in range(len(probs_z3_vars))]
-        
         return obligations
     
     def obligation_quantum_forget(self, q_process : QuantumProcess, prev_mem : QuantumMemory):

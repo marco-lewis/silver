@@ -1,6 +1,7 @@
 from genericpath import exists
 import json as json
 from os.path import splitext
+import re
 import subprocess
 
 from z3.z3 import *
@@ -8,7 +9,7 @@ from z3.z3 import *
 from ClassicalMemory import ClassicalMemory
 from Instruction import Instruction
 from JSONInterpreter import JSONInterpreter
-from MeasureOptions import MEASURE_OPTION, CERTAINTY, HIGH_PROB
+from MeasureOptions import MEASURE_OPTION, CERTAINTY, HIGH_PROB, SPECIFIC_VALUE
 from ObligationGenerator import ObilgationGenerator
 from Program import Program
 from QuantumMemory import QuantumMemory
@@ -18,14 +19,16 @@ from silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
 from SpeqGenerator import SpeqGenerator
 
 class SilVer:
-    __silver_tactic = Then(Repeat('propagate-values'), 
-                        'elim-and',
-                        'elim-uncnstr', 
-                        'solve-eqs', 
-                        'bit-blast', 
-                        'smt', 
-                        "collect-statistics"
-                        )
+    __silver_tactic = Then(
+        Repeat('propagate-ineqs'),
+        Repeat('propagate-values'),
+        'elim-and',
+        'elim-uncnstr',
+        'solve-eqs',
+        'bit-blast',
+        'smt',
+        "collect-statistics"
+        )
 
     def __init__(self):
         self.solver = self.__silver_tactic.solver()
@@ -66,6 +69,7 @@ class SilVer:
         
         if self.speq_flag_itp.meas_cert: self.config[MEASURE_OPTION] = CERTAINTY
         elif self.speq_flag_itp.meas_whp: self.config[MEASURE_OPTION] = HIGH_PROB
+        elif self.speq_flag_itp.meas_atval: self.config[MEASURE_OPTION] = SPECIFIC_VALUE
         else: self.config[MEASURE_OPTION] = HIGH_PROB
         self.speq_z3_itp.set_meas_cert(self.speq_flag_itp.meas_cert)
         
@@ -107,6 +111,7 @@ class SilVer:
         speq_obs = self.get_speq_obs(spq_name)
         
         if verbose:
+            print(speq_obs)
             print("SilSpeq proof obligations generated and satisfiable")
             print()
             print("Generating Program from AST...") 
@@ -120,18 +125,18 @@ class SilVer:
         
         if verbose:
             print("Program obligations generated")
-            # print(prog_obs)
+            print(prog_obs)
             print()
 
-        # isqrt2 causing solver to take too long finding sat instance
-        if False:
-            prog_sat = self.check_gen_obs_sat(prog_obs)
-            if prog_sat != z3.sat:
-                raise Exception("SatError(" + str(prog_sat) + "): generated obligations from Silq program are invalid.")
+        # Slow for some programs, related to measurement?
+        prog_sat, stats = self.check_gen_obs_sat(prog_obs)
+        if prog_sat != z3.sat:
+            if verbose: print(stats)
+            raise Exception("SatError(" + str(prog_sat) + "): generated obligations from Silq program are invalid.")
 
-            if verbose:
-                print("Program obligations satisfiable")
-                print()
+        if verbose:
+            print("Program obligations satisfiable")
+            print()
         return prog_obs + speq_obs[func]
 
     def getJSON(self, silq_json_file):
@@ -177,8 +182,6 @@ class SilVer:
     
     def generate_program_obligations(self, prog : Program):
         obs : list[BoolRef] = []
-        # isqrt2 = Real("isqrt2")
-        # obs = [isqrt2 ** 2 == 1/2, isqrt2 > 0]
         ob_gen = ObilgationGenerator(self.config)
         for time in range(prog.current_time):
             if prog.quantum_processes[time].instruction != Instruction():
@@ -193,12 +196,13 @@ class SilVer:
                 obs += classical_obligation
         return obs
         
-    def check_gen_obs_sat(self, obs : list[BoolRef], timeout=5000):
+    def check_gen_obs_sat(self, obs : list[BoolRef], timeout=60000):
         s = self.__silver_tactic.solver()
         s.set(timeout=timeout)
         s.add(obs)
         sat = s.check()
-        return sat
+        stats = s.statistics()
+        return sat, stats
     
     def get_prev_quantum_memory(self, prog : Program, time):
         return prog.quantum_processes[time - 1].end_memory
