@@ -132,7 +132,8 @@ class SilVer:
         prog_sat, stats = self.check_gen_obs_sat(prog_obs)
         if prog_sat != z3.sat:
             if verbose: print(stats)
-            raise Exception("SatError(" + str(prog_sat) + "): generated obligations from Silq program are invalid.")
+            if prog_sat == z3.unknown: print("Warning: program obligations unkown; could be unsat")
+            else: raise Exception("SatError(" + str(prog_sat) + "): generated obligations from Silq program are invalid.")
 
         if verbose:
             print("Program obligations satisfiable")

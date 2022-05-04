@@ -1,0 +1,17 @@
+def grover_rev(f : const uint[3] !->qfree B){
+    x := 2:uint[3];
+
+    // Diffusion    
+    x[0] := H(x[0]);
+    x[1] := H(x[1]);
+    x[2] := H(x[2]);
+    if x!=0{ phase(pi); }
+    x[0] := H(x[0]);
+    x[1] := H(x[1]);
+    x[2] := H(x[2]);
+
+    if f(x){ phase(pi); }
+    
+    x := measure(x);
+    return x;
+}

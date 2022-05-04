@@ -1,0 +1,11 @@
+grover_rev[whp](define f:{0, 1}^7->{0, 1})->(define grover_rev_ret:{0, 1}^7)
+pre{
+    define a : {0,1}^7
+    define x : {0,1}^7
+    assert(a = 2)
+    assert(f(a) = 1)
+    assert(SUM[x](f) = 1)
+}
+post{
+    assert(grover_rev_ret = a)
+}
