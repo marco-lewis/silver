@@ -3,9 +3,8 @@ import z3
 
 folder = "tests/"
 
-def check(json_file, func, expected, verbose=False, stats=True, timeout=60000):
-    silver = SilVer()
-    silver.solver.set(timeout=timeout)
+def check(json_file, func, expected, verbose=False, stats=True, timeout=5000):
+    silver = SilVer(timeout)
     sat = silver.verify_func(folder + json_file, func, verbose)
     if sat == expected: print("Test passed as expected")
     if verbose and sat == z3.sat:

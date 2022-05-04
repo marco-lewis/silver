@@ -30,8 +30,10 @@ class SilVer:
         "collect-statistics"
         )
 
-    def __init__(self):
+    def __init__(self, timeout=5000):
+        self.timeout = timeout
         self.solver = self.__silver_tactic.solver()
+        self.solver.set(timeout=self.timeout)
         self.json_interp = JSONInterpreter()
         self.speq_parser = SilSpeqParser()
         # TODO: Move so that Interpreters are only function specific
@@ -158,7 +160,8 @@ class SilVer:
         """
         Given a SilSpeq tree, check that all generated Z3 expressions are satisfiable
         """
-        speq_solver = Solver()
+        speq_solver = self.__silver_tactic.solver()
+        speq_solver.set(timeout=self.timeout)
         speq_itp = SilSpeqZ3Interpreter(False)
         obl_dict = speq_itp.visit(tree)
         for func_name in obl_dict:
@@ -197,9 +200,9 @@ class SilVer:
                 obs += classical_obligation
         return obs
         
-    def check_gen_obs_sat(self, obs : list[BoolRef], timeout=60000):
+    def check_gen_obs_sat(self, obs : list[BoolRef]):
         s = self.__silver_tactic.solver()
-        s.set(timeout=timeout)
+        s.set(timeout=self.timeout)
         s.add(obs)
         sat = s.check()
         stats = s.statistics()
