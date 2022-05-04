@@ -6,7 +6,7 @@ post{
 
 }
 
-fixed_dj(define f:{0, 1}^5->{0, 1})->(define fixed_dj_ret:{0, 1}^5)
+fixed_dj[cert](define f:{0, 1}^5->{0, 1})->(define fixed_dj_ret:{0, 1}^5)
 pre{
     define y : N
     define x : {0,1}^5
@@ -14,7 +14,6 @@ pre{
     define const : {0, 1}
     
     assert((¬(bal = 1)) <-> const = 1)
-    # assert(SUM[x](f(x)) = y)
     assert(SUM[x](f) = y)
     assert(y = 2^(5-1) | y = 0 | y = 2^5)
     assert(bal = 1 <-> y = 2^(5-1))
