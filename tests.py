@@ -7,21 +7,25 @@ def check(json_file, func, expected, verbose=False, stats=True, timeout=5000):
     silver = SilVer(timeout)
     sat = silver.verify_func(folder + json_file, func, verbose)
     if sat == expected: print("Test passed as expected")
+    else: print("SatError: Expected " + str(expected) + " but got " + str(sat))
     if verbose and sat == z3.sat:
         print("Model/CEX")
         m = silver.solver.model()
         print(m)
         try: print('Function: ', m[z3.Function('f', z3.IntSort(), z3.IntSort())])
         except: pass
+    if verbose and sat == z3.unknown:
+        print('Reason: ', silver.solver.reason_unknown())
     if verbose and sat == z3.unsat:
         print("Unsat Core:")
         print(silver.solver.unsat_core())
+    stats = silver.solver.statistics()    
     if stats:
-        print("Stats")
-        stats = silver.solver.statistics()
-        print(stats)
-    if sat != expected:
-        raise Exception("SatError: Expected " + str(expected) + " but got " + str(sat))
+        print("Time")
+        print(stats.time)
+        if verbose:
+            print("Stats")
+            print(stats)
     print()
 
 # Basic checks that SilVer compiles correctly
