@@ -6,7 +6,7 @@ post{
 
 }
 
-fixed_dj[cert](define f:{0, 1}^5->{0, 1})->(define fixed_dj_ret:{0, 1}^5)
+fixed_dj[whp](define f:{0, 1}^5->{0, 1})->(define fixed_dj_ret:{0, 1}^5)
 pre{
     define y : N
     define x : {0,1}^5
