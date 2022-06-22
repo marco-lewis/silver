@@ -30,10 +30,12 @@ class SilVer:
         "collect-statistics"
         )
 
-    def __init__(self, timeout=5000):
+    def __init__(self, timeout=30000, seed=3):
         self.timeout = timeout
         self.solver = self.__silver_tactic.solver()
-        self.solver.set(timeout=self.timeout)
+        self.solver.set(timeout=self.timeout,
+                        random_seed=seed,
+        )
         self.json_interp = JSONInterpreter()
         self.speq_parser = SilSpeqParser()
         # TODO: Move so that Interpreters are only function specific
@@ -131,10 +133,12 @@ class SilVer:
             print()
 
         # Slow for some programs, related to measurement?
-        prog_sat, stats = self.check_gen_obs_sat(prog_obs)
+        prog_sat, stats, reason = self.check_gen_obs_sat(prog_obs)
         if prog_sat != z3.sat:
             if verbose: print(stats)
-            if prog_sat == z3.unknown: print("Warning: program obligations unkown; could be unsat")
+            if prog_sat == z3.unknown: 
+                print("Warning: program obligations unkown; could be unsat")
+                print("Reason: ", reason)
             else: raise Exception("SatError(" + str(prog_sat) + "): generated obligations from Silq program are invalid.")
 
         if verbose:
@@ -206,7 +210,7 @@ class SilVer:
         s.add(obs)
         sat = s.check()
         stats = s.statistics()
-        return sat, stats
+        return sat, stats, s.reason_unknown()
     
     def get_prev_quantum_memory(self, prog : Program, time):
         return prog.quantum_processes[time - 1].end_memory
