@@ -1,4 +1,5 @@
 from math import floor
+from typing import List
 from z3 import *
 from ClassicalMemory import ClassicalMemory
 from Instruction import *
@@ -35,7 +36,7 @@ class ObilgationGenerator:
         value = Int(end_memory.get_obligation_variable(instruction.classical_ref.variable))
         return [value == meas]
 
-    # Adding bounds ot the lhs make it harder to find sat instances 
+    # Adding bounds to the lhs make it harder to find sat instances 
     def make_quantum_process_obligation(self, q_process : QuantumProcess, prev_mem : QuantumMemory, controls : list) -> list[BoolRef]:
         instruction = q_process.instruction
         lhs = self.quantum_memory_to_literals(q_process.end_memory)
@@ -48,6 +49,10 @@ class ObilgationGenerator:
             rhs = self.qop_obligation(instruction, prev_mem, controls)
             obs += self.obligation_quantum_assignment(lhs, rhs)
             return obs
+        if isinstance(instruction, QPAR):
+            rhs = self.qpar_obligation(instruction, prev_mem, controls)
+            obs += self.obligation_quantum_assignment(lhs, rhs)
+            return obs
         if isinstance(instruction, QPHASE):
             rhs = self.qphase_obligation(instruction, prev_mem, controls)
             obs += self.obligation_quantum_assignment(lhs, rhs)
@@ -55,7 +60,6 @@ class ObilgationGenerator:
         if isinstance(instruction, QMEAS):
             return self.obligation_quantum_measurement(q_process, prev_mem, self.__config[MEASURE_OPTION])
         if isinstance(instruction, QFORGET):
-            # return [True]
             return self.obligation_quantum_forget(q_process, prev_mem)
         if isinstance(instruction, RETURN):
             return [True]
@@ -99,6 +103,17 @@ class ObilgationGenerator:
                         op = dot(dot(SWAP, op), SWAP)
                         op = [[simplify(el) for el in r] for r in op]
         return self.obligation_operation(op, self.quantum_memory_to_literals(prev_mem))
+
+    def qpar_obligation(self, instruction : QPAR, prev_mem : QuantumMemory, controls : list):
+        # TODO: Handle control
+        # TODO: Share functionality
+        locs = [prev_mem.get_loc(inst.arg.variable, inst.arg.index) for inst in instruction.operations]
+        matrices = [self.matrix_from_string(inst.operation) for inst in instruction.operations]
+        ops = [self.make_qubit_operation(m, l, prev_mem.get_total_size()) for l,m in zip(locs, matrices)]
+        final_op = ID_N(2**prev_mem.get_total_size())
+        for op in ops: final_op = dot(final_op,op)
+        return self.obligation_operation(final_op, self.quantum_memory_to_literals(prev_mem))
+
     
     def qphase_obligation(self, instruction : QPHASE, prev_mem : QuantumMemory, controls : list):
         # TODO: Handle non-standard operations

@@ -1,5 +1,5 @@
 from SilVer import SilVer
-import z3
+import z3, sys
 
 folder = "tests/"
 
@@ -22,11 +22,13 @@ def check(json_file, func, expected, verbose=False, stats=True, timeout=5000):
     stats = silver.solver.statistics()    
     if stats:
         print("Time")
-        print(stats.time)
+        try: print(stats.get_key_value('time'))
+        except: print("Unable to get time (possibly 0)")
         if verbose:
             print("Stats")
             print(stats)
     print()
+    sys.stdout.flush()
 
 # Basic checks that SilVer compiles correctly
 # check("test_singlevar.json", "main", z3.sat)
@@ -36,9 +38,9 @@ def check(json_file, func, expected, verbose=False, stats=True, timeout=5000):
 
 # Verification of Deutsch's algorithm
 # check("deutsch.json", "deutsch", z3.unsat)
-# BUG: prog_obl not sat
-# check("deutsch_anc.json", "deutsch", z3.unsat)
 # check("deutsch_anc2.json", "deutsch", z3.unsat)
+# BUG: prog_obl not sat - related to measurement and forgetting
+# check("deutsch_anc.json", "deutsch", z3.unsat)
 
 # Verification fail on purpose - gives a model
 # BUG: prog_obl not sat
@@ -50,9 +52,10 @@ def check(json_file, func, expected, verbose=False, stats=True, timeout=5000):
 # check("dj_fixed3.json", "fixed_dj", z3.unsat)
 # check("dj_fixed4.json", "fixed_dj", z3.unsat)
 # check("dj_fixed5.json", "fixed_dj", z3.unsat)
+# Works using optimise
 # check("dj_fixed6.json", "fixed_dj", z3.unsat)
-# Very slow (kinda expected)
-# check("dj_fixed7.json", "fixed_dj", z3.unsat)
+# Gets stuck - sometimes no timeout
+# check("dj_fixed7.json", "fixed_dj", z3.unsat, True)
 
 # Verification of Grover's Algorithm - Work in Progress
 # 2 qubits - uses certainty

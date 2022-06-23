@@ -1,3 +1,4 @@
+from typing import List
 from VarRef import VarRef
 
 
@@ -91,7 +92,7 @@ class QOP(Instruction):
         self.__operation = operation
         self.__arg = arg
         self.__out = out
-        
+
     @property
     def operation(self):
         return self.__operation
@@ -118,6 +119,23 @@ class QOP(Instruction):
 
     def __repr__(self) -> str:
         return "QOP(" + repr(self.__operation) + ", " + repr(self.__arg) + ", " + repr(self.__out) + ")"
+
+class QPAR(Instruction):
+    def __init__(self, operations) -> None:
+        super().__init__()
+        self.__operations = operations
+        
+    @property
+    def operations(self):
+        return self.__operations
+
+    @operations.setter
+    def operations(self, value):
+        self.__operations = value
+        
+    def __repr__(self) -> str:
+        return "QPAR(" + repr(self.__operations) + ")"
+
 
 class QPHASE(Instruction):
     def __init__(self, phase) -> None:

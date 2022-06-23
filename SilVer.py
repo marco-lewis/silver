@@ -93,19 +93,19 @@ class SilVer:
             # 4a) Produce obligation/sat(?) files for correct functions
         pass
 
-    def verify_func(self, file, func, verbose=False):
-        obs = self.make_obs(file, func, verbose)
+    def verify_func(self, file, func, verbose=False, show_objects=False):
+        obs = self.make_obs(file, func, verbose, show_objects)
         self.solver.add(obs)
         if verbose:
             print("Full Obligations in Solver")
-            print(self.solver)
+            if show_objects: print(self.solver)
             print()
 
         print("Verifying program with specification...")
         sat = self.check_solver_sat()
         return sat
 
-    def make_obs(self, file, func, verbose=False):
+    def make_obs(self, file, func, verbose=False, show_objects=False):
         print("Verifying " + func + " in " + file)
         self.check_speq_exists(file)
         spq_name = self.get_speq_file_name(file)
@@ -115,21 +115,23 @@ class SilVer:
         speq_obs = self.get_speq_obs(spq_name)
         
         if verbose:
-            print(speq_obs)
+            if show_objects: print(speq_obs)
             print("SilSpeq proof obligations generated and satisfiable")
             print()
             print("Generating Program from AST...") 
         prog = self.generate_json_program(file, func)
+        prog.optimise()
 
         if verbose: 
             print("Generating proof obligations from Program...")
-            print(prog)
+            if show_objects: print(prog)
             print()
+        # Slow here?
         prog_obs = self.generate_program_obligations(prog)
         
         if verbose:
             print("Program obligations generated")
-            print(prog_obs)
+            if show_objects: print(prog_obs)
             print()
 
         # Slow for some programs, related to measurement?
