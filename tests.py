@@ -1,4 +1,4 @@
-from SilVer import SilVer
+from silver.SilVer import SilVer
 import z3, sys
 
 folder = "tests/"
@@ -38,9 +38,9 @@ def check(json_file, func, expected, verbose=False, stats=True, timeout=5000):
 
 # Verification of Deutsch's algorithm
 # check("deutsch.json", "deutsch", z3.unsat)
-# check("deutsch_anc2.json", "deutsch", z3.unsat)
-# BUG: prog_obl not sat - related to measurement and forgetting
 # check("deutsch_anc.json", "deutsch", z3.unsat)
+# BUG: prog_obl not sat - related to measurement and forgetting
+# check("deutsch_anc2.json", "deutsch", z3.unsat)
 
 # Verification fail on purpose - gives a model
 # BUG: prog_obl not sat
@@ -52,9 +52,8 @@ def check(json_file, func, expected, verbose=False, stats=True, timeout=5000):
 # check("dj_fixed3.json", "fixed_dj", z3.unsat)
 # check("dj_fixed4.json", "fixed_dj", z3.unsat)
 # check("dj_fixed5.json", "fixed_dj", z3.unsat)
-# Works using optimise
 # check("dj_fixed6.json", "fixed_dj", z3.unsat)
-# Gets stuck - sometimes no timeout
+# Quite slow - exponential? (18s)
 # check("dj_fixed7.json", "fixed_dj", z3.unsat, True)
 
 # Verification of Grover's Algorithm - Work in Progress
