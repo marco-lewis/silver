@@ -126,7 +126,6 @@ class SilVer:
             print("Generating proof obligations from Program...")
             if show_objects: print(prog)
             print()
-        # Slow here?
         prog_obs = self.generate_program_obligations(prog)
         
         if verbose:

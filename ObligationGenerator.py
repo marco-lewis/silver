@@ -110,8 +110,12 @@ class ObilgationGenerator:
         locs = [prev_mem.get_loc(inst.arg.variable, inst.arg.index) for inst in instruction.operations]
         matrices = [self.matrix_from_string(inst.operation) for inst in instruction.operations]
         ops = [self.make_qubit_operation(m, l, prev_mem.get_total_size()) for l,m in zip(locs, matrices)]
-        final_op = ID_N(2**prev_mem.get_total_size())
-        for op in ops: final_op = dot(final_op,op)
+        final_op = [[1]]
+        for l in range(prev_mem.get_total_size()):
+            if l in locs:
+                idx = locs.index(l)
+                final_op = kronecker(final_op, matrices[idx])
+            else: final_op = kronecker(final_op, ID)
         return self.obligation_operation(final_op, self.quantum_memory_to_literals(prev_mem))
 
     
