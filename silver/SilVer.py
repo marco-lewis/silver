@@ -6,17 +6,17 @@ import subprocess
 
 from z3.z3 import *
 
-from ClassicalMemory import ClassicalMemory
-from Instruction import Instruction
-from JSONInterpreter import JSONInterpreter
-from MeasureOptions import MEASURE_OPTION, CERTAINTY, HIGH_PROB, SPECIFIC_VALUE
-from ObligationGenerator import ObilgationGenerator
-from Program import Program
-from QuantumMemory import QuantumMemory
 from silspeq.SilSpeqParser import SilSpeqParser
 from silspeq.SilSpeqZ3FlagVisitor import SilSpeqZ3FlagVisitor
 from silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
-from SpeqGenerator import SpeqGenerator
+from silver.ClassicalMemory import ClassicalMemory
+from silver.Instruction import Instruction
+from silver.JSONInterpreter import JSONInterpreter
+from silver.MeasureOptions import MEASURE_OPTION, CERTAINTY, HIGH_PROB, SPECIFIC_VALUE
+from silver.ObligationGenerator import ObilgationGenerator
+from silver.Program import Program
+from silver.QuantumMemory import QuantumMemory
+from silver.SpeqGenerator import SpeqGenerator
 
 class SilVer:
     __silver_tactic = Then(

@@ -1,6 +1,6 @@
-from ClassicalMemory import ClassicalMemory
-from Instruction import Instruction
-from QuantumMemory import QuantumMemory
+from silver.ClassicalMemory import ClassicalMemory
+from silver.Instruction import Instruction
+from silver.QuantumMemory import QuantumMemory
 
 # Stores the instruction and memory together as a process
 class Process():

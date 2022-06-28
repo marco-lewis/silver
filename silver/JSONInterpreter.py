@@ -9,14 +9,14 @@ Integers for now only
 from cmath import exp
 from lib2to3.pgen2.token import RIGHTSHIFT
 from z3 import *
-from ClassicalMemory import ClassicalMemory
-from utils import *
 
-from Instruction import *
-from Program import Program
-from QuantumMemory import QuantumMemory
-from QuantumOps import *
-from VarRef import VarRef
+from silver.ClassicalMemory import ClassicalMemory
+from silver.Instruction import *
+from silver.Program import Program
+from silver.QuantumMemory import QuantumMemory
+from silver.QuantumOps import *
+from silver.VarRef import VarRef
+from silver.utils import *
 
 class JSONInterpreter:
     isqrt2 = Real("isqrt2")

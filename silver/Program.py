@@ -1,8 +1,8 @@
 from copy import deepcopy
-from Instruction import CMEAS, QOP, QPAR
-from Process import *
-from QuantumMemory import QuantumMemory
-from VarRef import VarRef
+from silver.Instruction import CMEAS, QOP, QPAR
+from silver.Process import *
+from silver.QuantumMemory import QuantumMemory
+from silver.VarRef import VarRef
 
 # Class for representation of programs from Silq
 # Should convert JSON into processes

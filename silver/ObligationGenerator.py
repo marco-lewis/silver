@@ -1,16 +1,17 @@
 from math import floor
 from typing import List
 from z3 import *
-from ClassicalMemory import ClassicalMemory
-from Instruction import *
-from Process import ClassicalProcess, QuantumProcess
-from QuantumMemory import QuantumMemory
-from complex import *
-from ComplexVector import *
+
 from silspeq.SilSpeqZ3Interpreter import Equiv
-from utils import *
-from QuantumOps import *
-from MeasureOptions import MEASURE_OPTION, HIGH_PROB, CERTAINTY, SPECIFIC_VALUE
+from silver.ClassicalMemory import ClassicalMemory
+from silver.complex import *
+from silver.ComplexVector import *
+from silver.Instruction import *
+from silver.Process import ClassicalProcess, QuantumProcess
+from silver.MeasureOptions import MEASURE_OPTION, HIGH_PROB, CERTAINTY, SPECIFIC_VALUE
+from silver.QuantumMemory import QuantumMemory
+from silver.QuantumOps import *
+from silver.utils import *
 
 # Currently handles single variable, want to change to handle multiple variables
 # TODO: Checks for valid sizes of inputs

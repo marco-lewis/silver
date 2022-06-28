@@ -1,4 +1,4 @@
-from VarRef import VarRef
+from silver.VarRef import VarRef
 
 
 class QuantumRegister:

@@ -1,5 +1,5 @@
 import re
-from utils import generate_silspeq_from_func
+from silver.utils import generate_silspeq_from_func
 
 PROD = "prod"
 
