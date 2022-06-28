@@ -3,9 +3,10 @@ import z3, sys
 
 folder = "tests/"
 
-def check(json_file, func, expected, verbose=False, stats=True, timeout=5000):
-    silver = SilVer(timeout)
-    sat = silver.verify_func(folder + json_file, func, verbose)
+def check(json_file, func, expected, verbose=False, stats=True, show_objects=False, timeout=5000):
+    if show_objects and not(verbose): print("Verbosity: objects will not be shown as verbose is not enabled.")
+    silver = SilVer(timeout=timeout)
+    sat = silver.verify_func(folder + json_file, func, verbose, show_objects)
     if sat == expected: print("Test passed as expected")
     else: print("SatError: Expected " + str(expected) + " but got " + str(sat))
     if verbose and sat == z3.sat:
@@ -65,4 +66,5 @@ def check(json_file, func, expected, verbose=False, stats=True, timeout=5000):
 # check("grover_rev7.json", "grover_rev", z3.unsat)
 # 3 qubits - problems with measurement/probability
 # Likely causing check to be unknown
-# check("grover_fixed2.json", "grover_fixed", z3.unsat)
+# Setting WHP bound to be 1/2 ignores timeout and causes SilVer to take ~45s
+check("grover_fixed2.json", "grover_fixed", z3.unsat, True)

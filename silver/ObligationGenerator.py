@@ -237,8 +237,8 @@ class ObilgationGenerator:
         return obligations
     
     # TODO: Allow user to specify value for high probability (2/3, 1/2, 9/10...)
-    def obligation_qmeas_with_high_prob(self, var, probs_z3_vars, value):
-        obligations = [Equiv(2/3 <= probs_z3_vars[i], value == i)
+    def obligation_qmeas_with_high_prob(self, var, probs_z3_vars, value, prob_bound=1/2):
+        obligations = [Equiv(prob_bound <= probs_z3_vars[i], value == i)
                         for i in range(len(probs_z3_vars))]
         return obligations
     
