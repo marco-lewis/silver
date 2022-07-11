@@ -177,7 +177,10 @@ class SilVer:
             speq_solver.reset()
         
     def get_speq_file_name(self, silq_json_file):
-        return splitext(silq_json_file)[0] + ".spq"    
+        spq_path = splitext(silq_json_file)[0].split("/")
+        del spq_path[-2]
+        spq_path = '/'.join(spq_path)
+        return spq_path + ".spq"
     
     def generate_speq_file(self, silq_json_file):
         speq_gen = SpeqGenerator(self.getJSON(silq_json_file),
