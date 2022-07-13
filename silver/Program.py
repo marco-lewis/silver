@@ -23,6 +23,7 @@ class Program():
         self.controls = {}
         self.quantum_processes[-1] = QuantumProcess()
         self.classical_processes[-1] = ClassicalProcess(Instruction())
+        self.controls[-1] = []
         
     def iterate_time(self):
         self.current_time += 1
@@ -105,9 +106,9 @@ class Program():
         counter = 0
         while counter + 1 < self.current_time:
             # Identify if current process is a quantum op or a quantum parallel
-            proc = self.quantum_processes[counter]
-            next_proc = self.quantum_processes[counter + 1]
-            if self.can_parallelise(proc, next_proc):
+            proc, next_proc = self.quantum_processes[counter], self.quantum_processes[counter + 1]
+            ctrl, next_ctrl = self.controls[counter], self.controls[counter + 1]
+            if self.can_parallelise(proc, next_proc, ctrl, next_ctrl):
                 # 1: Combine into quantum parallel
                 if isinstance(proc.instruction, QOP): self.quantum_processes[counter].instruction = QPAR([proc.instruction])
                 self.quantum_processes[counter].instruction.operations.append(next_proc.instruction)
@@ -115,9 +116,9 @@ class Program():
                 self.decrement_processes(counter + 1)
             else: counter += 1
 
-    def can_parallelise(self, proc:QuantumProcess, next_proc:QuantumProcess):
+    def can_parallelise(self, proc:QuantumProcess, next_proc:QuantumProcess, ctrl, next_ctrl):
         b = (isinstance(proc.instruction, QOP) or isinstance(proc.instruction, QPAR)) 
-        b = b and isinstance(next_proc.instruction, QOP)
+        b = b and isinstance(next_proc.instruction, QOP) and ctrl == next_ctrl
         return b and not(self.intersecting_memory(proc.instruction, next_proc.instruction))
 
     def intersecting_memory(self, proc1 : QOP|QPAR, proc2 : QOP):
@@ -136,6 +137,9 @@ class Program():
         del self.controls[self.current_time]
 
     def __str__(self) -> str:
-        quantum_str = self.quantum_processes.__str__()
-        classical_str = self.classical_processes.__str__()
-        return "Quantum: " + quantum_str + "\nClassical: " + classical_str + "\nControls: " + str(self.controls)
+        quantum_str, classical_str, controls_str = "", "", ""
+        for k in self.quantum_processes:
+            quantum_str += str(k) + ": " + str(self.quantum_processes[k]) + "\n"
+            classical_str += str(k) + ": " + str(self.classical_processes[k]) + "\n"
+            controls_str += str(k) + ": " + str(self.controls[k]) + "\n"
+        return "Quantum\n" + quantum_str + "\nClassical\n" + classical_str + "\nControls\n" + controls_str
