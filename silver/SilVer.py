@@ -25,6 +25,7 @@ class SilVer:
         'elim-and',
         'elim-uncnstr',
         'solve-eqs',
+        'eq2bv',
         'bit-blast',
         'smt',
         "collect-statistics"
@@ -33,8 +34,9 @@ class SilVer:
     def __init__(self, timeout=30000, seed=3):
         self.timeout = timeout
         self.solver = self.__silver_tactic.solver()
-        self.solver.set(timeout=self.timeout,
-                        random_seed=seed,
+        self.solver.set(
+            timeout=self.timeout,
+            random_seed=seed,
         )
         self.json_interp = JSONInterpreter()
         self.speq_parser = SilSpeqParser()
