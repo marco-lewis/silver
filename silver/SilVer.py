@@ -117,14 +117,13 @@ class SilVer:
         speq_obs = self.get_speq_obs(spq_name)
         
         if verbose:
-            if show_objects: print(speq_obs)
             print("SilSpeq proof obligations generated and satisfiable")
             print()
             print("Generating Program from AST...") 
         prog = self.generate_json_program(file, func)
         prog.optimise()
 
-        if verbose: 
+        if verbose:
             print("Generating proof obligations from Program...")
             if show_objects: print(prog)
             print()
@@ -132,7 +131,6 @@ class SilVer:
         
         if verbose:
             print("Program obligations generated")
-            if show_objects: print(prog_obs)
             print()
 
         # Slow for some programs, related to measurement?
