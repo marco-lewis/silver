@@ -22,13 +22,13 @@ def check(json_file, func, expected, verbose=False, stats=True, show_objects=Fal
     if verbose and sat == z3.unsat:
         print("Unsat Core:")
         print(silver.solver.unsat_core())
-    stats = silver.solver.statistics()    
+    silver_stats = silver.solver.statistics()    
     if stats:
         print("Time")
-        try: print(stats.get_key_value('time'))
+        try: print(silver_stats.get_key_value('time'))
         except: print("Unable to get time (possibly 0)")
         if verbose:
             print("Stats")
-            print(stats)
+            print(silver_stats)
     print()
     sys.stdout.flush()

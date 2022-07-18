@@ -1,0 +1,19 @@
+main()->(define main_ret:())
+pre{
+
+}
+post{
+
+}
+
+fixed_bv[cert](define f:{0, 1}^2->{0, 1})->(define fixed_bv_ret:{0, 1}^2)
+pre{
+    define s : {0,1}^2
+    define x : {0,1}^2
+
+    # f(x) = s.x mod 2 == 1 if odd number of different 1's, 0 if even
+    assert(@x. f(x) = (s.x) mod 2)
+}
+post{
+    assert(fixed_bv_ret = s)
+}
