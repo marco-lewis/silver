@@ -224,10 +224,6 @@ class SilSpeqZ3Interpreter(Interpreter):
 
     # Handling numexpr
     @visit_children_decor
-    def var(self, expr):
-        return self.token(expr[0])
-    
-    @visit_children_decor
     def neg(self,expr):
         return - self.handle_token(expr[0])
 
@@ -252,6 +248,23 @@ class SilSpeqZ3Interpreter(Interpreter):
         return self.handle_token(exprs[0]) ** self.handle_token(exprs[1])
 
     @visit_children_decor
+    def mod(self,exprs):
+        return self.handle_token(exprs[0]) % self.handle_token(exprs[1])
+
+    @visit_children_decor
+    def dot(self,exprs):
+        l = self.handle_token(exprs[0])
+        r = self.handle_token(exprs[1])
+        tl, tr = self.types[l.__str__()], self.types[r.__str__()]
+        i = tl if tl > tr else tr
+        s = (l % 2) * (r % 2)
+        for j in range(1,i):
+            lterm = (l/ 2**j) % 2
+            rterm = (r/ 2**j) % 2
+            s += lterm*rterm
+        return s
+
+    @visit_children_decor
     def call(self, call):
         return self.handle_token(call[0])([self.handle_token(input) for input in call[1]])
 
@@ -267,6 +280,11 @@ class SilSpeqZ3Interpreter(Interpreter):
         else:
             s = Sum([body(i) for i in range(0, 2**idx_type)])
             return s
+
+    # Handling variables
+    @visit_children_decor
+    def var(self, expr):
+        return self.token(expr[0])
 
     # Handling tokens and fetching Z3 variables
     def handle_token(self, t):

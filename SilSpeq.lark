@@ -60,6 +60,8 @@
     | numexpr "*" numexpr       -> mul
     | numexpr "/" numexpr       -> div
     | numexpr "^" numexpr       -> pow
+    | numexpr "mod" numexpr     -> mod
+    | numexpr "." numexpr       -> dot
     | func "(" args ")"         -> call
     | "SUM" "[" NAME "]" "(" numexpr ")"    -> sum
 
