@@ -1,0 +1,9 @@
+fixed_bv(define f:{0, 1}^6->{0, 1})->(define fixed_bv_ret:{0, 1}^6)
+pre{
+    define s : {0,1}^6
+    define x : {0,1}^6
+    assert(@x. f(x) = (s.x) mod 2)
+}
+post{
+    assert(fixed_bv_ret = s)
+}
