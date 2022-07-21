@@ -3,7 +3,7 @@ sys.path.append('../silver')
 from silver.SilVer import SilVer
 import z3, sys
 
-folder = "Silq_Programs/.ast/"
+folder = "Silq_Programs/"
 
 def check(json_file, func, expected, verbose=False, stats=True, show_objects=False, timeout=5000, seed=3):
     if show_objects and not(verbose): print("Verbosity: objects will not be shown as verbose is not enabled.")

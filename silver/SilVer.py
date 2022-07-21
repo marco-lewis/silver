@@ -1,4 +1,5 @@
 from genericpath import exists
+import inspect
 import json as json
 from os.path import splitext
 import re
@@ -6,6 +7,7 @@ import subprocess
 
 from z3.z3 import *
 
+import silver
 from silspeq.SilSpeqParser import SilSpeqParser
 from silspeq.SilSpeqZ3FlagVisitor import SilSpeqZ3FlagVisitor
 from silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
@@ -100,8 +102,9 @@ class SilVer:
             # 4a) Produce obligation/sat(?) files for correct functions
         pass
 
-    def verify_func(self, file, func, verbose=False, show_objects=False):
-        obs = self.make_obs(file, func, verbose, show_objects)
+    def verify_func(self, silq_file_path, func, verbose=False, show_objects=False):
+        json_file_path = self.generate_ast_file(silq_file_path)
+        obs = self.make_obs(json_file_path, func, verbose, show_objects)
         self.solver.add(obs)
         if verbose:
             print("Full Obligations in Solver")
@@ -111,6 +114,26 @@ class SilVer:
         print("Verifying program with specification...")
         sat = self.check_solver_sat()
         return sat
+
+    def get_ast_folder(self, silq_file_path):
+        folder_path = splitext(silq_file_path)[0].split("/")[0]
+        ast_path = folder_path + "/.ast"
+        if not(exists(ast_path)):
+            os.makedirs(ast_path)
+        return ast_path
+
+    def create_json_file(self, silq_file_path):
+        rc = subprocess.check_call(["silq", "--ast-dump", silq_file_path])
+        json_file_path = splitext(silq_file_path)[0] + ".json"
+        return json_file_path
+
+    def generate_ast_file(self, silq_file_path):
+        ast_path = self.get_ast_folder(silq_file_path)
+        json_file_path = self.create_json_file(silq_file_path)
+        json_file_name = splitext(json_file_path)[0].split("/")[-1] + ".json"
+        json_file_path_dest = ast_path + "/" + json_file_name
+        os.rename(json_file_path, json_file_path_dest)
+        return json_file_path_dest
 
     def make_obs(self, file, func, verbose=False, show_objects=False):
         print("Verifying " + func + " in " + file)
