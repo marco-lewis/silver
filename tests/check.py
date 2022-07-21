@@ -5,9 +5,9 @@ import z3, sys
 
 folder = "Silq_Programs/"
 
-def check(json_file, func, expected, verbose=False, stats=True, show_objects=False, timeout=5000, seed=3):
+def check(json_file, func, expected, verbose=False, stats=True, show_objects=False, timeout=5000, seed=3, check_store=True):
     if show_objects and not(verbose): print("Verbosity: objects will not be shown as verbose is not enabled.")
-    silver = SilVer(timeout=timeout, seed=seed)
+    silver = SilVer(timeout=timeout, seed=seed, check_store=check_store)
     sat = silver.verify_func(folder + json_file, func, verbose, show_objects)
     if sat == expected: print("Test passed as expected")
     else: print("SatError: Expected " + str(expected) + " but got " + str(sat))

@@ -34,9 +34,10 @@ class SilVer:
         "collect-statistics"
         )
 
-    def __init__(self, timeout=30000, seed=3):
+    def __init__(self, timeout=30000, seed=3, check_store=True):
         self.timeout = timeout
         self.seed = seed
+        self.check_store = check_store
         self.solver = self.make_solver_instance()
         self.json_interp = JSONInterpreter()
         self.speq_parser = SilSpeqParser()
@@ -162,7 +163,7 @@ class SilVer:
         hash_path = self.get_hash_path(json_file_path, func)
         stored_hash = self.get_stored_hash(hash_path)
 
-        if hash == stored_hash:
+        if hash == stored_hash and self.check_store:
             print("Obtaining stored obligations...")
             prog_obs = []
             self.load_stored_obligations(json_file_path, func)
