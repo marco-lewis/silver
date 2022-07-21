@@ -6,3 +6,5 @@ Deprecated/
 toy.py
 tests_analysis.py
 Silq_Programs/.ast/*
+Silq_Programs/.hash/*
+Silq_Programs/.obl/*

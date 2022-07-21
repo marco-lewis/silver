@@ -1,4 +1,5 @@
 from genericpath import exists
+import hashlib
 import inspect
 import json as json
 from os.path import splitext
@@ -103,6 +104,7 @@ class SilVer:
         pass
 
     def verify_func(self, silq_file_path, func, verbose=False, show_objects=False):
+        print("Verifying " + func + " in " + silq_file_path)
         json_file_path = self.generate_ast_file(silq_file_path)
         obs = self.make_obs(json_file_path, func, verbose, show_objects)
         self.solver.add(obs)
@@ -135,43 +137,67 @@ class SilVer:
         os.rename(json_file_path, json_file_path_dest)
         return json_file_path_dest
 
-    def make_obs(self, file, func, verbose=False, show_objects=False):
-        print("Verifying " + func + " in " + file)
-        self.check_speq_exists(file)
-        spq_name = self.get_speq_file_name(file)
+    def make_obs(self, json_file_path, func, verbose=False, show_objects=False):
+        self.check_speq_exists(json_file_path)
+        spq_name = self.get_speq_file_name(json_file_path)
         self.check_flags(spq_name)
         
         if verbose: print("Generating SilSpeq proof obligations...")
         speq_obs = self.get_speq_obs(spq_name)
         
         if verbose:
-            print("SilSpeq proof obligations generated and satisfiable")
-            print()
-            print("Generating Program from AST...") 
-        prog = self.generate_json_program(file, func)
-        prog.optimise()
-
-        if verbose:
-            print("Generating proof obligations from Program...")
-            if show_objects: print(prog)
-            print()
-        prog_obs = self.generate_program_obligations(prog)
-        
-        if verbose:
-            print("Program obligations generated")
+            print("SilSpeq proof obligations generated")
             print()
 
-        prog_sat, stats, reason = self.check_generated_obs_sat(prog_obs)
-        if prog_sat != z3.sat:
-            if verbose: print(stats)
-            if prog_sat == z3.unknown: 
-                print("Warning: program obligations unkown; could be unsat")
-                print("Reason: ", reason)
-            else: raise Exception("SatError(" + str(prog_sat) + "): generated obligations from Silq program are invalid.")
+        # Hash the silq_json with config
+        # Check if there exists a hash file (with obligations)
+        # If there is no hash file OR there is a hash but its different
+        # - Generate obligations as normal
+        # - Then store obligations with new hash (delete old one)
+        # Otherwise
+        # - Fetch program obligations
 
-        if verbose:
-            print("Program obligations satisfiable")
-            print()
+        silq_json = self.getJSON(json_file_path)
+        hash = hashlib.md5(str(silq_json).encode('utf-8') + str(self.config).encode('utf-8')).hexdigest()
+        hash_path = self.get_hash_path(json_file_path, func)
+        stored_hash = self.get_stored_hash(hash_path)
+
+        if hash == stored_hash:
+            print("Obtaining stored obligations...")
+            prog_obs = []
+            self.load_stored_obligations(json_file_path, func)
+        else:
+            if verbose: print("Generating Program from AST...") 
+            prog = self.json_interp.decode_func_in_json(silq_json, func)
+            prog.optimise()
+
+            if verbose:
+                print("Generating proof obligations from Program...")
+                if show_objects: print(prog)
+                print()
+            prog_obs = self.generate_program_obligations(prog)
+            
+            if verbose:
+                print("Program obligations generated")
+                print()
+
+            prog_sat, stats, reason = self.check_generated_obs_sat(prog_obs)
+            if prog_sat != z3.sat:
+                if verbose: print(stats)
+                if prog_sat == z3.unknown: 
+                    print("Warning: program obligations unkown; could be unsat")
+                    print("Reason: ", reason)
+                else: raise Exception("SatError(" + str(prog_sat) + "): generated obligations from Silq program are invalid.")
+
+            if verbose:
+                print("Program obligations satisfiable")
+                print("Storing obligations...")
+            
+            with open(hash_path, 'w') as writer: writer.write(str(hash))
+            temp_solver = self.__silver_tactic.solver()
+            temp_solver.add(prog_obs)
+            prog_smt2 = temp_solver.to_smt2()
+            with open(self.get_obligation_path(json_file_path, func), 'w') as writer: writer.write(str(prog_smt2))
         return prog_obs + speq_obs[func]
 
     def getJSON(self, silq_json_file):
@@ -182,7 +208,35 @@ class SilVer:
             data = rf.read()
             silq_json = json.loads(data)
         return silq_json
-        
+
+    def get_hash_path(self, json_file_path, func):
+        path = splitext(json_file_path)[0].split("/")
+        path[-1] = path[-1] + "_" + str(func)
+        path[-2] = ".hash"
+        folder = "/".join(path[:-1])
+        if not(exists(folder)): os.mkdir(folder)
+        path = "/".join(path) + ".hash"
+        return path
+    
+    def get_stored_hash(self, hash_file_path):
+        if not(exists(hash_file_path)):
+            return ""
+        with open(hash_file_path, 'rb') as r: hash = r.read()
+        return hash.decode('utf-8')
+
+    def get_obligation_path(self, json_file_path, func):
+        path = splitext(json_file_path)[0].split("/")
+        path[-1] = path[-1] + "_" + str(func)
+        path[-2] = ".obl"
+        folder = "/".join(path[:-1])
+        if not(exists(folder)): os.mkdir(folder)
+        path = "/".join(path) + ".smt2"
+        return path
+
+    def load_stored_obligations(self, json_file_path, func):
+        obl_path = self.get_obligation_path(json_file_path, func)
+        self.solver.from_file(obl_path)
+
     def get_speq_obs(self, file):
         tree = self.speq_parser.parse_file(file)
         self.check_speq_sat(tree)
@@ -220,11 +274,6 @@ class SilVer:
         speq_gen = SpeqGenerator(self.getJSON(silq_json_file),
                                  self.get_speq_file_name(silq_json_file))
         speq_gen.generate_speq_file()
-                
-    def generate_json_program(self, silq_json_file, func):
-        silq_json = self.getJSON(silq_json_file)
-        prog = self.json_interp.decode_func_in_json(silq_json, func)
-        return prog
     
     def generate_program_obligations(self, prog : Program):
         obs : list[BoolRef] = []
