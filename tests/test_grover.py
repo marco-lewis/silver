@@ -14,7 +14,8 @@ check("grover_fixed2.json", "grover_fixed", z3.unsat)
 # 2 Calls
 # 3 qubits - problems with measurement/probability
 # Likely causing check to be unknown
-# Setting WHP bound to be 1/2 ignores timeout and causes SilVer to take ~45s
+# Ran for 5 minutes but no sauce
+check("grover_err3.json", "grover_fixed", z3.sat)
 check("grover_fixed3.json", "grover_fixed", z3.unsat)
 # 4 qubits
 # 5 qubits

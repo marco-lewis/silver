@@ -33,11 +33,8 @@ class SilVer:
 
     def __init__(self, timeout=30000, seed=3):
         self.timeout = timeout
-        self.solver = self.__silver_tactic.solver()
-        self.solver.set(
-            timeout=self.timeout,
-            random_seed=seed,
-        )
+        self.seed = seed
+        self.solver = self.make_solver_instance()
         self.json_interp = JSONInterpreter()
         self.speq_parser = SilSpeqParser()
         # TODO: Move so that Interpreters are only function specific
@@ -49,7 +46,15 @@ class SilVer:
         if not(exists(self.get_speq_file_name(file))):
             self.generate_speq_file(file)
             raise Exception("New SilSpeq file created, you should add your specification before continuing")
-        
+    
+    def make_solver_instance(self):
+        s = self.__silver_tactic.solver()
+        s.set(
+            timeout=self.timeout,
+            random_seed=self.seed,
+        )
+        return s
+
     def reset(self):
         self.solver.reset()
         self.json_interp = JSONInterpreter()
@@ -133,8 +138,7 @@ class SilVer:
             print("Program obligations generated")
             print()
 
-        # Slow for some programs, related to measurement?
-        prog_sat, stats, reason = self.check_gen_obs_sat(prog_obs)
+        prog_sat, stats, reason = self.check_generated_obs_sat(prog_obs)
         if prog_sat != z3.sat:
             if verbose: print(stats)
             if prog_sat == z3.unknown: 
@@ -165,15 +169,19 @@ class SilVer:
         """
         Given a SilSpeq tree, check that all generated Z3 expressions are satisfiable
         """
-        speq_solver = self.__silver_tactic.solver()
-        speq_solver.set(timeout=self.timeout)
+        speq_solver = self.make_solver_instance()
         speq_itp = SilSpeqZ3Interpreter(False)
         obl_dict = speq_itp.visit(tree)
         for func_name in obl_dict:
-            speq_solver.add(obl_dict[func_name])
+            func_obls = obl_dict[func_name]
+            speq_solver.add(func_obls)
             sat = speq_solver.check()
             if not(sat == z3.sat):
-                raise Exception("SilSpeqError: one of your SilSpeq functions is unsatisfiable. Check there are no contradictions in your specificaiton.")
+                raise Exception(
+                    "SilSpeqError(" + str(sat) +
+                    "): one of your SilSpeq function specifications is not sat. " +
+                    "Check there are no contradictions in your specificaiton."
+                )
             speq_solver.reset()
         
     def get_speq_file_name(self, silq_json_file):
@@ -208,9 +216,8 @@ class SilVer:
                 obs += classical_obligation
         return obs
         
-    def check_gen_obs_sat(self, obs : list[BoolRef]):
-        s = self.__silver_tactic.solver()
-        s.set(timeout=self.timeout)
+    def check_generated_obs_sat(self, obs : list[BoolRef]):
+        s = self.make_solver_instance()
         s.add(obs)
         sat = s.check()
         stats = s.statistics()
