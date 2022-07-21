@@ -199,7 +199,10 @@ class SilVer:
             func_obls = obl_dict[func_name]
             speq_solver.add(func_obls)
             sat = speq_solver.check()
-            if not(sat == z3.sat):
+            if sat == z3.unknown:
+                print("Warning: SilSpeq obligations unkown; could be unsat")
+                print("Reason: ", speq_solver.reason_unknown())
+            elif sat == z3.unsat:
                 raise Exception(
                     "SilSpeqError(" + str(sat) +
                     "): one of your SilSpeq function specifications is not sat. " +
