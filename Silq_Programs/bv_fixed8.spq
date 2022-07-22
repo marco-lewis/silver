@@ -1,4 +1,4 @@
-fixed_bv(define f:{0, 1}^8->{0, 1})->(define fixed_bv_ret:{0, 1}^8)
+fixed_bv[cert](define f:{0, 1}^8->{0, 1})->(define fixed_bv_ret:{0, 1}^8)
 pre{
     define s : {0,1}^8
     define x : {0,1}^8
