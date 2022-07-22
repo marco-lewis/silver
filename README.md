@@ -19,14 +19,9 @@ Development of the SilVer tool for verifying Silq programs using the Z3 SMT solv
 ## Current Workflow
 
 1. Add your Silq file to `Silq_Programs`
-2. Run 
 
-    `./get_ast.sh Silq_Programs/<your-program>`
+2. Create a Python file that creates a `silver = SilVer()` object and run:
 
-    which will generate a json file (`<your-program>.json`) in the tests folder.
-
-3. Create a Python file that creates a `silver = SilVer()` object and run:
-
-    `silver.verify_func(<json-file-location>,<function-to-verify>)`
+    `silver.verify_func(<silq-file-location>,<function-to-verify>)`
     
     On the first run a spq file will be created which can be used to specify behaviour using SilSpeq. When ran again, SilVer will verify the function specified.
