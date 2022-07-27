@@ -107,14 +107,11 @@ class ObilgationGenerator:
         
     def make_operation(self, op_locs, matrices, prev_mem : QuantumMemory, controls : list, phase = 1):
         s = prev_mem.get_total_size()
-        print("Makung U...")
         U = self.make_quantum_op(op_locs, matrices, s)
         if not controls: return U
         U = np.matrix(U)
         I = np.identity(2**s, dtype=int)
-        print("Making F...")
         F = np.matrix(self.make_control_matrix(prev_mem, controls))
-        print("Calculating I + F.(U-I)")
         return (I + np.dot(F, phase*U - I)).tolist()
 
     def make_quantum_op(self, locs : list, matrices : list, size : int):
@@ -159,7 +156,8 @@ class ObilgationGenerator:
 
     def get_control_variable_and_function(self, control):
         if isinstance(control, QOP): return control.arg, lambda t: control.operation(t)
-        raise Exception("Unable to handle " + control)
+        if isinstance(control, VarRef): return control, lambda t: t
+        raise Exception("Unable to handle " + str(control))
 
     def obligation_quantum_assignment(self, lhs, rhs):
         if len(lhs) != len(rhs): raise Exception("LengthError: lengths of lists don't match")
