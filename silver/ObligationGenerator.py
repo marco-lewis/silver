@@ -109,10 +109,10 @@ class ObilgationGenerator:
         s = prev_mem.get_total_size()
         U = self.make_quantum_op(op_locs, matrices, s)
         if not controls: return U
-        U = np.matrix(U)
+        U = np.array(U)
         I = np.identity(2**s, dtype=int)
-        F = np.matrix(self.make_control_matrix(prev_mem, controls))
-        return (I + np.dot(F, phase*U - I)).tolist()
+        F = np.array(self.make_control_vector(prev_mem, controls))
+        return (I + (phase*U - I) * F[:, np.newaxis]).tolist()
 
     def make_quantum_op(self, locs : list, matrices : list, size : int):
         final_op = [[1]]
@@ -121,7 +121,7 @@ class ObilgationGenerator:
             else: final_op = kronecker(final_op, ID)
         return final_op
     
-    def make_control_matrix(self, prev_mem : QuantumMemory, controls : list):
+    def make_control_vector(self, prev_mem : QuantumMemory, controls : list):
         size = prev_mem.get_total_size()
         states = 2**size
         if controls == []: return ID_N(states)
@@ -136,8 +136,8 @@ class ObilgationGenerator:
             control_states = [int(bitstate[size-l-s:size-l], 2) for l, s in zip(control_locs, control_sizes)]
             control_term = [op(s) for s, op in zip(control_states, control_ops)]
             F[state] = z3.simplify(If(And([c for c in control_term]), RealVal(1), RealVal(0)))
-        return [[F[i] if i == j else 0 for j in range(states)] for i in range(states)]
-    
+        return F
+
     def get_control_variables_and_ops(self, controls : list):
         vars = []
         ops = []
