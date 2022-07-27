@@ -107,9 +107,14 @@ class ObilgationGenerator:
         
     def make_operation(self, op_locs, matrices, prev_mem : QuantumMemory, controls : list, phase = 1):
         s = prev_mem.get_total_size()
+        print("Makung U...")
+        U = self.make_quantum_op(op_locs, matrices, s)
+        if not controls: return U
+        U = np.matrix(U)
         I = np.identity(2**s, dtype=int)
-        U = np.matrix(self.make_quantum_op(op_locs, matrices, s))
+        print("Making F...")
         F = np.matrix(self.make_control_matrix(prev_mem, controls))
+        print("Calculating I + F.(U-I)")
         return (I + np.dot(F, phase*U - I)).tolist()
 
     def make_quantum_op(self, locs : list, matrices : list, size : int):
@@ -133,7 +138,7 @@ class ObilgationGenerator:
             bitstate = bin(state)[2:].zfill(size)
             control_states = [int(bitstate[size-l-s:size-l], 2) for l, s in zip(control_locs, control_sizes)]
             control_term = [op(s) for s, op in zip(control_states, control_ops)]
-            F[state] = z3.simplify(If(And([c for c in control_term]), 1, 0))
+            F[state] = z3.simplify(If(And([c for c in control_term]), RealVal(1), RealVal(0)))
         return [[F[i] if i == j else 0 for j in range(states)] for i in range(states)]
     
     def get_control_variables_and_ops(self, controls : list):
