@@ -23,15 +23,17 @@ from silver.SpeqGenerator import SpeqGenerator
 
 class SilVer:
     __silver_tactic = Then(
-        Repeat('propagate-ineqs'),
-        Repeat('propagate-values'),
-        'elim-and',
-        'elim-uncnstr',
-        'solve-eqs',
+        Repeat(Then(
+            'propagate-ineqs',
+            'propagate-values',
+            'elim-and',
+            'elim-uncnstr',
+            'solve-eqs',
+        )),
         'eq2bv',
         'bit-blast',
         'smt',
-        "collect-statistics"
+        'collect-statistics',
         )
 
     def __init__(self, timeout=30000, seed=3, check_store=True):
@@ -57,6 +59,11 @@ class SilVer:
             timeout=self.timeout,
             random_seed=self.seed,
         )
+        # s.set("parallel.enable", True)
+        s.set("threads", 4)
+        # s.set("arith.nl.rounds", 100)
+        # s.set("arith.ignore_int", True)
+        # s.set("eq2ineq", True)
         return s
 
     def reset(self):
@@ -149,14 +156,6 @@ class SilVer:
         if verbose:
             print("SilSpeq proof obligations generated")
             print()
-
-        # Hash the silq_json with config
-        # Check if there exists a hash file (with obligations)
-        # If there is no hash file OR there is a hash but its different
-        # - Generate obligations as normal
-        # - Then store obligations with new hash (delete old one)
-        # Otherwise
-        # - Fetch program obligations
 
         silq_json = self.getJSON(json_file_path)
         hash = hashlib.md5(str(silq_json).encode('utf-8') + str(self.config).encode('utf-8')).hexdigest()

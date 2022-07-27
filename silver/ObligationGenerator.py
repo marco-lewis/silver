@@ -89,76 +89,75 @@ class ObilgationGenerator:
     
     def qop_obligation(self, instruction : QOP, prev_mem : QuantumMemory, controls : list):
         # TODO: Handle non-standard operations
-        # TODO: Handle multiple controls
         loc = prev_mem.get_loc(instruction.arg.variable, instruction.arg.index)
         matrix = self.matrix_from_string(instruction.operation)
-        if controls == []:
-            op = self.make_qubit_operation(matrix, loc, prev_mem.get_total_size())
-        if len(controls) == 1:
-            control = controls[0]
-            if isinstance(control, QOP):
-                if prev_mem.is_stored(control.arg.variable):
-                    control_loc = prev_mem.get_loc(control.arg.variable)
-                    op = self.make_qubit_control_operation(matrix, prev_mem.get_total_size(), control.operation, control_loc)
-                    if control_loc == 0:
-                        op = dot(dot(SWAP, op), SWAP)
-                        op = [[simplify(el) for el in r] for r in op]
+        op = self.make_operation([loc], [matrix], prev_mem, controls)
         return self.obligation_operation(op, self.quantum_memory_to_literals(prev_mem))
 
     def qpar_obligation(self, instruction : QPAR, prev_mem : QuantumMemory, controls : list):
-        # TODO: Handle control
-        # TODO: Share functionality
         locs = [prev_mem.get_loc(inst.arg.variable, inst.arg.index) for inst in instruction.operations]
         matrices = [self.matrix_from_string(inst.operation) for inst in instruction.operations]
-        ops = [self.make_qubit_operation(m, l, prev_mem.get_total_size()) for l,m in zip(locs, matrices)]
-        final_op = [[1]]
-        for l in range(prev_mem.get_total_size()):
-            if l in locs:
-                idx = locs.index(l)
-                final_op = kronecker(final_op, matrices[idx])
-            else: final_op = kronecker(final_op, ID)
-        return self.obligation_operation(final_op, self.quantum_memory_to_literals(prev_mem))
+        op = self.make_operation(locs, matrices, prev_mem, controls)
+        return self.obligation_operation(op, self.quantum_memory_to_literals(prev_mem))
 
-    
     def qphase_obligation(self, instruction : QPHASE, prev_mem : QuantumMemory, controls : list):
-        # TODO: Handle non-standard operations
-        # TODO: Handle more boolops (make general)
         phase = PHASE(instruction.phase)
-        op = [[phase if i == j else 0 for j in range(2**prev_mem.get_total_size())] for i in range(2**prev_mem.get_total_size())]
-        for control in controls:
-            if isinstance(control, QOP):
-                if prev_mem.is_stored(control.arg.variable):
-                    control_loc = prev_mem.get_loc(control.arg.variable)
-                    op = self.make_qphase_control_operation(op, prev_mem.get_total_size(), control.operation, control_loc)
-            if isinstance(control, BOOLOP):
-                if prev_mem.is_stored(control.left.variable):
-                    control_loc = prev_mem.get_loc(control.left.variable)
-                    control_op = lambda l: control.comparitor(l, control.right)
-                    op = self.make_qphase_control_operation(op, prev_mem.get_total_size(), control_op, control_loc)
+        op = self.make_operation([], [], prev_mem, controls, phase=phase)
         return self.obligation_operation(op, self.quantum_memory_to_literals(prev_mem))
         
-    def make_qubit_operation(self, op, q_loc, size):
-        out = [[1]]
-        for i in range(size):
-            out = kronecker(out, ID) if not(size - 1 - q_loc == i) else kronecker(out, op)
-        return out
+    def make_operation(self, op_locs, matrices, prev_mem : QuantumMemory, controls : list, phase = 1):
+        s = prev_mem.get_total_size()
+        I = np.identity(2**s, dtype=int)
+        U = np.matrix(self.make_quantum_op(op_locs, matrices, s))
+        F = np.matrix(self.make_control_matrix(prev_mem, controls))
+        return (I + np.dot(F, phase*U - I)).tolist()
 
-    # TODO: Check process
-    def make_qubit_control_operation(self, op, size, cond, control_loc):
-        mat = []
-        for y in range(size):
-            t = [[delta(i,j) + cond(y) * (op[i-y*size][j - y*size] - delta(i,j)) for j in range(2)] for i in range(2)]
-            t = kronecker([[1 if x == y else 0 for x in range(size)]], t)
-            mat += t
-        return mat
+    def make_quantum_op(self, locs : list, matrices : list, size : int):
+        final_op = [[1]]
+        for l in range(size):
+            if l in locs: final_op = kronecker(final_op, matrices[locs.index(l)])
+            else: final_op = kronecker(final_op, ID)
+        return final_op
     
-    # TODO: Check with deutsch_anc
-    def make_qphase_control_operation(self, op, size, cond, control_loc):
-        return [[delta(i,j) + cond(floor(i//2**control_loc))*(op[i][j] - delta(i,j)) if i==j else 0 for j in range(2**size)] for i in range(2**size)]
+    def make_control_matrix(self, prev_mem : QuantumMemory, controls : list):
+        size = prev_mem.get_total_size()
+        states = 2**size
+        if controls == []: return ID_N(states)
+
+        vars, control_ops = self.get_control_variables_and_ops(controls)
+        control_locs = [prev_mem.get_loc_from_VarRef(var) for var in vars]
+        control_sizes = [var.index if var.index else prev_mem.get_size(var.variable) for var in vars]
+
+        F = [0]*states
+        for state in range(states):
+            bitstate = bin(state)[2:].zfill(size)
+            control_states = [int(bitstate[size-l-s:size-l], 2) for l, s in zip(control_locs, control_sizes)]
+            control_term = [op(s) for s, op in zip(control_states, control_ops)]
+            F[state] = z3.simplify(If(And([c for c in control_term]), 1, 0))
+        return [[F[i] if i == j else 0 for j in range(states)] for i in range(states)]
+    
+    def get_control_variables_and_ops(self, controls : list):
+        vars = []
+        ops = []
+        for control in controls:
+            if isinstance(control, QOP):
+                vars.append(control.arg)
+                ops.append(lambda t: control.operation(t) == 1)
+            if isinstance(control, BOOLOP):
+                v, f = self.get_control_variable_and_function(control.left)
+                if v : ops.append(lambda x: control.comparitor(f(x), control.right))
+                else:
+                    v, f = self.get_control_variable_and_function(control.right)
+                    ops.append(lambda x: control.comparitor(control.left, f(x)))
+                vars.append(v)
+        return vars, ops
+
+    def get_control_variable_and_function(self, control):
+        if isinstance(control, QOP): return control.arg, lambda t: control.operation(t)
+        raise Exception("Unable to handle " + control)
 
     def obligation_quantum_assignment(self, lhs, rhs):
-        if len(lhs) != len(rhs):
-            raise Exception("LengthError: lengths of lists don't match")
+        if len(lhs) != len(rhs): raise Exception("LengthError: lengths of lists don't match")
         return [simplify(lhs[i] == rhs[i]) for i in range(len(lhs))]
 
     def obligation_quantum_literal(self, size, literal = 0):
