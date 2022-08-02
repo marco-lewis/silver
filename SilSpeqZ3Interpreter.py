@@ -28,6 +28,7 @@ class SilSpeqZ3Interpreter(Interpreter):
         self.vars = {}
         self.types = {}
         self.not_post = not_post
+        self.assumptions = []
         super().__init__()
 
     def set_meas_cert(self, val):
@@ -138,6 +139,11 @@ class SilSpeqZ3Interpreter(Interpreter):
     @visit_children_decor
     def assertion(self, zexpr):
         return zexpr
+    
+    @visit_children_decor
+    def assumption(self, zexpr):
+        self.assumptions.append(zexpr)
+        return True
     
     # Ignore flags
     def qout(self, v): pass

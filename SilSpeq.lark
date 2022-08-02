@@ -33,6 +33,7 @@
 ?stmts: (stmt)*
 ?stmt: def 
 | "assert" "(" lexpr ")"        -> assertion
+| "assume" "(" lexpr ")"        -> assumption
 
 ?lexpr: "(" lexpr ")"
     | TRUE                      -> true
