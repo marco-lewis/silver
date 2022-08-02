@@ -1,11 +1,20 @@
-def simon(qf: const uint[2] x uint[2] !->qfree B){
+def simon(f: const uint[2] !->qfree uint[2]){
     x := 0:uint[2];
     y := 0:uint[2];
 
     x[0] := H(x[0]);
     x[1] := H(x[1]);
 
-    y := qf(x, y);
+    if (f(x) == 1) {
+        y[0] := X(y[0]);
+    }
+    if (f(x) == 2) {
+        y[1] := X(y[1]);
+    }
+    if (f(x) == 3) {
+        y[0] := X(y[0]);
+        y[1] := X(y[1]);
+    }
 
     y := measure(y);
 
