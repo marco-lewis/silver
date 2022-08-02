@@ -60,13 +60,15 @@
     | numexpr "*" numexpr       -> mul
     | numexpr "/" numexpr       -> div
     | numexpr "^" numexpr       -> pow
+    | numexpr "⊕" numexpr       -> xor
+    | numexpr "xor" numexpr     -> xor
     | numexpr "mod" numexpr     -> mod
     | numexpr "." numexpr       -> dot
     | func "(" args ")"         -> call
     | "SUM" "[" NAME "]" "(" numexpr ")"    -> sum
 
 ?args: (arg ("," arg)*)?        -> args
-?arg: NAME | NUMBER
+?arg: numexpr
 
 TRUE: "⊤" | "tt"
 FALSE: "⊥" | "ff"

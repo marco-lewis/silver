@@ -248,6 +248,18 @@ class SilSpeqZ3Interpreter(Interpreter):
         return self.handle_token(exprs[0]) ** self.handle_token(exprs[1])
 
     @visit_children_decor
+    def xor(self,exprs):
+        v1 = self.handle_token(exprs[0])
+        v2 = self.handle_token(exprs[1])
+        t1 = self.types[v1.__str__()]
+        t2 = self.types[v2.__str__()]
+        if t1 >= t2: bits = t1
+        else: bits = t2
+        v1, v2 = Int2BV(v1, bits), Int2BV(v2, bits)
+        term = v1 ^ v2
+        return BV2Int(term)
+
+    @visit_children_decor
     def mod(self,exprs):
         return self.handle_token(exprs[0]) % self.handle_token(exprs[1])
 
