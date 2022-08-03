@@ -203,7 +203,7 @@ class SilSpeqZ3Interpreter(Interpreter):
 
     @visit_children_decor
     def land(self, lexprs):
-        return And(lexprs[0], lexprs[0])
+        return And(lexprs[0], lexprs[1])
 
     @visit_children_decor
     def lor(self, lexprs):
