@@ -15,7 +15,7 @@ from silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
 from silver.ClassicalMemory import ClassicalMemory
 from silver.Instruction import Instruction
 from silver.JSONInterpreter import JSONInterpreter
-from silver.MeasureOptions import MEASURE_OPTION, CERTAINTY, HIGH_PROB, SPECIFIC_VALUE
+from silver.MeasureOptions import MEASURE_OPTION, CERTAINTY, HIGH_PROB, RAND, SPECIFIC_VALUE
 from silver.ObligationGenerator import ObilgationGenerator
 from silver.Program import Program
 from silver.QuantumMemory import QuantumMemory
@@ -47,6 +47,7 @@ class SilVer:
         self.speq_z3_itp = SilSpeqZ3Interpreter()
         self.speq_flag_itp = SilSpeqZ3FlagVisitor()
         self.config = {}
+        self.assumptions = {}
     
     def check_speq_exists(self, file):
         if not(exists(self.get_speq_file_name(file))):
@@ -71,7 +72,7 @@ class SilVer:
         self.json_interp = JSONInterpreter()
         
     def check_solver_sat(self):
-        return self.solver.check()
+        return self.solver.check(*self.assumptions)
         
     def print_solver_sat(self, solver_sat):
         print("Checking satisfiability...")
@@ -92,6 +93,7 @@ class SilVer:
         if self.speq_flag_itp.meas_cert: self.config[MEASURE_OPTION] = CERTAINTY
         elif self.speq_flag_itp.meas_whp: self.config[MEASURE_OPTION] = HIGH_PROB
         elif self.speq_flag_itp.meas_atval: self.config[MEASURE_OPTION] = SPECIFIC_VALUE
+        elif self.speq_flag_itp.meas_rand: self.config[MEASURE_OPTION] = RAND
         else: self.config[MEASURE_OPTION] = HIGH_PROB
         self.speq_z3_itp.set_meas_cert(self.speq_flag_itp.meas_cert)
         
@@ -179,6 +181,7 @@ class SilVer:
             
             if verbose:
                 print("Program obligations generated")
+                print("Checking program obligations satisfiable...")
                 print()
 
             prog_sat, stats, reason = self.check_generated_obs_sat(prog_obs)
@@ -249,10 +252,11 @@ class SilVer:
         speq_solver = self.make_solver_instance()
         speq_itp = SilSpeqZ3Interpreter(False)
         obl_dict = speq_itp.visit(tree)
+        self.assumptions = speq_itp.assumptions
         for func_name in obl_dict:
             func_obls = obl_dict[func_name]
             speq_solver.add(func_obls)
-            sat = speq_solver.check()
+            sat = speq_solver.check(*self.assumptions)
             if sat == z3.unknown:
                 print("Warning: SilSpeq obligations unkown; could be unsat")
                 print("Reason: ", speq_solver.reason_unknown())
