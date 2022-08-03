@@ -157,6 +157,7 @@ class SilVer:
         
         if verbose:
             print("SilSpeq proof obligations generated")
+            if show_objects: print(speq_obs)
             print()
 
         silq_json = self.getJSON(json_file_path)
@@ -181,8 +182,7 @@ class SilVer:
             
             if verbose:
                 print("Program obligations generated")
-                print("Checking program obligations satisfiable...")
-                print()
+                print("Checking program obligations satisfiable...\n")
 
             prog_sat, stats, reason = self.check_generated_obs_sat(prog_obs)
             if prog_sat != z3.sat:

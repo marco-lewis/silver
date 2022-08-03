@@ -8,7 +8,7 @@ from silver.complex import *
 from silver.ComplexVector import *
 from silver.Instruction import *
 from silver.Process import ClassicalProcess, QuantumProcess
-from silver.MeasureOptions import MEASURE_OPTION, HIGH_PROB, CERTAINTY, SPECIFIC_VALUE
+from silver.MeasureOptions import MEASURE_OPTION, HIGH_PROB, CERTAINTY, RAND, SPECIFIC_VALUE
 from silver.QuantumMemory import QuantumMemory
 from silver.QuantumOps import *
 from silver.utils import *
@@ -117,8 +117,8 @@ class ObilgationGenerator:
     def make_quantum_op(self, locs : list, matrices : list, size : int):
         final_op = [[1]]
         for l in range(size):
-            if l in locs: final_op = kronecker(final_op, matrices[locs.index(l)])
-            else: final_op = kronecker(final_op, ID)
+            if l in locs: final_op = kronecker(matrices[locs.index(l)], final_op)
+            else: final_op = kronecker(ID, final_op)
         return final_op
     
     def make_control_vector(self, prev_mem : QuantumMemory, controls : list):
@@ -199,6 +199,8 @@ class ObilgationGenerator:
         # Measurement options
         classical_value = Int('meas_' + variable)
         meas_obligations = []
+        if measure_option == RAND:
+            meas_obligations = self.obligation_qmeas_random()
         if measure_option == HIGH_PROB:
             meas_obligations = self.obligation_qmeas_with_high_prob(variable, probs_z3_vars, classical_value)
         if measure_option == CERTAINTY:
@@ -213,17 +215,20 @@ class ObilgationGenerator:
             post_z3_vars = [Complex(obl_var) for obl_var in post_memory.get_obligation_variables()]
             post_state_obligations = []
             for meas_value in range(2**size):
+                norm = probs_z3_vars[meas_value]
                 mem_locs = [memory_obligation_variables[j] for j in range(len(memory_obligation_variables)) if not((j & 1 << loc) ^ (meas_value << loc))]
-                post_prev_eq = And([post_var == prev_var for (post_var, prev_var) in zip(post_z3_vars, mem_locs)])
+                post_prev_eq = And([post_var == prev_var/norm for (post_var, prev_var) in zip(post_z3_vars, mem_locs)])
                 post_state_obligations.append(Implies(classical_value == meas_value, post_prev_eq))
-        else:
-            post_state_obligations = []
+        else: post_state_obligations = []
 
         return obligations + meas_obligations + post_state_obligations
     
+    def obligation_qmeas_random(self):
+        return []
+
     def obligation_qmeas_with_specific_value(self, var, probs_z3_vars, value):
         # raise Exception("ObligationError: function not implemented yet")
-        a = Int('a')
+        a = Int('__mark_' + var)
         max_prob = Real('hprob_' + var)
         obligations = [And([max_prob >= p for p in probs_z3_vars])]
         obligations += [Equiv(max_prob == probs_z3_vars[i], a == i)
