@@ -146,6 +146,7 @@ class SilSpeqZ3Interpreter(Interpreter):
         return True
     
     # Ignore flags
+    def rand(self, v): pass
     def qout(self, v): pass
     def oracle(self, v): pass
     def cert(self, v): pass
@@ -215,7 +216,12 @@ class SilSpeqZ3Interpreter(Interpreter):
     @visit_children_decor
     def equiv(self, lexprs):
         return lexprs[0] == lexprs[1]
-    
+
+    @visit_children_decor
+    def distinct(self, args):
+        args = self.flatten(args)
+        return simplify(Distinct(args), blast_distinct=True)
+
     @visit_children_decor
     def lnot(self, lexpr):
         return Not(lexpr[0])

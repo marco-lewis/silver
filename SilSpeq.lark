@@ -4,6 +4,7 @@
 
 ?funcflags: funcflag ("," funcflag)*
 ?funcflag: "qout"               -> qout
+        | "rand"                -> rand
         | "cert"                -> cert
         | "whp"                 -> highprob
         | "atval"               -> atvalue
@@ -48,6 +49,7 @@
     | lexpr "|" lexpr           -> lor
     | lexpr "->" lexpr          -> implies
     | lexpr "<->" lexpr         -> equiv
+    | "distinct" "(" args ")"   -> distinct
     | "¬" lexpr                 -> lnot
     | "@" NAME "." lexpr        -> forall
     | "$" NAME "." lexpr        -> exists
