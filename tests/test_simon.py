@@ -3,4 +3,4 @@ import z3
 
 # Verification of Simon
 # simon<n> - Simon for n-qubits
-check("simon2.slq", "simon", z3.unsat, True, timeout=60000, check_store=False)
+check("simon2.slq", "simon", z3.unsat, verbose=True, show_objects=True, check_store=False, stats=False, timeout=5000)

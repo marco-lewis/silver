@@ -17,18 +17,13 @@ def check(json_file, func, expected, verbose=False, stats=True, show_objects=Fal
         print(m)
         try: print('Function: ', m[z3.Function('f', z3.IntSort(), z3.IntSort())])
         except: pass
-    if verbose and sat == z3.unknown:
-        print('Reason: ', silver.solver.reason_unknown())
-    if verbose and sat == z3.unsat:
-        print("Unsat Core:")
-        print(silver.solver.unsat_core())
-    silver_stats = silver.solver.statistics()    
-    if stats:
+    if verbose and sat == z3.unknown: print('Reason: ', silver.solver.reason_unknown())
+    if verbose and sat == z3.unsat: print("Unsat Core: ", silver.solver.unsat_core())
+    silver_stats = silver.solver.statistics()
+    if verbose:
         print("Time")
         try: print(silver_stats.get_key_value('time'))
         except: print("Unable to get time (possibly 0)")
-        if verbose:
-            print("Stats")
-            print(silver_stats)
+        if stats: print("Stats\n", silver_stats)
     print()
     sys.stdout.flush()
