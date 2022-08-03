@@ -217,8 +217,8 @@ class ObilgationGenerator:
             for meas_value in range(2**size):
                 norm = probs_z3_vars[meas_value]
                 mem_locs = [memory_obligation_variables[j] for j in range(len(memory_obligation_variables)) if not((j & 1 << loc) ^ (meas_value << loc))]
-                post_prev_eq = And([post_var == prev_var/norm for (post_var, prev_var) in zip(post_z3_vars, mem_locs)])
-                post_state_obligations.append(Implies(classical_value == meas_value, post_prev_eq))
+                post_prev_eq = And([post_var * norm == prev_var for (post_var, prev_var) in zip(post_z3_vars, mem_locs)])
+                post_state_obligations.append(Implies(And(classical_value == meas_value, norm != 0), post_prev_eq))
         else: post_state_obligations = []
 
         return obligations + meas_obligations + post_state_obligations
@@ -227,7 +227,6 @@ class ObilgationGenerator:
         return []
 
     def obligation_qmeas_with_specific_value(self, var, probs_z3_vars, value):
-        # raise Exception("ObligationError: function not implemented yet")
         a = Int('__mark_' + var)
         max_prob = Real('hprob_' + var)
         obligations = [And([max_prob >= p for p in probs_z3_vars])]
