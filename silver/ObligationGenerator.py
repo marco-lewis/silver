@@ -13,9 +13,7 @@ from silver.QuantumMemory import QuantumMemory
 from silver.QuantumOps import *
 from silver.utils import *
 
-# Currently handles single variable, want to change to handle multiple variables
-# TODO: Checks for valid sizes of inputs
-# TODO: Handle return statements differently based on quantum or classical
+# ENHANCE: Handle return statements differently based on quantum or classical
 
 class ObilgationGenerator:
     def __init__(self, config = {}):
@@ -226,6 +224,7 @@ class ObilgationGenerator:
     def obligation_qmeas_random(self):
         return []
 
+    # TODO: Add specific value in some other way, allow user to specify in SilSpeq
     def obligation_qmeas_with_specific_value(self, var, probs_z3_vars, value):
         a = Int('__mark_' + var)
         max_prob = Real('hprob_' + var)

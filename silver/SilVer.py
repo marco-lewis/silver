@@ -22,24 +22,11 @@ from silver.QuantumMemory import QuantumMemory
 from silver.SpeqGenerator import SpeqGenerator
 
 class SilVer:
-    __silver_tactic = Then(
-        Repeat(Then(
-            'propagate-ineqs',
-            'propagate-values',
-            'elim-and',
-            'elim-uncnstr',
-            'solve-eqs',
-        )),
-        'eq2bv',
-        'bit-blast',
-        'smt',
-        'collect-statistics',
-        )
-
     def __init__(self, timeout=30000, seed=3, check_store=True):
         self.timeout = timeout
         self.seed = seed
         self.check_store = check_store
+        self.make_silver_tactic()
         self.solver = self.make_solver_instance()
         self.json_interp = JSONInterpreter()
         self.speq_parser = SilSpeqParser()
@@ -48,7 +35,27 @@ class SilVer:
         self.speq_flag_itp = SilSpeqZ3FlagVisitor()
         self.config = {}
         self.assumptions = {}
-    
+
+    def make_silver_tactic(self):
+        self.__silver_tactic = Then(
+            'propagate-ineqs',
+            'propagate-values',
+            'elim-and',
+            'elim-term-ite',
+            'elim-uncnstr',
+            'simplify',
+            'solve-eqs',
+            'eq2bv',
+            'dt2bv',
+            'bit-blast',
+            'tseitin-cnf',
+            OrElse(
+                TryFor('smt', self.timeout),
+                TryFor('nlsat', self.timeout),
+                Then('nlsat', 'smt'),
+                )
+            )
+
     def check_speq_exists(self, file):
         if not(exists(self.get_speq_file_name(file))):
             self.generate_speq_file(file)
@@ -58,10 +65,12 @@ class SilVer:
         s = self.__silver_tactic.solver()
         s.set(
             timeout=self.timeout,
-            random_seed=self.seed,
+            # random_seed=self.seed,
+            seed=self.seed,
         )
         # s.set("parallel.enable", True)
-        s.set("threads", 4)
+        # s.set("threads", 4)
+        # s.set("arith.solver", 6)
         # s.set("arith.nl.rounds", 100)
         # s.set("arith.ignore_int", True)
         # s.set("eq2ineq", True)
@@ -186,6 +195,7 @@ class SilVer:
 
             prog_sat, stats, reason = self.check_generated_obs_sat(prog_obs)
             if prog_sat != z3.sat:
+                # TODO: Hide stats behind another layer
                 if verbose: print(stats)
                 if prog_sat == z3.unknown: 
                     print("Warning: program obligations unkown; could be unsat")
