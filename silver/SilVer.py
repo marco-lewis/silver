@@ -102,7 +102,8 @@ class SilVer:
         if self.speq_flag_itp.meas_cert: self.config[MEASURE_OPTION] = CERTAINTY
         elif self.speq_flag_itp.meas_whp != -1: 
             self.config[MEASURE_OPTION] = HIGH_PROB
-            self.config[MEASURE_BOUND] = self.speq_flag_itp.meas_whp
+            if self.speq_flag_itp.meas_whp >= 0 and self.speq_flag_itp.meas_whp < 1: self.config[MEASURE_BOUND] = self.speq_flag_itp.meas_whp
+            else: raise Exception("FlagError(whp): bound given is not between 0 and 1")
         elif self.speq_flag_itp.meas_atval: self.config[MEASURE_OPTION] = SPECIFIC_VALUE
         elif self.speq_flag_itp.meas_rand: self.config[MEASURE_OPTION] = RAND
         else: self.config[MEASURE_OPTION] = HIGH_PROB
