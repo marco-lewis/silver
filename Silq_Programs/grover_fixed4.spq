@@ -6,9 +6,8 @@ post{
 
 }
 
-grover_fixed[whp](define f:{0, 1}^4->{0, 1})->(define grover_fixed_ret:{0, 1}^4)
+grover_fixed[atval(define a : {0,1}^4)](define f:{0, 1}^4->{0, 1})->(define grover_fixed_ret:{0, 1}^4)
 pre{
-    define a : {0,1}^4
     assert(f(a) = 1)
     assert(SUM[a](f) = 1)
 }
