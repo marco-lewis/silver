@@ -15,7 +15,7 @@ from silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
 from silver.ClassicalMemory import ClassicalMemory
 from silver.Instruction import Instruction
 from silver.JSONInterpreter import JSONInterpreter
-from silver.MeasureOptions import MEASURE_OPTION, CERTAINTY, HIGH_PROB, RAND, SPECIFIC_VALUE
+from silver.MeasureOptions import *
 from silver.ObligationGenerator import ObilgationGenerator
 from silver.Program import Program
 from silver.QuantumMemory import QuantumMemory
@@ -100,7 +100,9 @@ class SilVer:
         self.speq_flag_itp.visit(tree)
         
         if self.speq_flag_itp.meas_cert: self.config[MEASURE_OPTION] = CERTAINTY
-        elif self.speq_flag_itp.meas_whp: self.config[MEASURE_OPTION] = HIGH_PROB
+        elif self.speq_flag_itp.meas_whp != -1: 
+            self.config[MEASURE_OPTION] = HIGH_PROB
+            self.config[MEASURE_BOUND] = self.speq_flag_itp.meas_whp
         elif self.speq_flag_itp.meas_atval: self.config[MEASURE_OPTION] = SPECIFIC_VALUE
         elif self.speq_flag_itp.meas_rand: self.config[MEASURE_OPTION] = RAND
         else: self.config[MEASURE_OPTION] = HIGH_PROB

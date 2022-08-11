@@ -6,6 +6,7 @@ class MeasureOptions(Enum):
     SPECIFIC_VALUE = 3
 
 MEASURE_OPTION = "MEASURE_OPTION"
+MEASURE_BOUND = "MEASURE_BOUND"
 RAND = MeasureOptions.RAND
 HIGH_PROB = MeasureOptions.HIGH_PROB
 CERTAINTY = MeasureOptions.CERTAINTY

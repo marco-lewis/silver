@@ -8,7 +8,7 @@ from silver.complex import *
 from silver.ComplexVector import *
 from silver.Instruction import *
 from silver.Process import ClassicalProcess, QuantumProcess
-from silver.MeasureOptions import MEASURE_OPTION, HIGH_PROB, CERTAINTY, RAND, SPECIFIC_VALUE
+from silver.MeasureOptions import *
 from silver.QuantumMemory import QuantumMemory
 from silver.QuantumOps import *
 from silver.utils import *
@@ -200,7 +200,7 @@ class ObilgationGenerator:
         if measure_option == RAND:
             meas_obligations = self.obligation_qmeas_random()
         if measure_option == HIGH_PROB:
-            meas_obligations = self.obligation_qmeas_with_high_prob(variable, probs_z3_vars, classical_value)
+            meas_obligations = self.obligation_qmeas_with_high_prob(variable, probs_z3_vars, classical_value, prob_bound=self.__config[MEASURE_BOUND])
         if measure_option == CERTAINTY:
             meas_obligations = self.obligation_qmeas_with_certainty(variable, probs_z3_vars, classical_value)
         if measure_option == SPECIFIC_VALUE:
