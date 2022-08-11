@@ -6,12 +6,11 @@ post{
 
 }
 
-grover_partial[whp(.5)](define f:{0, 1}^3->{0, 1})->(define grover_partial_ret:{0, 1}^3)
+grover_partial[atval(define mark : {0,1}^3)](define f:{0, 1}^3->{0, 1})->(define grover_partial_ret:{0, 1}^3)
 pre{
-    define a : {0,1}^3
-    assert(f(a) = 1)
-    assert(SUM[a](f) = 1)
+    assert(f(mark) = 1)
+    assert(SUM[mark](f) = 1)
 }
 post{
-    assert(grover_partial_ret = a)
+    assert(grover_partial_ret = mark)
 }

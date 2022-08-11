@@ -204,7 +204,7 @@ class ObilgationGenerator:
         if measure_option == CERTAINTY:
             meas_obligations = self.obligation_qmeas_with_certainty(variable, probs_z3_vars, classical_value)
         if measure_option == SPECIFIC_VALUE:
-            meas_obligations = self.obligation_qmeas_with_specific_value(variable, probs_z3_vars, classical_value)
+            meas_obligations = self.obligation_qmeas_with_specific_value(variable, probs_z3_vars, classical_value, self.__config[MEASURE_MARK])
             
         # State after measurement
         # TODO: handle non-certainty instances (include 1//Sqrt(probs_z3_vars[meas_value]))
@@ -225,13 +225,12 @@ class ObilgationGenerator:
         return []
 
     # TODO: Add specific value in some other way, allow user to specify in SilSpeq
-    def obligation_qmeas_with_specific_value(self, var, probs_z3_vars, value):
-        a = Int('__mark_' + var)
+    def obligation_qmeas_with_specific_value(self, var, probs_z3_vars, classical_value, mark):
         max_prob = Real('hprob_' + var)
         obligations = [And([max_prob >= p for p in probs_z3_vars])]
-        obligations += [Equiv(max_prob == probs_z3_vars[i], a == i)
+        obligations += [Equiv(max_prob == probs_z3_vars[i], mark == i)
                         for i in range(len(probs_z3_vars))]
-        obligations.append(value == a)
+        obligations.append(classical_value == mark)
         return obligations
 
     def obligation_qmeas_with_certainty(self, var, probs_z3_vars, value):
