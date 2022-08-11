@@ -123,6 +123,7 @@ class SilVer:
         pass
 
     def verify_func(self, silq_file_path, func, verbose=False, show_objects=False):
+        print("###########################################################")
         print("Verifying " + func + " in " + silq_file_path)
         json_file_path = self.generate_ast_file(silq_file_path)
         obs = self.make_obs(json_file_path, func, verbose, show_objects)
@@ -189,22 +190,14 @@ class SilVer:
                 print()
             prog_obs = self.generate_program_obligations(prog)
             
-            if verbose:
-                print("Program obligations generated")
-                print("Checking program obligations satisfiable...\n")
+            if verbose: print("Program obligations generated\nChecking program obligations satisfiable...\n")
 
             prog_sat, stats, reason = self.check_generated_obs_sat(prog_obs)
             if prog_sat != z3.sat:
-                # TODO: Hide stats behind another layer
-                if verbose: print(stats)
-                if prog_sat == z3.unknown: 
-                    print("Warning: program obligations unkown; could be unsat")
-                    print("Reason: ", reason)
+                if prog_sat == z3.unknown: print("Warning: program obligations unkown; could be unsat.\nReason: ", reason)
                 else: raise Exception("SatError(" + str(prog_sat) + "): generated obligations from Silq program are invalid.")
 
-            if verbose:
-                print("Program obligations satisfiable")
-                print("Storing obligations...")
+            if verbose: print("Program obligations satisfiable\nStoring obligations...")
             
             with open(hash_path, 'w') as writer: writer.write(str(hash))
             temp_solver = self.__silver_tactic.solver()
