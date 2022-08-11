@@ -8,7 +8,7 @@
         | "rand"                -> rand
         | "cert"                -> cert
         | highprob
-        | "atval"               -> atvalue
+        | atval
 
 ?highprob: "whp"            -> whp
     | "whp" "(" prob ")"    -> whpvalue
@@ -16,6 +16,8 @@
 ?prob: "0" "." INT?             -> pdec
     | "." INT                   -> pdec
     | INT "/" INT               -> pdiv
+
+?atval: "atval" "(" def ")" -> atvalue
 
 // Statement set-up
 ?pre: "pre" "{" stmts "}" -> pre

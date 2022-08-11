@@ -44,19 +44,28 @@ class SilSpeqZ3FlagVisitor(Visitor):
         ints = [self.token(c) for c in children]
         return ints[0] / ints[1]
 
-    def atvalue(self, v):
-        self.meas_atval = True
+    def atvalue(self, v: Tree):
+        dtree = list(v.find_data('definition'))[0]
+        mark = self.definition(dtree)
+        self.meas_atval = mark
 
     def oracle(self, v):
         return lambda name: self.oracles.append(name)
 
-    def definition(self, v):
-        # if isinstance(v[0], type(lambda:0)):
-        #     v[0](v[1].value)
-        pass
+    def definition(self, v:Tree):
+        name = self.token(v.children[0])
+        return Int(name)
 
     def token(self, tok: Token):
         if tok.type == "INT": return self.INT(tok)
+        if tok.type == "NUMBER": return self.NUMBER(tok)
+        if tok.type == "NAME": return self.NAME(tok)
 
     def INT(self, n: Token):
         return int(n.value)
+
+    def NUMBER(self, n):
+        return float(n.value)
+
+    def NAME(self, var):
+        return var.value

@@ -145,14 +145,15 @@ class SilSpeqZ3Interpreter(Interpreter):
         self.assumptions.append(zexpr)
         return True
     
-    # Ignore flags
+    # Ignore most flags
     def rand(self, v): pass
     def qout(self, v): pass
     def oracle(self, v): pass
     def cert(self, v): pass
     def whp(self, v): pass
     def whpvalue(self, v): pass
-    def atvalue(self, v): pass
+    @visit_children_decor
+    def atvalue(self, v): return v
 
     # Handling types
     def nat(self, a):
