@@ -151,6 +151,7 @@ class SilSpeqZ3Interpreter(Interpreter):
     def oracle(self, v): pass
     def cert(self, v): pass
     def whp(self, v): pass
+    def whpvalue(self, v): pass
     def atvalue(self, v): pass
 
     # Handling types
@@ -318,10 +319,8 @@ class SilSpeqZ3Interpreter(Interpreter):
             return t
 
     def token(self, tok: Token):
-        if tok.type == "NUMBER":
-            return self.NUMBER(tok)
-        if tok.type == "NAME":
-            return self.NAME(tok)
+        if tok.type == "NUMBER": return self.NUMBER(tok)
+        if tok.type == "NAME": return self.NAME(tok)
 
     def NUMBER(self, n):
         return float(n.value)

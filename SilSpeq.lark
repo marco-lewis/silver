@@ -2,19 +2,29 @@
 
 ?func_spec: func ("[" funcflags "]")? "(" (defs)? ")" "->" "(" (defs)? ")" pre post -> funcspec
 
+// Flag Rules
 ?funcflags: funcflag ("," funcflag)*
 ?funcflag: "qout"               -> qout
         | "rand"                -> rand
         | "cert"                -> cert
-        | "whp"                 -> highprob
+        | highprob
         | "atval"               -> atvalue
 
+?highprob: "whp"            -> whp
+    | "whp" "(" prob ")"    -> whpvalue
+
+?prob: "0" "." INT?             -> pdec
+    | "." INT                   -> pdec
+    | INT "/" INT               -> pdiv
+
+// Statement set-up
 ?pre: "pre" "{" stmts "}" -> pre
 
 ?post: "post" "{" stmts "}" -> post
 
 ?func: NAME
 
+// Definitions and types
 ?defs: def ("," def)*
 ?def: "define" ("[" defflags "]")? NAME ":" type    -> definition
 
@@ -31,11 +41,13 @@
 ?bool: BOOL
     | "{" "0" "," "1" "}"
 
+// Statements
 ?stmts: (stmt)*
 ?stmt: def 
 | "assert" "(" lexpr ")"        -> assertion
 | "assume" "(" lexpr ")"        -> assumption
 
+// Logical Expressions
 ?lexpr: "(" lexpr ")"
     | TRUE                      -> true
     | FALSE                     -> false
@@ -54,6 +66,7 @@
     | "@" NAME "." lexpr        -> forall
     | "$" NAME "." lexpr        -> exists
 
+// Numerical Expressions
 ?numexpr: NUMBER
     | NAME                      -> var
     | "(" numexpr ")"
@@ -63,8 +76,7 @@
     | numexpr "*" numexpr       -> mul
     | numexpr "/" numexpr       -> div
     | numexpr "^" numexpr       -> pow
-    | numexpr "⊕" numexpr       -> xor
-    | numexpr "xor" numexpr     -> xor
+    | numexpr XOR numexpr       -> xor
     | numexpr "mod" numexpr     -> mod
     | numexpr "." numexpr       -> dot
     | func "(" args ")"         -> call
@@ -73,14 +85,17 @@
 ?args: (arg ("," arg)*)?        -> args
 ?arg: numexpr
 
+// Misc Symbols
 TRUE: "⊤" | "tt"
 FALSE: "⊥" | "ff"
+XOR: "xor" | "⊕"
 
 BOOL : "B" | "𝔹"
 NAT: "N" | "ℕ"
 
 %import common.CNAME -> NAME
 %import common.NUMBER
+%import common.INT
 %import common.WS
 %import common.SH_COMMENT
 
