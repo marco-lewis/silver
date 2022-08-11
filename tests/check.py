@@ -12,16 +12,14 @@ def check(json_file, func, expected, verbose=False, stats=False, show_objects=Fa
     if sat == expected: print("Test passed as expected")
     else: print("SatError: Expected " + str(expected) + " but got " + str(sat))
     if verbose and sat == z3.sat:
-        print("Model/CEX")
         m = silver.solver.model()
-        print(m)
+        print("Model/CEX\n", m)
         try: print('Function: ', m[z3.Function('f', z3.IntSort(), z3.IntSort())])
         except: pass
-    if verbose and sat == z3.unknown: print('Reason: ', silver.solver.reason_unknown())
-    if verbose and sat == z3.unsat: print("Unsat Core: ", silver.solver.unsat_core())
+    if sat == z3.unknown: print('Reason: ', silver.solver.reason_unknown())
     silver_stats = silver.solver.statistics()
     if verbose:
-        print("Time")
+        print("Time (s)")
         try: print(silver_stats.get_key_value('time'))
         except: print("Unable to get time (possibly 0)")
         if stats: print("Stats\n", silver_stats)
