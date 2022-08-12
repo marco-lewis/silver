@@ -86,7 +86,6 @@ class ObilgationGenerator:
         return obligations
     
     def qop_obligation(self, instruction : QOP, prev_mem : QuantumMemory, controls : list):
-        # TODO: Handle non-standard operations
         loc = prev_mem.get_loc(instruction.arg.variable, instruction.arg.index)
         matrix = self.matrix_from_string(instruction.operation)
         op = self.make_operation([loc], [matrix], prev_mem, controls)
@@ -164,8 +163,6 @@ class ObilgationGenerator:
     def obligation_quantum_literal(self, size, literal = 0):
         return [1 if i == literal else 0 for i in range(0, 2**size)]
             
-    # TODO: Add state after measurement calculated
-    # TODO: Correct probabilities from previous memory
     def obligation_quantum_measurement(self, q_process : QuantumProcess, prev_memory : QuantumMemory, measure_option=HIGH_PROB):
         instruction : QMEAS = q_process.instruction
         quantum_ref = instruction.quantum_ref
@@ -224,7 +221,6 @@ class ObilgationGenerator:
     def obligation_qmeas_random(self):
         return []
 
-    # TODO: Add specific value in some other way, allow user to specify in SilSpeq
     def obligation_qmeas_with_specific_value(self, var, probs_z3_vars, classical_value, mark):
         max_prob = Real('hprob_' + var)
         obligations = [And([max_prob >= p for p in probs_z3_vars])]
@@ -240,7 +236,6 @@ class ObilgationGenerator:
                         for i in range(len(probs_z3_vars))]
         return obligations
     
-    # TODO: Allow user to specify value for high probability (2/3, 1/2, 9/10...)
     def obligation_qmeas_with_high_prob(self, var, probs_z3_vars, value, prob_bound=1/2):
         obligations = [Equiv(prob_bound <= probs_z3_vars[i], value == i)
                         for i in range(len(probs_z3_vars))]
