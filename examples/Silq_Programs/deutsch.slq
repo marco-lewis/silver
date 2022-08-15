@@ -1,0 +1,15 @@
+// import deutsch_oracles;
+
+def deutsch(f : B !-> lifted B){
+  x := 0:B;
+  x := H(x);
+  if (f(x)) { phase(pi); }
+  x := H(x);
+  x := measure(x);
+  return x;
+}
+
+def main() {
+  // Returns only f(0) + f(1) mod 2
+  // deutsch(f1_oracle);
+}

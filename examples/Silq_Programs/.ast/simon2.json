@@ -1,0 +1,340 @@
+[
+    {
+        "args": [
+            {
+                "const": true,
+                "expType": "param",
+                "name": "f",
+                "type": "¬const uint[2] →qfree uint[2]"
+            }
+        ],
+        "func": "simon",
+        "retType": {
+            "size": {
+                "expType": "litExp",
+                "value": 2
+            },
+            "typeObj": "uint"
+        },
+        "statements": [
+            {
+                "expType": "defineExp",
+                "lhs": "x",
+                "rhs": {
+                    "consume": true,
+                    "expType": "typeChangeExp",
+                    "expr": {
+                        "expType": "litExp",
+                        "value": 0
+                    },
+                    "type": {
+                        "size": {
+                            "expType": "litExp",
+                            "value": 2
+                        },
+                        "typeObj": "uint"
+                    }
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": "y",
+                "rhs": {
+                    "consume": true,
+                    "expType": "typeChangeExp",
+                    "expr": {
+                        "expType": "litExp",
+                        "value": 0
+                    },
+                    "type": {
+                        "size": {
+                            "expType": "litExp",
+                            "value": 2
+                        },
+                        "typeObj": "uint"
+                    }
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": {
+                    "expType": "indexExp",
+                    "index": {
+                        "expType": "litExp",
+                        "value": 0
+                    },
+                    "var": "x"
+                },
+                "rhs": {
+                    "arg": {
+                        "expType": "indexExp",
+                        "index": {
+                            "expType": "litExp",
+                            "value": 0
+                        },
+                        "var": "x"
+                    },
+                    "expType": "callExp",
+                    "op": "H"
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": {
+                    "expType": "indexExp",
+                    "index": {
+                        "expType": "litExp",
+                        "value": 1
+                    },
+                    "var": "x"
+                },
+                "rhs": {
+                    "arg": {
+                        "expType": "indexExp",
+                        "index": {
+                            "expType": "litExp",
+                            "value": 1
+                        },
+                        "var": "x"
+                    },
+                    "expType": "callExp",
+                    "op": "H"
+                }
+            },
+            {
+                "cond": {
+                    "expType": "eqExp",
+                    "left": {
+                        "arg": "x",
+                        "expType": "callExp",
+                        "op": "f"
+                    },
+                    "right": {
+                        "expType": "litExp",
+                        "value": 1
+                    }
+                },
+                "expType": "iteExp",
+                "othw": {
+                    "expType": "compoundExp",
+                    "statements": []
+                },
+                "then": {
+                    "expType": "compoundExp",
+                    "statements": [
+                        {
+                            "expType": "defineExp",
+                            "lhs": {
+                                "expType": "indexExp",
+                                "index": {
+                                    "expType": "litExp",
+                                    "value": 0
+                                },
+                                "var": "y"
+                            },
+                            "rhs": {
+                                "arg": {
+                                    "expType": "indexExp",
+                                    "index": {
+                                        "expType": "litExp",
+                                        "value": 0
+                                    },
+                                    "var": "y"
+                                },
+                                "expType": "callExp",
+                                "op": "X"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "cond": {
+                    "expType": "eqExp",
+                    "left": {
+                        "arg": "x",
+                        "expType": "callExp",
+                        "op": "f"
+                    },
+                    "right": {
+                        "expType": "litExp",
+                        "value": 2
+                    }
+                },
+                "expType": "iteExp",
+                "othw": {
+                    "expType": "compoundExp",
+                    "statements": []
+                },
+                "then": {
+                    "expType": "compoundExp",
+                    "statements": [
+                        {
+                            "expType": "defineExp",
+                            "lhs": {
+                                "expType": "indexExp",
+                                "index": {
+                                    "expType": "litExp",
+                                    "value": 1
+                                },
+                                "var": "y"
+                            },
+                            "rhs": {
+                                "arg": {
+                                    "expType": "indexExp",
+                                    "index": {
+                                        "expType": "litExp",
+                                        "value": 1
+                                    },
+                                    "var": "y"
+                                },
+                                "expType": "callExp",
+                                "op": "X"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "cond": {
+                    "expType": "eqExp",
+                    "left": {
+                        "arg": "x",
+                        "expType": "callExp",
+                        "op": "f"
+                    },
+                    "right": {
+                        "expType": "litExp",
+                        "value": 3
+                    }
+                },
+                "expType": "iteExp",
+                "othw": {
+                    "expType": "compoundExp",
+                    "statements": []
+                },
+                "then": {
+                    "expType": "compoundExp",
+                    "statements": [
+                        {
+                            "expType": "defineExp",
+                            "lhs": {
+                                "expType": "indexExp",
+                                "index": {
+                                    "expType": "litExp",
+                                    "value": 0
+                                },
+                                "var": "y"
+                            },
+                            "rhs": {
+                                "arg": {
+                                    "expType": "indexExp",
+                                    "index": {
+                                        "expType": "litExp",
+                                        "value": 0
+                                    },
+                                    "var": "y"
+                                },
+                                "expType": "callExp",
+                                "op": "X"
+                            }
+                        },
+                        {
+                            "expType": "defineExp",
+                            "lhs": {
+                                "expType": "indexExp",
+                                "index": {
+                                    "expType": "litExp",
+                                    "value": 1
+                                },
+                                "var": "y"
+                            },
+                            "rhs": {
+                                "arg": {
+                                    "expType": "indexExp",
+                                    "index": {
+                                        "expType": "litExp",
+                                        "value": 1
+                                    },
+                                    "var": "y"
+                                },
+                                "expType": "callExp",
+                                "op": "X"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": "y",
+                "rhs": {
+                    "arg": "y",
+                    "expType": "callExp",
+                    "op": "measure"
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": {
+                    "expType": "indexExp",
+                    "index": {
+                        "expType": "litExp",
+                        "value": 0
+                    },
+                    "var": "x"
+                },
+                "rhs": {
+                    "arg": {
+                        "expType": "indexExp",
+                        "index": {
+                            "expType": "litExp",
+                            "value": 0
+                        },
+                        "var": "x"
+                    },
+                    "expType": "callExp",
+                    "op": "H"
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": {
+                    "expType": "indexExp",
+                    "index": {
+                        "expType": "litExp",
+                        "value": 1
+                    },
+                    "var": "x"
+                },
+                "rhs": {
+                    "arg": {
+                        "expType": "indexExp",
+                        "index": {
+                            "expType": "litExp",
+                            "value": 1
+                        },
+                        "var": "x"
+                    },
+                    "expType": "callExp",
+                    "op": "H"
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": "x",
+                "rhs": {
+                    "arg": "x",
+                    "expType": "callExp",
+                    "op": "measure"
+                }
+            },
+            {
+                "expType": "returnExp",
+                "value": [
+                    "x"
+                ]
+            }
+        ]
+    }
+]

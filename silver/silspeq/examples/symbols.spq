@@ -1,6 +1,0 @@
-test[qout](define [oracle] f : {0,1}^3 -> N -> B -> B)->(define dj_ret : {0,1}^3)
-pre{
-    assert(f(2, 700, 1) = 0)
-}
-post{
-}

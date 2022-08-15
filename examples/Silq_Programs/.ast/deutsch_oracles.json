@@ -1,0 +1,99 @@
+[
+    {
+        "args": [
+            {
+                "const": true,
+                "expType": "param",
+                "name": "b",
+                "type": "B"
+            }
+        ],
+        "func": "f1_oracle",
+        "retType": {
+            "typeObj": "B"
+        },
+        "statements": [
+            {
+                "expType": "returnExp",
+                "value": [
+                    {
+                        "expType": "litExp",
+                        "value": 0
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "args": [
+            {
+                "const": true,
+                "expType": "param",
+                "name": "b",
+                "type": "B"
+            }
+        ],
+        "func": "f2_oracle",
+        "retType": {
+            "typeObj": "B"
+        },
+        "statements": [
+            {
+                "expType": "returnExp",
+                "value": [
+                    {
+                        "expType": "litExp",
+                        "value": 1
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "args": [
+            {
+                "const": true,
+                "expType": "param",
+                "name": "b",
+                "type": "B"
+            }
+        ],
+        "func": "f0_oracle",
+        "retType": {
+            "typeObj": "B"
+        },
+        "statements": [
+            {
+                "expType": "returnExp",
+                "value": [
+                    "b"
+                ]
+            }
+        ]
+    },
+    {
+        "args": [
+            {
+                "const": true,
+                "expType": "param",
+                "name": "b",
+                "type": "B"
+            }
+        ],
+        "func": "f3_oracle",
+        "retType": {
+            "typeObj": "B"
+        },
+        "statements": [
+            {
+                "expType": "returnExp",
+                "value": [
+                    {
+                        "expType": "uNotExp",
+                        "value": "b"
+                    }
+                ]
+            }
+        ]
+    }
+]

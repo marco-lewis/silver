@@ -1,0 +1,9 @@
+def had_loop(q: uint[3]){
+    for i in [0..3){ q[i] := H(q[i]); }
+    return q;
+}
+
+def had[n:!N](q:uint[n]){
+    for i in [0..n) { q[i] := H(q[i]); }
+    return q;
+}

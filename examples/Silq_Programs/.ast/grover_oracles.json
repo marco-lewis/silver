@@ -1,0 +1,31 @@
+[
+    {
+        "args": [
+            {
+                "const": true,
+                "expType": "param",
+                "name": "x",
+                "type": "uint[2]"
+            }
+        ],
+        "func": "g2",
+        "retType": {
+            "typeObj": "B"
+        },
+        "statements": [
+            {
+                "expType": "returnExp",
+                "value": [
+                    {
+                        "expType": "eqExp",
+                        "left": "x",
+                        "right": {
+                            "expType": "litExp",
+                            "value": 2
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]

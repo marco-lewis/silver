@@ -1,0 +1,273 @@
+[
+    {
+        "args": [
+            {
+                "const": true,
+                "expType": "param",
+                "name": "f",
+                "type": "¬const uint[3] →qfree 𝔹"
+            }
+        ],
+        "func": "grover",
+        "retType": {
+            "typeObj": "ℕ"
+        },
+        "statements": [
+            {
+                "expType": "defineExp",
+                "lhs": "cand",
+                "rhs": {
+                    "consume": true,
+                    "expType": "typeChangeExp",
+                    "expr": {
+                        "expType": "litExp",
+                        "value": 0
+                    },
+                    "type": {
+                        "size": {
+                            "expType": "litExp",
+                            "value": 3
+                        },
+                        "typeObj": "uint"
+                    }
+                }
+            },
+            {
+                "body": {
+                    "expType": "compoundExp",
+                    "statements": [
+                        {
+                            "expType": "defineExp",
+                            "lhs": {
+                                "expType": "indexExp",
+                                "index": "k",
+                                "var": "cand"
+                            },
+                            "rhs": {
+                                "arg": {
+                                    "expType": "indexExp",
+                                    "index": "k",
+                                    "var": "cand"
+                                },
+                                "expType": "callExp",
+                                "op": "H"
+                            }
+                        }
+                    ]
+                },
+                "expType": "forExp",
+                "identifier": "k",
+                "left": {
+                    "expType": "litExp",
+                    "value": 0
+                },
+                "right": {
+                    "expType": "litExp",
+                    "value": 3
+                },
+                "step": 1
+            },
+            {
+                "body": {
+                    "expType": "compoundExp",
+                    "statements": [
+                        {
+                            "expType": "defineExp",
+                            "lhs": "b",
+                            "rhs": {
+                                "arg": "cand",
+                                "expType": "callExp",
+                                "op": "f"
+                            }
+                        },
+                        {
+                            "cond": "b",
+                            "expType": "iteExp",
+                            "othw": {
+                                "expType": "compoundExp",
+                                "statements": []
+                            },
+                            "then": {
+                                "expType": "compoundExp",
+                                "statements": [
+                                    {
+                                        "arg": "pi",
+                                        "expType": "callExp",
+                                        "op": "phase"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "expType": "forgetExp",
+                            "val": {
+                                "arg": "cand",
+                                "expType": "callExp",
+                                "op": "f"
+                            },
+                            "var": "b"
+                        },
+                        {
+                            "expType": "defineExp",
+                            "lhs": "cand",
+                            "rhs": {
+                                "arg": "cand",
+                                "expType": "callExp",
+                                "op": "groverDiffusion"
+                            }
+                        }
+                    ]
+                },
+                "expType": "forExp",
+                "identifier": "k",
+                "left": {
+                    "expType": "litExp",
+                    "value": 0
+                },
+                "right": {
+                    "expType": "litExp",
+                    "value": 2
+                },
+                "step": 1
+            },
+            {
+                "expType": "returnExp",
+                "value": [
+                    {
+                        "consume": true,
+                        "expType": "typeChangeExp",
+                        "expr": {
+                            "arg": "cand",
+                            "expType": "callExp",
+                            "op": "measure"
+                        },
+                        "type": {
+                            "typeObj": "ℕ"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "args": [
+            {
+                "const": false,
+                "expType": "param",
+                "name": "cand",
+                "type": "uint[3]"
+            }
+        ],
+        "func": "groverDiffusion",
+        "retType": {
+            "size": {
+                "expType": "litExp",
+                "value": 3
+            },
+            "typeObj": "uint"
+        },
+        "statements": [
+            {
+                "body": {
+                    "expType": "compoundExp",
+                    "statements": [
+                        {
+                            "expType": "defineExp",
+                            "lhs": {
+                                "expType": "indexExp",
+                                "index": "k",
+                                "var": "cand"
+                            },
+                            "rhs": {
+                                "arg": {
+                                    "expType": "indexExp",
+                                    "index": "k",
+                                    "var": "cand"
+                                },
+                                "expType": "callExp",
+                                "op": "H"
+                            }
+                        }
+                    ]
+                },
+                "expType": "forExp",
+                "identifier": "k",
+                "left": {
+                    "expType": "litExp",
+                    "value": 0
+                },
+                "right": {
+                    "expType": "litExp",
+                    "value": 3
+                },
+                "step": 1
+            },
+            {
+                "cond": {
+                    "expType": "neqExp",
+                    "left": "cand",
+                    "right": {
+                        "expType": "litExp",
+                        "value": 0
+                    }
+                },
+                "expType": "iteExp",
+                "othw": {
+                    "expType": "compoundExp",
+                    "statements": []
+                },
+                "then": {
+                    "expType": "compoundExp",
+                    "statements": [
+                        {
+                            "arg": "pi",
+                            "expType": "callExp",
+                            "op": "phase"
+                        }
+                    ]
+                }
+            },
+            {
+                "body": {
+                    "expType": "compoundExp",
+                    "statements": [
+                        {
+                            "expType": "defineExp",
+                            "lhs": {
+                                "expType": "indexExp",
+                                "index": "k",
+                                "var": "cand"
+                            },
+                            "rhs": {
+                                "arg": {
+                                    "expType": "indexExp",
+                                    "index": "k",
+                                    "var": "cand"
+                                },
+                                "expType": "callExp",
+                                "op": "H"
+                            }
+                        }
+                    ]
+                },
+                "expType": "forExp",
+                "identifier": "k",
+                "left": {
+                    "expType": "litExp",
+                    "value": 0
+                },
+                "right": {
+                    "expType": "litExp",
+                    "value": 3
+                },
+                "step": 1
+            },
+            {
+                "expType": "returnExp",
+                "value": [
+                    "cand"
+                ]
+            }
+        ]
+    }
+]

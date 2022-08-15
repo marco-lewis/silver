@@ -1,0 +1,48 @@
+[
+    {
+        "args": [],
+        "func": "main",
+        "retType": {
+            "typeObj": "𝟙"
+        },
+        "statements": [
+            {
+                "expType": "defineExp",
+                "lhs": "x",
+                "rhs": {
+                    "consume": true,
+                    "expType": "typeChangeExp",
+                    "expr": {
+                        "expType": "litExp",
+                        "value": 0
+                    },
+                    "type": {
+                        "typeObj": "B"
+                    }
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": "x",
+                "rhs": {
+                    "arg": "x",
+                    "expType": "callExp",
+                    "op": "H"
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": "m",
+                "rhs": {
+                    "arg": "x",
+                    "expType": "callExp",
+                    "op": "measure"
+                }
+            },
+            {
+                "expType": "returnExp",
+                "value": []
+            }
+        ]
+    }
+]

@@ -1,0 +1,25 @@
+main()->(define main_ret:())
+pre{
+
+}
+post{
+
+}
+
+fixed_dj[whp](define f:{0, 1}^3->{0, 1})->(define fixed_dj_ret:{0, 1}^3)
+pre{
+    define y : N
+    define x : {0,1}^3
+    define bal : {0, 1}
+    define const : {0, 1}
+    
+    assert((¬(bal = 1)) <-> const = 1)
+    assert(SUM[x](f) = y)
+    assert(y = 2^(3-1) | y = 0 | y = 2^3)
+    assert(bal = 1 <-> y = 2^(3-1))
+    assert(const = 1 <-> (y = 0 | y = 2^3))
+}
+post{
+    assert(const = 1 -> fixed_dj_ret = 0)
+    assert(bal = 1 -> ¬(fixed_dj_ret = 0))
+}

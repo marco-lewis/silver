@@ -1,0 +1,77 @@
+[
+    {
+        "args": [],
+        "func": "uint_test",
+        "statements": [
+            {
+                "expType": "defineExp",
+                "lhs": "q",
+                "rhs": {
+                    "consume": true,
+                    "expType": "typeChangeExp",
+                    "expr": {
+                        "expType": "litExp",
+                        "value": 0
+                    },
+                    "type": {
+                        "size": {
+                            "expType": "litExp",
+                            "value": 3
+                        },
+                        "typeObj": "uint"
+                    }
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": {
+                    "expType": "indexExp",
+                    "index": {
+                        "expType": "litExp",
+                        "value": 0
+                    },
+                    "var": "q"
+                },
+                "rhs": {
+                    "arg": {
+                        "expType": "indexExp",
+                        "index": {
+                            "expType": "litExp",
+                            "value": 0
+                        },
+                        "var": "q"
+                    },
+                    "expType": "callExp",
+                    "op": "H"
+                }
+            },
+            {
+                "expType": "defineExp",
+                "lhs": {
+                    "expType": "indexExp",
+                    "index": {
+                        "expType": "litExp",
+                        "value": 1
+                    },
+                    "var": "q"
+                },
+                "rhs": {
+                    "arg": {
+                        "expType": "indexExp",
+                        "index": {
+                            "expType": "litExp",
+                            "value": 1
+                        },
+                        "var": "q"
+                    },
+                    "expType": "callExp",
+                    "op": "Z'"
+                }
+            },
+            {
+                "expType": "returnExp",
+                "value": ["q"]
+            }
+        ]
+    }
+]

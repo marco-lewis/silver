@@ -1,0 +1,31 @@
+// import dj_oracles;
+
+def fixed_dj(f: const uint[8] !->qfree B){
+    x := 0:uint[8];
+
+    x[0] := H(x[0]);
+    x[1] := H(x[1]);
+    x[2] := H(x[2]);
+    x[3] := H(x[3]);
+    x[4] := H(x[4]);
+    x[5] := H(x[5]);
+    x[6] := H(x[6]);
+    x[7] := H(x[7]);
+    if f(x){ phase(pi); }
+
+    x[0] := H(x[0]);
+    x[1] := H(x[1]);
+    x[2] := H(x[2]);
+    x[3] := H(x[3]);
+    x[4] := H(x[4]);
+    x[5] := H(x[5]);
+    x[6] := H(x[6]);
+    x[7] := H(x[7]);
+    
+    x := measure(x);
+    return x;
+}
+
+def main(){
+    // return fixed_dj(c_oracle[3]);
+}

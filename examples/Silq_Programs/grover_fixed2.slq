@@ -1,0 +1,24 @@
+// import grover_oracles;
+
+def grover_fixed(f : const uint[2] !->qfree B){
+    x := 0:uint[2];
+    x[0] := H(x[0]);
+    x[1] := H(x[1]);
+    // Oracle
+    if f(x){ phase(pi); }
+    // Diffusion
+    x[0] := H(x[0]);
+    x[1] := H(x[1]);
+    if x!=0{ phase(pi); }
+    x[0] := H(x[0]);
+    x[1] := H(x[1]);
+    
+    x := measure(x);
+    return x;
+}
+
+
+
+def main(){
+
+}

@@ -1,0 +1,10 @@
+grover_rev[cert](define f:{0, 1}^2->{0, 1})->(define grover_rev_ret:{0, 1}^2)
+pre{
+    define a : {0,1}^2
+    assert(a = 2)
+    assert(f(a) = 1)
+    assert(f(0) + f(1) + f(2) + f(3) = 1)
+}
+post{
+    assert(grover_rev_ret = 0)
+}

@@ -1,0 +1,14 @@
+def deutsch(b:!uint[2]){
+    q := 0:B;
+
+    q := H(q);
+    if (b == 1 & q)|(b == 2 & ¬q)|(b == 3 & (q || ¬q)) { phase(pi); }
+    q := H(q);
+
+    q := measure(q);
+    return q;
+}
+
+def main(){
+    return deutsch(3:!uint[2]);
+}
