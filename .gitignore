@@ -5,6 +5,6 @@ example.py
 Deprecated/
 toy.py
 tests_analysis.py
-Silq_Programs/.ast/*
-Silq_Programs/.hash/*
-Silq_Programs/.obl/*
+examples/Silq_Programs/.ast/*
+examples/Silq_Programs/.hash/*
+examples/Silq_Programs/.obl/*
