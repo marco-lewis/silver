@@ -194,33 +194,31 @@ class ObilgationGenerator:
         # Measurement options
         classical_value = Int('meas_' + variable)
         meas_obligations = []
-        if measure_option == RAND:
-            meas_obligations = self.obligation_qmeas_random()
+        if measure_option == RAND: pass
         if measure_option == HIGH_PROB:
             meas_obligations = self.obligation_qmeas_with_high_prob(variable, probs_z3_vars, classical_value, prob_bound=self.__config[MEASURE_BOUND])
         if measure_option == CERTAINTY:
             meas_obligations = self.obligation_qmeas_with_certainty(variable, probs_z3_vars, classical_value)
         if measure_option == SPECIFIC_VALUE:
             meas_obligations = self.obligation_qmeas_with_specific_value(variable, probs_z3_vars, classical_value, self.__config[MEASURE_MARK])
-            
+        for meas_value in range(2**size): meas_obligations.append(Implies(probs_z3_vars[meas_value] == 0, classical_value != meas_value))
+
         # State after measurement
         # TODO: handle non-certainty instances (include 1//Sqrt(probs_z3_vars[meas_value]))
         post_memory = q_process.end_memory
+        post_state_obligations = []
         if not(post_memory.is_empty()):
             post_z3_vars = [Complex(obl_var) for obl_var in post_memory.get_obligation_variables()]
-            post_state_obligations = []
             for meas_value in range(2**size):
-                norm = probs_z3_vars[meas_value]
-                mem_locs = [memory_obligation_variables[j] for j in range(len(memory_obligation_variables)) if not((j & 1 << loc) ^ (meas_value << loc))]
-                post_prev_eq = And([post_var * norm == prev_var for (post_var, prev_var) in zip(post_z3_vars, mem_locs)])
-                post_state_obligations.append(Implies(And(classical_value == meas_value, norm != 0), post_prev_eq))
-        else: post_state_obligations = []
+                norm = Sqrt(probs_z3_vars[meas_value])
+                post_state_obligations.append(norm >= 0)
+                prev_mem_locs = [memory_obligation_variables[j] for j in range(len(memory_obligation_variables)) 
+                                 if not((j & 1 << loc) ^ (meas_value << loc))]
+                post_prev_eq = And([post_var * norm == prev_var for (post_var, prev_var) in zip(post_z3_vars, prev_mem_locs)])
+                post_state_obligations.append(Implies(classical_value == meas_value, post_prev_eq))
 
         return obligations + meas_obligations + post_state_obligations
     
-    def obligation_qmeas_random(self):
-        return []
-
     def obligation_qmeas_with_specific_value(self, var, probs_z3_vars, classical_value, mark):
         max_prob = Real('hprob_' + var)
         obligations = [And([max_prob >= p for p in probs_z3_vars])]
