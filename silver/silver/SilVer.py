@@ -6,15 +6,16 @@ import subprocess
 
 from z3.z3 import *
 
-from silspeq.SilSpeqParser import SilSpeqParser
-from silspeq.SilSpeqZ3FlagVisitor import SilSpeqZ3FlagVisitor
-from silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
-from silver.Instruction import Instruction
-from silver.JSONInterpreter import JSONInterpreter
-from silver.MeasureOptions import *
-from silver.ObligationGenerator import ObilgationGenerator
-from silver.Program import Program
-from silver.SpeqGenerator import SpeqGenerator
+from silver.silspeq.SilSpeqParser import SilSpeqParser
+from silver.silspeq.SilSpeqZ3FlagVisitor import SilSpeqZ3FlagVisitor
+from silver.silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
+from silver.silver.Instruction import Instruction
+from silver.silver.JSONInterpreter import JSONInterpreter
+from silver.silver.MeasureOptions import *
+from silver.silver.ObligationGenerator import ObilgationGenerator
+from silver.silver.Program import Program
+from silver.silver.SpeqGenerator import SpeqGenerator
+from .utils import get_path
 
 class SilVer:
     def __init__(self, timeout=30000, seed=3, check_store=True):
@@ -138,7 +139,7 @@ class SilVer:
         return sat
 
     def get_ast_folder(self, silq_file_path):
-        folder_path = splitext(silq_file_path)[0].split("/")[0]
+        folder_path = get_path(silq_file_path)
         ast_path = folder_path + "/.ast"
         if not(exists(ast_path)):
             os.makedirs(ast_path)

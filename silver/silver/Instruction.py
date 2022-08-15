@@ -1,5 +1,5 @@
 from typing import List
-from silver.VarRef import VarRef
+from silver.silver.VarRef import VarRef
 
 
 class Instruction():

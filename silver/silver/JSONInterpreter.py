@@ -10,13 +10,13 @@ from cmath import exp
 from lib2to3.pgen2.token import RIGHTSHIFT
 from z3 import *
 
-from silver.ClassicalMemory import ClassicalMemory
-from silver.Instruction import *
-from silver.Program import Program
-from silver.QuantumMemory import QuantumMemory
-from silver.QuantumOps import *
-from silver.VarRef import VarRef
-from silver.utils import *
+from silver.silver.ClassicalMemory import ClassicalMemory
+from silver.silver.Instruction import *
+from silver.silver.Program import Program
+from silver.silver.QuantumMemory import QuantumMemory
+from silver.silver.QuantumOps import *
+from silver.silver.VarRef import VarRef
+from silver.silver.utils import *
 
 class JSONInterpreter:
     isqrt2 = Real("isqrt2")

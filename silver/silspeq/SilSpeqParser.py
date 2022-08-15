@@ -8,7 +8,7 @@ class SilSpeqParser:
                 self.__grammar = f.read()
         except:
             try:
-                with open(getcwd() + "/silspeq/SilSpeq.lark", 'r') as f:
+                with open(getcwd() + "/silver/silspeq/SilSpeq.lark", 'r') as f:
                     self.__grammar = f.read()
             except:
                 raise Exception("Cannot find SilSpeq.lark file")

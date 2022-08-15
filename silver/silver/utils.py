@@ -1,3 +1,4 @@
+from os.path import splitext
 import re
 from z3 import *
 
@@ -6,6 +7,9 @@ TYPEOBJ = "typeObj"
 
 def delta(i, j):
     return 1 if i == j else 0
+
+def get_path(file_path):
+    return "/".join(splitext(file_path)[0].split("/")[:-1])
 
 def kronecker(matrix1, matrix2):
     """

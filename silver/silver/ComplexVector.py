@@ -1,4 +1,4 @@
-from silver.complex import Complex
+from silver.silver.complex import Complex
 
 def ComplexVector(name, sz, offset = 0):
         cv = []

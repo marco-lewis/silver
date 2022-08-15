@@ -2,16 +2,16 @@ from math import floor
 from typing import List
 from z3 import *
 
-from silspeq.SilSpeqZ3Interpreter import Equiv
-from silver.ClassicalMemory import ClassicalMemory
-from silver.complex import *
-from silver.ComplexVector import *
-from silver.Instruction import *
-from silver.Process import ClassicalProcess, QuantumProcess
-from silver.MeasureOptions import *
-from silver.QuantumMemory import QuantumMemory
-from silver.QuantumOps import *
-from silver.utils import *
+from silver.silspeq.SilSpeqZ3Interpreter import Equiv
+from silver.silver.ClassicalMemory import ClassicalMemory
+from silver.silver.complex import *
+from silver.silver.ComplexVector import *
+from silver.silver.Instruction import *
+from silver.silver.Process import ClassicalProcess, QuantumProcess
+from silver.silver.MeasureOptions import *
+from silver.silver.QuantumMemory import QuantumMemory
+from silver.silver.QuantumOps import *
+from silver.silver.utils import *
 
 # ENHANCE: Handle return statements differently based on quantum or classical
 
