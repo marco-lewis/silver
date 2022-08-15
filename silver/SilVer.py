@@ -1,24 +1,19 @@
 from genericpath import exists
 import hashlib
-import inspect
 import json as json
 from os.path import splitext
-import re
 import subprocess
 
 from z3.z3 import *
 
-import silver
 from silspeq.SilSpeqParser import SilSpeqParser
 from silspeq.SilSpeqZ3FlagVisitor import SilSpeqZ3FlagVisitor
 from silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
-from silver.ClassicalMemory import ClassicalMemory
 from silver.Instruction import Instruction
 from silver.JSONInterpreter import JSONInterpreter
 from silver.MeasureOptions import *
 from silver.ObligationGenerator import ObilgationGenerator
 from silver.Program import Program
-from silver.QuantumMemory import QuantumMemory
 from silver.SpeqGenerator import SpeqGenerator
 
 class SilVer:
