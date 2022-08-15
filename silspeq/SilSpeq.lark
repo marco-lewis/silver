@@ -1,0 +1,105 @@
+?start: (func_spec)* -> specs
+
+?func_spec: func ("[" funcflags "]")? "(" (defs)? ")" "->" "(" (defs)? ")" pre post -> funcspec
+
+// Flag Rules
+?funcflags: funcflag ("," funcflag)*
+?funcflag: "qout"               -> qout
+        | "rand"                -> rand
+        | "cert"                -> cert
+        | highprob
+        | atval
+
+?highprob: "whp"            -> whp
+    | "whp" "(" prob ")"    -> whpvalue
+
+?prob: "0" "." INT?             -> pdec
+    | "." INT                   -> pdec
+    | INT "/" INT               -> pdiv
+
+?atval: "atval" "(" def ")" -> atvalue
+
+// Statement set-up
+?pre: "pre" "{" stmts "}" -> pre
+
+?post: "post" "{" stmts "}" -> post
+
+?func: NAME
+
+// Definitions and types
+?defs: def ("," def)*
+?def: "define" ("[" defflags "]")? NAME ":" type    -> definition
+
+?defflags: defflag ("," defflag)*
+?defflag: "oracle"              -> oracle
+
+?type: NAT                              -> nat
+    | "(" ")"                           -> unit
+    | bool                              -> bool
+    | bool "^" NUMBER                   -> int
+    | type ("->" type)+                 -> function
+    | "!" type                          -> classical
+
+?bool: BOOL
+    | "{" "0" "," "1" "}"
+
+// Statements
+?stmts: (stmt)*
+?stmt: def 
+| "assert" "(" lexpr ")"        -> assertion
+| "assume" "(" lexpr ")"        -> assumption
+
+// Logical Expressions
+?lexpr: "(" lexpr ")"
+    | TRUE                      -> true
+    | FALSE                     -> false
+    | numexpr
+    | numexpr "=" numexpr       -> eq
+    | numexpr ">" numexpr       -> gt
+    | numexpr "<" numexpr       -> lt
+    | numexpr ">=" numexpr      -> ge
+    | numexpr "<=" numexpr      -> le
+    | lexpr "&" lexpr           -> land
+    | lexpr "|" lexpr           -> lor
+    | lexpr "->" lexpr          -> implies
+    | lexpr "<->" lexpr         -> equiv
+    | "distinct" "(" args ")"   -> distinct
+    | "¬" lexpr                 -> lnot
+    | "@" NAME "." lexpr        -> forall
+    | "$" NAME "." lexpr        -> exists
+
+// Numerical Expressions
+?numexpr: NUMBER
+    | NAME                      -> var
+    | "(" numexpr ")"
+    | "-" numexpr               -> neg
+    | numexpr "+" numexpr       -> add
+    | numexpr "-" numexpr       -> sub
+    | numexpr "*" numexpr       -> mul
+    | numexpr "/" numexpr       -> div
+    | numexpr "^" numexpr       -> pow
+    | numexpr XOR numexpr       -> xor
+    | numexpr "mod" numexpr     -> mod
+    | numexpr "." numexpr       -> dot
+    | func "(" args ")"         -> call
+    | "SUM" "[" NAME "]" "(" numexpr ")"    -> sum
+
+?args: (arg ("," arg)*)?        -> args
+?arg: numexpr
+
+// Misc Symbols
+TRUE: "⊤" | "tt"
+FALSE: "⊥" | "ff"
+XOR: "xor" | "⊕"
+
+BOOL : "B" | "𝔹"
+NAT: "N" | "ℕ"
+
+%import common.CNAME -> NAME
+%import common.NUMBER
+%import common.INT
+%import common.WS
+%import common.SH_COMMENT
+
+%ignore WS
+%ignore SH_COMMENT

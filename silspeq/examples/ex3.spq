@@ -1,0 +1,16 @@
+dj_alg(define f : {0,1}^3 -> N -> N -> B)->(define dj_ret : {0,1}^3)
+pre{
+    define n : N
+    define y : B
+    define x : {0,1}^3
+    define bal : B
+    define const : B
+    
+    assert((¬(bal = 1)) <-> const = 1)
+    assert(const = 1 <-> $y.(@x.(f(x, n, n) = y)))
+    assert(bal = 1 <-> SUM[x](f(x, n, n)) = 4)
+}
+post{
+    assert(const = 1 -> dj_ret = 0)
+    assert(bal = 1 -> ¬dj_ret = 0)
+}
