@@ -5,7 +5,6 @@ import z3
 # 1 Call
 # 2 qubits - uses certainty
 check("grover_fixed2.slq", "grover_fixed", z3.unsat)
-check("grover_partial3.slq", "grover_partial", z3.unsat)
 
 # 2 Calls
 # 3 qubits
