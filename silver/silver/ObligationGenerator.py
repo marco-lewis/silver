@@ -8,7 +8,7 @@ from silver.silver.complex import *
 from silver.silver.ComplexVector import *
 from silver.silver.Instruction import *
 from silver.silver.Process import ClassicalProcess, QuantumProcess
-from silver.silver.MeasureOptions import *
+from silver.MeasureOptions import *
 from silver.silver.QuantumMemory import QuantumMemory
 from silver.silver.QuantumOps import *
 from silver.silver.utils import *
@@ -163,7 +163,7 @@ class ObilgationGenerator:
     def obligation_quantum_literal(self, size, literal = 0):
         return [1 if i == literal else 0 for i in range(0, 2**size)]
             
-    def obligation_quantum_measurement(self, q_process : QuantumProcess, prev_memory : QuantumMemory, measure_option=HIGH_PROB):
+    def obligation_quantum_measurement(self, q_process : QuantumProcess, prev_memory : QuantumMemory, measure_option=[HIGH_PROB]):
         instruction : QMEAS = q_process.instruction
         quantum_ref = instruction.quantum_ref
         variable = quantum_ref.variable
@@ -195,12 +195,12 @@ class ObilgationGenerator:
         classical_value = Int('meas_' + variable)
         meas_obligations = []
         if measure_option == RAND: pass
-        if measure_option == HIGH_PROB:
-            meas_obligations = self.obligation_qmeas_with_high_prob(variable, probs_z3_vars, classical_value, prob_bound=self.__config[MEASURE_BOUND])
-        if measure_option == CERTAINTY:
-            meas_obligations = self.obligation_qmeas_with_certainty(variable, probs_z3_vars, classical_value)
-        if measure_option == SPECIFIC_VALUE:
-            meas_obligations = self.obligation_qmeas_with_specific_value(variable, probs_z3_vars, classical_value, self.__config[MEASURE_MARK])
+        if HIGH_PROB in measure_option:
+            meas_obligations += self.obligation_qmeas_with_high_prob(variable, probs_z3_vars, classical_value, prob_bound=self.__config[MEASURE_BOUND])
+        if CERTAINTY in measure_option:
+            meas_obligations += self.obligation_qmeas_with_certainty(variable, probs_z3_vars, classical_value)
+        if SPECIFIC_VALUE in measure_option:
+            meas_obligations += self.obligation_qmeas_with_specific_value(variable, probs_z3_vars, classical_value, self.__config[MEASURE_MARK])
         for meas_value in range(2**size): meas_obligations.append(Implies(probs_z3_vars[meas_value] == 0, classical_value != meas_value))
 
         # State after measurement

@@ -11,7 +11,7 @@ from silver.silspeq.SilSpeqZ3FlagVisitor import SilSpeqZ3FlagVisitor
 from silver.silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
 from silver.silver.Instruction import Instruction
 from silver.silver.JSONInterpreter import JSONInterpreter
-from silver.silver.MeasureOptions import *
+from silver.MeasureOptions import *
 from silver.silver.ObligationGenerator import ObilgationGenerator
 from silver.silver.Program import Program
 from silver.silver.SpeqGenerator import SpeqGenerator
@@ -94,18 +94,16 @@ class SilVer:
     def check_flags(self, file):
         tree = self.speq_parser.parse_file(file)
         self.speq_flag_itp.visit(tree)
+
+        self.config[MEASURE_OPTION] = self.speq_flag_itp.meas_options
         
-        if self.speq_flag_itp.meas_cert: self.config[MEASURE_OPTION] = CERTAINTY
-        elif self.speq_flag_itp.meas_whp != -1: 
-            self.config[MEASURE_OPTION] = HIGH_PROB
-            if self.speq_flag_itp.meas_whp >= 0 and self.speq_flag_itp.meas_whp < 1: self.config[MEASURE_BOUND] = self.speq_flag_itp.meas_whp
+        if HIGH_PROB in self.config[MEASURE_OPTION]: 
+            low = self.speq_flag_itp.meas_low_bound
+            if low >= 0 and  low <= 1: self.config[MEASURE_BOUND] = low
             else: raise Exception("FlagError(whp): bound given is not between 0 and 1")
-        elif is_int(self.speq_flag_itp.meas_atval): 
-            self.config[MEASURE_OPTION] = SPECIFIC_VALUE
-            self.config[MEASURE_MARK] = self.speq_flag_itp.meas_atval
-        elif self.speq_flag_itp.meas_rand: self.config[MEASURE_OPTION] = RAND
-        else: self.config[MEASURE_OPTION] = RAND
-        self.speq_z3_itp.set_meas_cert(self.speq_flag_itp.meas_cert)
+        if SPECIFIC_VALUE in self.config[MEASURE_OPTION]: self.config[MEASURE_MARK] = self.speq_flag_itp.meas_mark
+        if self.config[MEASURE_OPTION] == []: self.config[MEASURE_OPTION].append(RAND)
+        self.speq_z3_itp.set_meas_cert(CERTAINTY in self.config[MEASURE_OPTION])
         
         if self.speq_flag_itp.quantum_out: pass
     

@@ -2,15 +2,16 @@ from lark.visitors import *
 from lark import Token
 from z3 import *
 
+from silver.MeasureOptions import *
+
 class SilSpeqZ3FlagVisitor(Visitor):
     oracles = []
     quantum_out = False
-    meas_rand = False
-    meas_cert = False
-    meas_whp = -1
-    meas_atval = False
     
     def __init__(self):
+        self.meas_options = []
+        self.meas_low_bound = -1
+        self.meas_mark = 0
         super().__init__()
     
     def specs(self, specs):
@@ -23,18 +24,20 @@ class SilSpeqZ3FlagVisitor(Visitor):
         self.quantum_out = True
         
     def rand(self, v):
-        self.meas_rand = True
+        self.meas_options.append(RAND)
 
     def cert(self, v):
-        self.meas_cert = True
+        self.meas_options.append(CERTAINTY)
 
     def whp(self, v):
-        self.meas_whp = 0.5
+        self.meas_options.append(HIGH_PROB)
+        self.meas_low_bound = 0.5
 
     def whpvalue(self, v:Tree):
         if list(v.find_data('pdec')): d = self.pdec(v.children[0])
         elif list(v.find_data('pdiv')): d = self.pdiv(v.children[0])
-        self.meas_whp = d
+        self.meas_options.append(HIGH_PROB)
+        self.meas_low_bound = d
 
     def pdec(self, v:Tree):
         return float("0." + str(self.token(v.children[0])))
@@ -47,7 +50,8 @@ class SilSpeqZ3FlagVisitor(Visitor):
     def atvalue(self, v: Tree):
         dtree = list(v.find_data('definition'))[0]
         mark = self.definition(dtree)
-        self.meas_atval = mark
+        self.meas_options.append(SPECIFIC_VALUE)
+        self.meas_mark = mark
 
     def oracle(self, v):
         return lambda name: self.oracles.append(name)
