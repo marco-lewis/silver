@@ -61,7 +61,7 @@ class SilVer:
         s = self.__silver_tactic.solver()
         s.set(
             timeout=self.timeout,
-            # random_seed=self.seed,
+            random_seed=self.seed,
             seed=self.seed,
         )
         # s.set("parallel.enable", True)
