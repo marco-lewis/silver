@@ -235,7 +235,7 @@ class ObilgationGenerator:
         return obligations
     
     def obligation_qmeas_with_high_prob(self, var, probs_z3_vars, value, prob_bound=1/2):
-        obligations = [Equiv(prob_bound <= probs_z3_vars[i], value == i)
+        obligations = [Implies(value == i, prob_bound <= probs_z3_vars[i])
                         for i in range(len(probs_z3_vars))]
         return obligations
     
