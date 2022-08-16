@@ -31,8 +31,7 @@ class SilSpeqZ3Interpreter(Interpreter):
         self.assumptions = []
         super().__init__()
 
-    def set_meas_cert(self, val):
-        self.__meas_cert = val
+    def set_meas_cert(self, val): self.__meas_cert = val
 
     # Handling pre, post, spec etc.
     @visit_children_decor
@@ -43,8 +42,7 @@ class SilSpeqZ3Interpreter(Interpreter):
             d[spec[0].value] = self.flatten(func_spec)
         return d
 
-    def flatten(self, old):
-        return self.__flatten(old, [])
+    def flatten(self, old): return self.__flatten(old, [])
 
     def __flatten(self, old, new):
         for i in old:
@@ -55,12 +53,10 @@ class SilSpeqZ3Interpreter(Interpreter):
         return new
 
     @visit_children_decor
-    def funcspec(self, tree):
-        return tree
+    def funcspec(self, tree): return tree
 
     @visit_children_decor
-    def pre(self, stmts):
-        return stmts
+    def pre(self, stmts): return stmts
 
     @visit_children_decor
     def post(self, stmts):
@@ -137,8 +133,7 @@ class SilSpeqZ3Interpreter(Interpreter):
             return And(0 <= z3_expr, z3_expr < 2**type)
 
     @visit_children_decor
-    def assertion(self, zexpr):
-        return zexpr
+    def assertion(self, zexpr): return zexpr
     
     @visit_children_decor
     def assumption(self, zexpr):
@@ -146,24 +141,21 @@ class SilSpeqZ3Interpreter(Interpreter):
         return True
     
     # Ignore most flags
-    def rand(self, v): pass
-    def qout(self, v): pass
-    def oracle(self, v): pass
-    def cert(self, v): pass
-    def whp(self, v): pass
-    def whpvalue(self, v): pass
+    def rand(self, v): return []
+    def qout(self, v): return []
+    def oracle(self, v): return []
+    def cert(self, v): return []
+    def whp(self, v): return []
+    def whpvalue(self, v): return []
     @visit_children_decor
     def atvalue(self, v): return v
 
     # Handling types
-    def nat(self, a):
-        return NAT
+    def nat(self, a): return NAT
 
-    def bool(self, a):
-        return BOOL
+    def bool(self, a): return BOOL
     
-    def unit(self, a):
-        return UNIT
+    def unit(self, a): return UNIT
     
     @visit_children_decor
     def int(self, n):
@@ -172,52 +164,41 @@ class SilSpeqZ3Interpreter(Interpreter):
         if n[0] == BOOL: return int(n[1])
         return int(n[0].value)
     
-    def classical(self, a):
-        return CLASSICAL
+    def classical(self, a): return CLASSICAL
 
     @visit_children_decor
-    def function(self, types):
-        return types
+    def function(self, types): return types
 
     # Handling lexpr
     true = lambda self,_: True
     false = lambda self,_: False
 
     @visit_children_decor
-    def eq(self, lexprs):
-        return lexprs[0] == lexprs[1]
+    def eq(self, lexprs): return lexprs[0] == lexprs[1]
 
     @visit_children_decor
-    def gt(self, nexprs):
-        return nexprs[0] > nexprs[1]
+    def gt(self, nexprs): return nexprs[0] > nexprs[1]
 
     @visit_children_decor
-    def lt(self, nexprs):
-        return nexprs[0] < nexprs[1]
+    def lt(self, nexprs): return nexprs[0] < nexprs[1]
 
     @visit_children_decor
-    def ge(self, nexprs):
-        return nexprs[0] >= nexprs[1]
+    def ge(self, nexprs): return nexprs[0] >= nexprs[1]
 
     @visit_children_decor
-    def le(self, nexprs):
-        return nexprs[0] <= nexprs[1]
+    def le(self, nexprs): return nexprs[0] <= nexprs[1]
 
     @visit_children_decor
-    def land(self, lexprs):
-        return And(lexprs[0], lexprs[1])
+    def land(self, lexprs): return And(lexprs[0], lexprs[1])
 
     @visit_children_decor
-    def lor(self, lexprs):
-        return Or(lexprs[0], lexprs[1])
+    def lor(self, lexprs): return Or(lexprs[0], lexprs[1])
 
     @visit_children_decor
-    def implies(self, lexprs):
-        return Implies(lexprs[0], lexprs[1])
+    def implies(self, lexprs): return Implies(lexprs[0], lexprs[1])
 
     @visit_children_decor
-    def equiv(self, lexprs):
-        return lexprs[0] == lexprs[1]
+    def equiv(self, lexprs): return lexprs[0] == lexprs[1]
 
     @visit_children_decor
     def distinct(self, args):
@@ -225,41 +206,32 @@ class SilSpeqZ3Interpreter(Interpreter):
         return simplify(Distinct(args), blast_distinct=True)
 
     @visit_children_decor
-    def lnot(self, lexpr):
-        return Not(lexpr[0])
+    def lnot(self, lexpr): return Not(lexpr[0])
 
     @visit_children_decor
-    def forall(self, lexpr):
-        return ForAll([self.token(lexpr[0])], lexpr[1])
+    def forall(self, lexpr): return ForAll([self.token(lexpr[0])], lexpr[1])
 
     @visit_children_decor
-    def exists(self, lexpr):
-        return Exists([self.token(lexpr[0])], lexpr[1])
+    def exists(self, lexpr): return Exists([self.token(lexpr[0])], lexpr[1])
 
     # Handling numexpr
     @visit_children_decor
-    def neg(self,expr):
-        return - self.handle_token(expr[0])
+    def neg(self,expr): return - self.handle_token(expr[0])
 
     @visit_children_decor
-    def add(self,exprs):
-        return self.handle_token(exprs[0]) + self.handle_token(exprs[1])
+    def add(self,exprs): return self.handle_token(exprs[0]) + self.handle_token(exprs[1])
 
     @visit_children_decor
-    def sub(self,exprs):
-        return self.handle_token(exprs[0]) - self.handle_token(exprs[1])
+    def sub(self,exprs): return self.handle_token(exprs[0]) - self.handle_token(exprs[1])
 
     @visit_children_decor
-    def mul(self,exprs):
-        return self.handle_token(exprs[0]) * self.handle_token(exprs[1])
+    def mul(self,exprs): return self.handle_token(exprs[0]) * self.handle_token(exprs[1])
 
     @visit_children_decor
-    def div(self,exprs):
-        return self.handle_token(exprs[0]) / self.handle_token(exprs[1])
+    def div(self,exprs): return self.handle_token(exprs[0]) / self.handle_token(exprs[1])
 
     @visit_children_decor
-    def pow(self,exprs):
-        return self.handle_token(exprs[0]) ** self.handle_token(exprs[1])
+    def pow(self,exprs): return self.handle_token(exprs[0]) ** self.handle_token(exprs[1])
 
     @visit_children_decor
     def xor(self,exprs):
@@ -274,8 +246,7 @@ class SilSpeqZ3Interpreter(Interpreter):
         return BV2Int(term)
 
     @visit_children_decor
-    def mod(self,exprs):
-        return self.handle_token(exprs[0]) % self.handle_token(exprs[1])
+    def mod(self,exprs): return self.handle_token(exprs[0]) % self.handle_token(exprs[1])
 
     @visit_children_decor
     def dot(self,exprs):
@@ -291,8 +262,7 @@ class SilSpeqZ3Interpreter(Interpreter):
         return s
 
     @visit_children_decor
-    def call(self, call):
-        return self.handle_token(call[0])([self.handle_token(input) for input in call[1]])
+    def call(self, call): return self.handle_token(call[0])([self.handle_token(input) for input in call[1]])
 
     @visit_children_decor
     # TODO: get sum working nicely works
@@ -309,8 +279,7 @@ class SilSpeqZ3Interpreter(Interpreter):
 
     # Handling variables
     @visit_children_decor
-    def var(self, expr):
-        return self.token(expr[0])
+    def var(self, expr): return self.token(expr[0])
 
     # Handling tokens and fetching Z3 variables
     def handle_token(self, t):
@@ -323,8 +292,6 @@ class SilSpeqZ3Interpreter(Interpreter):
         if tok.type == "NUMBER": return self.NUMBER(tok)
         if tok.type == "NAME": return self.NAME(tok)
 
-    def NUMBER(self, n):
-        return float(n.value)
+    def NUMBER(self, n: Token): return float(n.value)
 
-    def NAME(self, var):
-        return self.vars[var.value]
+    def NAME(self, var: Token): return self.vars[var.value]
