@@ -1,11 +1,6 @@
 from tests.check import check
 import z3
 
-# Grover Reversed
-check("grover_rev2.slq", "grover_rev", z3.unsat)
-check("grover_rev3.slq", "grover_rev", z3.unsat)
-check("grover_rev7.slq", "grover_rev", z3.unsat)
-
 # Verification of Grover's Algorithm
 # 1 Call
 # 2 qubits - uses certainty
