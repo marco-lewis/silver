@@ -134,6 +134,7 @@ class SilVer:
 
         print("Verifying program with specification...")
         sat = self.check_solver_sat()
+        self.sanity_check(sat)
         return sat
 
     def get_ast_folder(self, silq_file_path):
@@ -142,6 +143,13 @@ class SilVer:
         if not(exists(ast_path)):
             os.makedirs(ast_path)
         return ast_path
+
+    def sanity_check(self, sat):
+        if sat == z3.sat: 
+            m =self.solver.model()
+            for var in m: self.solver.add(var() == m[var()])
+            s = self.solver.check()
+            if s == z3.unsat: raise Exception("Generated model failed sanity check. Model: ", m)
 
     def create_json_file(self, silq_file_path):
         rc = subprocess.check_call(["silq", "--ast-dump", silq_file_path])
