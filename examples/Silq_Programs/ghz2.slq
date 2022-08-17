@@ -1,0 +1,12 @@
+def ghz(){
+    x := 0:B;
+    y := 0:uint[2];
+    x := H(x);
+    if x==1{
+        y[0] := X(y[0]);
+        y[1] := X(y[1]);
+    }
+    y := measure(y);
+    x := measure(x);
+    return y;
+}
