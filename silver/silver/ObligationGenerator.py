@@ -68,12 +68,12 @@ class ObilgationGenerator:
         return [Complex(string) for string in memory.get_obligation_variables()]
     
     def qinit_obligation(self, instruction : QINIT, prev_mem : QuantumMemory):
-        if prev_mem.is_empty():
-            return self.obligation_quantum_literal(instruction.size, instruction.value)
+        if prev_mem.is_empty(): return self.obligation_quantum_literal(instruction.size, instruction.value)
         lits = self.quantum_memory_to_literals(prev_mem)
         obligations = []
-        for i in range(2**(prev_mem.get_total_size())):
-            obligations += [0 if i != instruction.value else lits[j] for j in range(2**instruction.size)]
+        prev_size = 2**(prev_mem.get_total_size())
+        for j in range(2**instruction.size):
+            obligations += [0 if j != instruction.value else lits[i] for i in range(prev_size)]
         return obligations
     
     def make_quantum_memory_initial_obligations(self, initial_memory : QuantumMemory):
