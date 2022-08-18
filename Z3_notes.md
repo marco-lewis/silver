@@ -13,3 +13,5 @@
 - grover_partial3 is incomplete but grover_fixed3 is fine (takes a long time to solve though me thinks). Need to use nlsat with smt tactic
 
 - div by 0 allows any value to be taken up to other constraints (https://stackoverflow.com/q/40182521)
+
+- Moving If to highest layer makes things slow (If(cond, x=-y, x=y) < x=y+(-2)*If(cond,y,0))
