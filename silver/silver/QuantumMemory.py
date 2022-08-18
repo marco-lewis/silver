@@ -85,7 +85,7 @@ class QuantumMemory:
         for key, qreg in self.registers.items():
             if key == var:
                 if offset >= qreg.size:
-                    raise ValueError("Offset is larger than register size")
+                    raise ValueError("Offset is larger than register size: offset="+str(offset)+", size="+str(qreg.size))
                 return loc + offset
             loc += qreg.size
         return None
