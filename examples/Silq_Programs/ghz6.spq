@@ -1,0 +1,7 @@
+ghz[rand]()->(define ghz_ret:{0, 1}^6)
+pre{
+
+}
+post{
+    assert(ghz_ret = 0 | ghz_ret = (2^6) - 1)
+}
