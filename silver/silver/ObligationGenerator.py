@@ -220,7 +220,7 @@ class ObilgationGenerator:
                                                  norm * post_var.i == prev_var.i)
                                  for (post_var, prev_var) in zip(post_z3_vars, prev_mem_locs)]))
                 meas_possibilities.append(And(classical_value == meas_value, post_prev_eq))
-            post_state_obligations += [Or(post_state_obligations)]
+            post_state_obligations += [Or(meas_possibilities)]
         else: post_state_obligations.append(True)
 
         return obligations + meas_obligations + post_state_obligations
