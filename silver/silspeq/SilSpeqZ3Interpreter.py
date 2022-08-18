@@ -256,9 +256,9 @@ class SilSpeqZ3Interpreter(Interpreter):
         i = tl if tl > tr else tr
         s = (l % 2) * (r % 2)
         for j in range(1,i):
-            lterm = (l/ 2**j) % 2
-            rterm = (r/ 2**j) % 2
-            s += lterm*rterm
+            lterm = (l / 2**j)
+            rterm = (r / 2**j)
+            s += (lterm*rterm) % 2
         return s
 
     @visit_children_decor
