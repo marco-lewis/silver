@@ -208,13 +208,19 @@ class ObilgationGenerator:
         post_state_obligations = []
         if not(post_memory.is_empty()):
             post_z3_vars = [Complex(obl_var) for obl_var in post_memory.get_obligation_variables()]
+            meas_possibilities = []
             for meas_value in range(2**size):
                 norm = Sqrt(probs_z3_vars[meas_value])
                 post_state_obligations.append(norm >= 0)
                 prev_mem_locs = [memory_obligation_variables[j] for j in range(len(memory_obligation_variables)) 
                                  if not((j & (2**size-1) << loc) ^ (meas_value << loc))]
-                post_prev_eq = And([post_var * norm == prev_var for (post_var, prev_var) in zip(post_z3_vars, prev_mem_locs)])
-                post_state_obligations.append(Implies(classical_value == meas_value, post_prev_eq))
+                post_prev_eq0 = And([And(Implies(prev_var.r == 0, post_var.r == 0), Implies(prev_var.i == 0, post_var.i == 0))
+                                 for (post_var, prev_var) in zip(post_z3_vars, prev_mem_locs)])
+                post_prev_eq1 = And([norm * post_var.r == prev_var.r for (post_var, prev_var) in zip(post_z3_vars, prev_mem_locs)])
+                post_prev_eq2 = And([norm * post_var.i == prev_var.i for (post_var, prev_var) in zip(post_z3_vars, prev_mem_locs)])
+                meas_possibilities.append(And(classical_value == meas_value, post_prev_eq0, post_prev_eq1, post_prev_eq2))
+            post_state_obligations += [simplify(Or(post_state_obligations))]
+        else: post_state_obligations.append(True)
 
         return obligations + meas_obligations + post_state_obligations
     
@@ -247,6 +253,7 @@ class ObilgationGenerator:
         obligations = []
         
         # Check probability of value is 1
+        # TODO: Check perform correct comparison
         prev_vars_at_value = [prev_vars[i] for i in range(len(prev_vars)) if i >> loc == instruction.value]
         s = simplify(Sum([q.len_sqr() for q in prev_vars_at_value]))
         # Z3 BUG: Summation is causing major slow down
