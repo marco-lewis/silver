@@ -105,9 +105,8 @@ class ObilgationGenerator:
     # TODO: Fix bug with if x {...}
     def make_operation(self, op_locs, matrices, prev_mem : QuantumMemory, controls : list, phase = 1):
         s = prev_mem.get_total_size()
-        U = self.make_quantum_op(op_locs, matrices, s)
-        if not controls: return U
-        U = np.array(U)
+        U = np.array(self.make_quantum_op(op_locs, matrices, s))
+        if not controls: return (phase*U).tolist()
         I = np.identity(2**s, dtype=int)
         F = np.array(self.make_control_vector(prev_mem, controls))
         return (I + (phase*U - I) * F[:, np.newaxis]).tolist()
