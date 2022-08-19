@@ -236,6 +236,15 @@ class BOOLOP(Instruction):
     @comparitor.setter
     def comparitor(self, value):
         self.__comparitor = value
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, self.__class__):
+            l = self.left == other.left
+            r = self.right == other.right
+            c = self.comparitor.__code__.co_code == other.comparitor.__code__.co_code
+            print(self.left, other.left)
+            return l and r and c and super().__eq__(other)
+        return NotImplemented
         
     def __repr__(self) -> str:
         return "BOOLOP(" + repr(self.left) + "," + repr(self.comparitor) + "," + repr(self.right) + ")"

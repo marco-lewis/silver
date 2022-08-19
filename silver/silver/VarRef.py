@@ -20,7 +20,14 @@ class VarRef():
 
     @index.setter
     def index(self, value):
-        self.__index = value 
+        self.__index = value
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, self.__class__):
+            v = self.variable == other.variable
+            i = self.index == other.index
+            return i and v
+        return NotImplemented
         
     def __repr__(self) -> str:
         return "VarRef(" + self.__variable + ", " + repr(self.__index) + ")"
