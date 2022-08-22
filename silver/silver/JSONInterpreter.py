@@ -34,13 +34,12 @@ class JSONInterpreter:
 
 
     def decode_func_in_json(self, json, fname):
-        try:
-            for i in range(len(json)):
-                if json[i]["func"] == fname:
-                    func_json = json[i]
-                    break
-        except:
-            raise Exception("Function " + fname + " was not detected in json file")
+        func_json = 0
+        for i in range(len(json)):
+            if json[i]["func"] == fname:
+                func_json = json[i]
+                break
+        if not(func_json): raise Exception("Function " + fname + " was not detected in json file")
         return self.make_program(func_json)
         
     def make_program(self, func_json, verbose = False):
