@@ -61,17 +61,15 @@ def generate_silspeq_from_func(func, args, ret):
     return speq
 
 def convert_type_to_Z3_sorts(type):
-    if (re.match(r"[N|ℕ]", type)):
+    t = type["typeObj"]
+    if (re.match(r"[N|ℕ]", t)):
         return IntSort()
-    if (re.match(r"[B|𝔹]", type)):
+    if (re.match(r"[B|𝔹]", t)):
         return IntSort()
-    if (re.match(r"uint\[[0-9]+\]", type)):
+    if (re.match(r"[uint]", t)):
         return IntSort()
-    if (re.match(r".*(→.*)+",type)):
+    if (re.match(r"[prod]", t)):
         types = [convert_type_to_Z3_sorts(arg_type)
-                    for arg_type in re.split(r"→", type)]
+                    for arg_type in [type["lhs"], type["rhs"]]]
         return tuple(types)
-    if (re.match(r"[¬, const, qfree].*", type)):
-        split = re.split(r"[¬, const, qfree]", type, maxsplit=1)[1]
-        return convert_type_to_Z3_sorts(split)
-    raise Exception("TypeTODO: " + type)
+    raise Exception("TypeTODO: " + str(type))
