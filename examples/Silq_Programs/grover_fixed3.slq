@@ -1,5 +1,3 @@
-// import grover_oracles;
-
 def grover_fixed(f : const uint[3] !->qfree B){
     x := 0:uint[3];
     x[0] := H(x[0]);
