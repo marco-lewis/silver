@@ -133,9 +133,19 @@ class SilVer:
             print()
 
         print("Verifying program with specification...")
-        sat = self.check_solver_sat()
-        self.sanity_check(sat, verbose)
-        return sat
+        self.solver_type = 'z3'
+        if self.solver_type == 'z3':
+            sat = self.check_solver_sat()
+            self.sanity_check(sat, verbose)
+            return sat
+        elif self.solver_type == 'dreal':
+            smt2 = self.solver.to_smt2()
+            with open('test.smt2', 'w') as file:
+                file.write(smt2)
+            rc = subprocess.check_call(["/opt/dreal/4.21.06.2/bin/dreal",
+                                        "--model",
+                                        "test.smt2"
+                                        ])
 
     def get_ast_folder(self, silq_file_path):
         folder_path = get_path(silq_file_path)
