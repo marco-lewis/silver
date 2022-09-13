@@ -226,11 +226,8 @@ class ObilgationGenerator:
         return obligations + meas_obligations + post_state_obligations
     
     def obligation_qmeas_with_specific_value(self, var, probs_z3_vars, classical_value, mark):
-        max_prob = Real('hprob_' + var)
-        obligations = [And([max_prob >= p for p in probs_z3_vars])]
-        obligations += [Equiv(max_prob == probs_z3_vars[i], mark == i)
+        obligations = [Equiv(classical_value == i, And([probs_z3_vars[i] >= p for p in probs_z3_vars]))
                         for i in range(len(probs_z3_vars))]
-        obligations.append(classical_value == mark)
         return obligations
 
     def obligation_qmeas_with_certainty(self, var, probs_z3_vars, value):
