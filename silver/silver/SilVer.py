@@ -34,7 +34,6 @@ class SilVer:
 
     def make_silver_tactic(self):
         self.__silver_tactic = Then(
-            'propagate-ineqs',
             'propagate-values',
             'elim-and',
             'elim-term-ite',
@@ -63,6 +62,7 @@ class SilVer:
             timeout=self.timeout,
             random_seed=self.seed,
             seed=self.seed,
+            unsat_core=True,
         )
         # s.set("parallel.enable", True)
         # s.set("threads", 4)
@@ -126,7 +126,9 @@ class SilVer:
         print("Verifying " + func + " in " + silq_file_path)
         json_file_path = self.generate_ast_file(silq_file_path)
         obs = self.make_obs(json_file_path, func, verbose, show_objects)
-        self.solver.add(obs)
+        for i in range(len(obs)):
+            if obs[i] == True: continue 
+            self.solver.assert_and_track(obs[i], func + '_tracker' + str(i))
         if verbose:
             print("Full Obligations in Solver")
             if show_objects: print(self.solver)

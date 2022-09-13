@@ -16,6 +16,7 @@ def check(json_file, func, expected, verbose=False, stats=False, show_objects=Fa
         print("Model/CEX\n", m)
         f = z3.Function('f', z3.IntSort(), z3.IntSort())
         if f in m: print('Function: ', m[f])
+    if verbose and sat == z3.unsat: print(silver.solver.unsat_core())
     if sat == z3.unknown: print('Reason: ', silver.solver.reason_unknown())
     silver_stats = silver.solver.statistics()
     if verbose:
