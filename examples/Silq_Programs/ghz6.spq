@@ -1,4 +1,4 @@
-ghz[rand]()->(define ghz_ret:{0, 1}^6)
+ghz[whp]()->(define ghz_ret:{0, 1}^6)
 pre{
 
 }
