@@ -1,6 +1,7 @@
 from os import R_OK
 from lark.visitors import *
 from lark import Token
+import numpy as np
 from z3 import *
 
 
@@ -21,14 +22,13 @@ BOOL = "BOOL"
 FUNC = "FUNC"
 CLASSICAL = "CLASSICAL"
 
-class SilSpeqZ3Interpreter(Interpreter):
-    __meas_cert = False
-    
+class SilSpeqZ3Interpreter(Interpreter):  
     def __init__(self, not_post : bool = True):
         self.vars = {}
         self.types = {}
         self.not_post = not_post
         self.assumptions = []
+        self.__meas_cert = False
         super().__init__()
 
     def set_meas_cert(self, val): self.__meas_cert = val
@@ -66,9 +66,8 @@ class SilSpeqZ3Interpreter(Interpreter):
             for obl in stmts:
                 if obl != None: obls.append(obl)
             post_obl = And(obls)
-            if self.__meas_cert:
-                t = Bool('meas_cert')
-                post_obl = And(post_obl, t == self.__meas_cert)
+            t = Bool('meas_cert')
+            post_obl = And(post_obl, t == self.__meas_cert)
             post_obl = simplify(post_obl)
             return Not(post_obl) if self.not_post else post_obl
         return True
@@ -79,13 +78,11 @@ class SilSpeqZ3Interpreter(Interpreter):
     @visit_children_decor
     def definition(self, df):
         # Ignore flag
-        if df[0] == None:
-            df = df[1:]
+        if df[0] == None: df = df[1:]
         
         var = df[0].value
         self.types[var] = df[1]
-        if df[1] == UNIT:
-            return True
+        if df[1] == UNIT: return True
         elif df[1] == NAT:
             self.vars[var] = Int(var)
             return self.vars[var] >= 0
@@ -252,8 +249,12 @@ class SilSpeqZ3Interpreter(Interpreter):
     def dot(self,exprs):
         l = self.handle_token(exprs[0])
         r = self.handle_token(exprs[1])
-        tl, tr = self.types[l.__str__()], self.types[r.__str__()]
-        i = tl if tl > tr else tr
+        def extract_num_bits(x):
+            try: return self.types[x.__str__()]
+            except: return int(np.ceil(np.log2(x))) if not(x == 0) else 1
+        tl = extract_num_bits(l)
+        tr = extract_num_bits(r)
+        i = max(tl, tr)
         s = (l % 2) * (r % 2)
         for j in range(1,i):
             lterm = (l / 2**j)

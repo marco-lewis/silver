@@ -201,7 +201,7 @@ class ObilgationGenerator:
             meas_obligations += self.obligation_qmeas_with_certainty(variable, probs_z3_vars, classical_value)
         if SPECIFIC_VALUE in measure_option:
             meas_obligations += self.obligation_qmeas_with_specific_value(variable, probs_z3_vars, classical_value, self.__config[MEASURE_MARK])
-        for meas_value in range(2**size): meas_obligations.append(Implies(probs_z3_vars[meas_value] == 0, classical_value != meas_value))
+        for meas_value in range(2**size): meas_obligations.append(Implies(classical_value == meas_value, probs_z3_vars[meas_value] != 0))
 
         # State after measurement
         post_memory = q_process.end_memory
@@ -232,8 +232,9 @@ class ObilgationGenerator:
 
     def obligation_qmeas_with_certainty(self, var, probs_z3_vars, value):
         meas_cert = Bool('meas_cert')
-        obligations = [Equiv(Or([p == 1 for p in probs_z3_vars]), meas_cert == True)]
-        obligations += [Equiv(1 == probs_z3_vars[i], value == i)
+        obligations = []
+        obligations += [Equiv(meas_cert == True, Or([p == 1 for p in probs_z3_vars]))]
+        obligations += [Implies(value == i, probs_z3_vars[i] == 1)
                         for i in range(len(probs_z3_vars))]
         return obligations
     
