@@ -1,6 +1,7 @@
 from genericpath import exists
 import hashlib
 import json as json
+import logging
 from os.path import splitext
 import subprocess
 
@@ -80,16 +81,16 @@ class SilVer:
         return self.solver.check(*self.assumptions)
         
     def print_solver_sat(self, solver_sat):
-        print("Checking satisfiability...")
+        logging.info("Checking satisfiability...")
         if solver_sat == sat:
             m = self.solver.model()
-            print("Counterexample found")
-            print(m)
+            logging.info("Counterexample found")
+            logging.debug("Model: %s", m)
         elif solver_sat == unsat:
-            print("Program is correct!")
+            logging.info("Program is correct!")
         else:
-            print("Unable to determine if satisfiable")
-            print(sat)
+            logging.info("Unable to determine if satisfiable")
+            logging.debug("Satisfiability: %s", sat)
             
     def check_flags(self, file):
         tree = self.speq_parser.parse_file(file)
@@ -121,22 +122,21 @@ class SilVer:
             # 4a) Produce obligation/sat(?) files for correct functions
         pass
 
-    def verify_func(self, silq_file_path, func, verbose=False, show_objects=False):
+    def verify_func(self, silq_file_path, func, log_level=logging.WARNING):
+        logging.basicConfig(level=log_level, force=True)
         print("###########################################################")
         print("Verifying " + func + " in " + silq_file_path)
         json_file_path = self.generate_ast_file(silq_file_path)
-        obs = self.make_obs(json_file_path, func, verbose, show_objects)
+        obs = self.make_obs(json_file_path, func)
         for i in range(len(obs)):
             if obs[i] == True: continue 
             self.solver.assert_and_track(obs[i], func + '_tracker' + str(i))
-        if verbose:
-            print("Full Obligations in Solver")
-            if show_objects: print(self.solver)
-            print()
+        logging.info("Full Obligations in Solver")
+        logging.debug("Solver: %s", self.solver)
 
         print("Verifying program with specification...")
         sat = self.check_solver_sat()
-        self.sanity_check(sat, verbose)
+        self.sanity_check(sat)
         return sat
 
     def get_ast_folder(self, silq_file_path):
@@ -146,9 +146,9 @@ class SilVer:
             os.makedirs(ast_path)
         return ast_path
 
-    def sanity_check(self, sat, verbose=False):
+    def sanity_check(self, sat):
         if sat == z3.sat:
-            if verbose: print("Performing sanity check on satisfiable model...")
+            logging.info("Performing sanity check on satisfiable model...")
             m = self.solver.model()
             s = self.make_solver_instance()
             s.add(self.solver.assertions())
@@ -158,9 +158,9 @@ class SilVer:
                 except: pass
             sat_c = s.check()
             if sat_c == z3.unsat:
-                if verbose: print("Erroneous model found\n", m)
+                logging.info("Erroneous model found\n %s", m)
                 raise Exception("Generated model failed sanity check.")
-            if verbose: print("Sanity check passed")
+            logging.info("Sanity check passed")
         if sat == z3.unsat:
             # TODO: Fetch unsat core and check that postconditions tracker is in there
             pass
@@ -178,18 +178,16 @@ class SilVer:
         os.rename(json_file_path, json_file_path_dest)
         return json_file_path_dest
 
-    def make_obs(self, json_file_path, func, verbose=False, show_objects=False):
+    def make_obs(self, json_file_path, func):
         self.check_speq_exists(json_file_path)
         spq_name = self.get_speq_file_name(json_file_path)
         self.check_flags(spq_name)
         
-        if verbose: print("Generating SilSpeq proof obligations...")
+        logging.info("Generating SilSpeq proof obligations...")
         speq_obs = self.get_speq_obs(spq_name)
         
-        if verbose:
-            print("SilSpeq proof obligations generated")
-            if show_objects: print(speq_obs)
-            print()
+        logging.info("SilSpeq proof obligations generated")
+        logging.debug("SpeqObligations:%s", speq_obs)
 
         silq_json = self.getJSON(json_file_path)
         hash = hashlib.md5(str(silq_json).encode('utf-8') + str(self.config).encode('utf-8')).hexdigest()
@@ -197,28 +195,30 @@ class SilVer:
         stored_hash = self.get_stored_hash(hash_path)
 
         if hash == stored_hash and self.check_store:
-            print("Obtaining stored obligations...")
+            logging.info("Obtaining stored obligations...")
             prog_obs = []
             self.load_stored_obligations(json_file_path, func)
         else:
-            if verbose: print("Generating Program from AST...") 
+            logging.info("Generating Program from AST...") 
             prog = self.json_interp.decode_func_in_json(silq_json, func)
             prog.optimise()
 
-            if verbose:
-                print("Generating proof obligations from Program...")
-                if show_objects: print(prog)
-                print()
+            logging.info("Generating proof obligations from Program...")
+            logging.debug("Program:%s", prog)
             prog_obs = self.generate_program_obligations(prog)
             
-            if verbose: print("Program obligations generated\nChecking program obligations satisfiable...\n")
+            logging.info("Program obligations generated")
+            logging.info("Checking program obligations satisfiable...")
 
             prog_sat, stats, reason = self.check_generated_obs_sat(prog_obs)
             if prog_sat != z3.sat:
-                if prog_sat == z3.unknown: print("Warning: program obligations unkown; could be unsat.\nReason: ", reason)
+                if prog_sat == z3.unknown:
+                    logging.warning("Warning: program obligations unkown; could be unsat.")
+                    logging.warning("Reason: %s", reason)
                 else: raise Exception("SatError(" + str(prog_sat) + "): generated obligations from Silq program are invalid.")
 
-            if verbose: print("Program obligations satisfiable\nStoring obligations...")
+            logging.info("Program obligations satisfiable")
+            logging.info("Storing obligations...")
             
             with open(hash_path, 'w') as writer: writer.write(str(hash))
             temp_solver = self.__silver_tactic.solver()
@@ -282,8 +282,8 @@ class SilVer:
             speq_solver.add(func_obls)
             sat = speq_solver.check(*self.assumptions)
             if sat == z3.unknown:
-                print("Warning: SilSpeq obligations unkown; could be unsat")
-                print("Reason: ", speq_solver.reason_unknown())
+                logging.warning("Warning: SilSpeq obligations unkown; could be unsat")
+                logging.warning("Reason: %s", speq_solver.reason_unknown())
             elif sat == z3.unsat:
                 raise Exception(
                     "SilSpeqError(" + str(sat) +
