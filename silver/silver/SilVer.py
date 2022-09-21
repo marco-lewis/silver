@@ -104,7 +104,7 @@ class SilVer:
         if SPECIFIC_VALUE in self.config[MEASURE_OPTION]: self.config[MEASURE_MARK] = self.speq_flag_itp.meas_mark
         if self.config[MEASURE_OPTION] == []: self.config[MEASURE_OPTION].append(RAND)
         self.speq_z3_itp.set_meas_cert(CERTAINTY in self.config[MEASURE_OPTION])
-        
+
         if self.speq_flag_itp.quantum_out: pass
     
     def verify_slq_file(self, silq_file):
@@ -149,8 +149,10 @@ class SilVer:
     def sanity_check(self, sat, verbose=False):
         if sat == z3.sat: 
             if verbose: print("Performing sanity check on satisfiable model...")
-            m =self.solver.model()
-            for var in m: self.solver.add(var() == m[var()])
+            m = self.solver.model()
+            for var in m: 
+                try: self.solver.add(var() == m[var()])
+                except: pass
             s = self.solver.check()
             if s == z3.unsat:
                 if verbose: print("Erroneous model found\n", m)

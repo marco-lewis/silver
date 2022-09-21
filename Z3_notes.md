@@ -15,3 +15,5 @@
 - div by 0 allows any value to be taken up to other constraints (https://stackoverflow.com/q/40182521)
 
 - Moving If to highest layer makes things slow (If(cond, x=-y, x=y) < x=y+(-2)*If(cond,y,0))
+
+- dReal for grover4: ran for >90min and no results
