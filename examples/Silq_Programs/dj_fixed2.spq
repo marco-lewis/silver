@@ -14,7 +14,7 @@ pre{
     define const : {0, 1}
     
     assert(bal = 0 <-> const = 1)
-    # assert(SUM[x](f(x)) = y)
+    # assert(SUM[x](f) = y)
     assert(y = f(0) + f(1) + f(2) + f(3))
     assert(y = 2^(2-1) | y = 0 | y = 2^2)
     assert(bal = 1 <-> y = 2^(2-1))
