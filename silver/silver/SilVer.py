@@ -147,17 +147,23 @@ class SilVer:
         return ast_path
 
     def sanity_check(self, sat, verbose=False):
-        if sat == z3.sat: 
+        if sat == z3.sat:
             if verbose: print("Performing sanity check on satisfiable model...")
             m = self.solver.model()
+            s = self.make_solver_instance()
+            s.add(self.solver.assertions())
+            # TODO: handle functions correctly in except
             for var in m: 
-                try: self.solver.add(var() == m[var()])
+                try: s.add(var() == m[var()])
                 except: pass
-            s = self.solver.check()
-            if s == z3.unsat:
+            sat_c = s.check()
+            if sat_c == z3.unsat:
                 if verbose: print("Erroneous model found\n", m)
                 raise Exception("Generated model failed sanity check.")
             if verbose: print("Sanity check passed")
+        if sat == z3.unsat:
+            # TODO: Fetch unsat core and check that postconditions tracker is in there
+            pass
 
     def create_json_file(self, silq_file_path):
         rc = subprocess.check_call(["silq", "--ast-dump", silq_file_path])
