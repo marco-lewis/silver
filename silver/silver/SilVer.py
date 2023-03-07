@@ -124,8 +124,7 @@ class SilVer:
 
     def verify_func(self, silq_file_path, func, log_level=logging.WARNING):
         logging.basicConfig(level=log_level, force=True)
-        print("###########################################################")
-        print("Verifying " + func + " in " + silq_file_path)
+        logging.info("Verifying " + func + " in " + silq_file_path)
         json_file_path = self.generate_ast_file(silq_file_path)
         obs = self.make_obs(json_file_path, func)
         for i in range(len(obs)):
@@ -133,10 +132,10 @@ class SilVer:
             self.solver.assert_and_track(obs[i], func + '_tracker' + str(i))
         logging.info("Full Obligations in Solver")
         logging.debug("Solver: %s", self.solver)
-
-        print("Verifying program with specification...")
+        logging.info("Verifying program with specification...")
         sat = self.check_solver_sat()
-        self.sanity_check(sat)
+        logging.debug("Solver satisfiability: %s", sat)
+        self.check_sat_instance(sat)
         return sat
 
     def get_ast_folder(self, silq_file_path):
@@ -146,24 +145,43 @@ class SilVer:
             os.makedirs(ast_path)
         return ast_path
 
-    def sanity_check(self, sat):
+    def check_sat_instance(self, sat):
         if sat == z3.sat:
-            logging.info("Performing sanity check on satisfiable model...")
+            logging.info("Performing check on satisfiable model...")
             m = self.solver.model()
-            s = self.make_solver_instance()
-            s.add(self.solver.assertions())
+            solver = self.make_solver_instance()
+            solver.add(self.solver.assertions())
             # TODO: handle functions correctly in except
+            model_obs = []
             for var in m: 
-                try: s.add(var() == m[var()])
-                except: pass
-            sat_c = s.check()
-            if sat_c == z3.unsat:
-                logging.info("Erroneous model found\n %s", m)
-                raise Exception("Generated model failed sanity check.")
-            logging.info("Sanity check passed")
+                try:
+                    if isinstance(m[var], FuncInterp): self.add_func_interp(model_obs, m, var)
+                    else: model_obs.append(var() == m[var()])
+                except:
+                    logging.warn("%s was not added correctly.", var)
+                    logging.warn("This may cause problems when checking.")
+            solver.add(model_obs)
+            logging.debug("Model Obligation:\n%s", "\n".join([str(obl) for obl in model_obs]))
+            sat_check = solver.check()
+            if sat_check == z3.unsat:
+                logging.error("Erroneous model found. This means the solver returned a model that is unsatisfiable.")
+                logging.error("Erroneous model\n %s", m)
+                logging.error("Generated model failed check.")
+                sys.exit()
+            logging.info("Satisfiability check passed")
         if sat == z3.unsat:
             # TODO: Fetch unsat core and check that postconditions tracker is in there
             pass
+
+    def add_func_interp(self, model_obs : list, model, var):
+        fixed_inputs = []
+        for inout_pair in model[var].as_list():
+            if isinstance(inout_pair, list):
+                model_obs.append(var(inout_pair[0]) == inout_pair[1])
+                fixed_inputs.append(var(inout_pair[0]))
+        f_in = Int(str(var) +'_in')
+        model_obs.append(var(f_in) == model[var].else_value())
+        if not(fixed_inputs == []): model_obs.append(And([Not(f_in == i) for i in fixed_inputs]))
 
     def create_json_file(self, silq_file_path):
         rc = subprocess.check_call(["silq", "--ast-dump", silq_file_path])
