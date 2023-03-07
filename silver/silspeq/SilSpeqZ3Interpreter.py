@@ -4,6 +4,7 @@ from lark import Token
 import numpy as np
 from z3 import *
 
+from ..silver.utils import log_error
 
 def Equiv(a, b):
     return And(Implies(a, b), Implies(b, a))
@@ -40,7 +41,15 @@ class SilSpeqZ3Interpreter(Interpreter):
         for spec in specs:
             func_spec = [s for s in spec[1:] if s != None]
             d[spec[0].value] = self.flatten(func_spec)
+            d[spec[0].value] = self.simplify_list(d[spec[0].value])
         return d
+    
+    def simplify_list(self, spec):
+        temp = []
+        for obl in spec:
+            if isinstance(obl, bool): temp.append(obl)
+            else: temp.append(simplify(obl))
+        return temp
 
     def flatten(self, old): return self.__flatten(old, [])
 
@@ -115,7 +124,7 @@ class SilSpeqZ3Interpreter(Interpreter):
 
     def type_size(self, type):
         if type == NAT:
-            raise Exception("SpeqError: unable to handle NAT argument")
+            log_error("SpeqError: unable to handle NAT argument")
         elif type == BOOL:
             return 2
         else:
@@ -195,7 +204,7 @@ class SilSpeqZ3Interpreter(Interpreter):
     def implies(self, lexprs): return Implies(lexprs[0], lexprs[1])
 
     @visit_children_decor
-    def equiv(self, lexprs): return lexprs[0] == lexprs[1]
+    def equiv(self, lexprs): return Equiv(lexprs[0], lexprs[1])
 
     @visit_children_decor
     def distinct(self, args):
@@ -271,7 +280,7 @@ class SilSpeqZ3Interpreter(Interpreter):
         body = lambda x: expr[1](x)
         idx_type = self.types[str(self.token(expr[0]))]
         if idx_type == NAT:
-            raise Exception("SumError: can't use natural numbers as a parameter for sum")
+            log_error("SumError: can't use natural numbers as a parameter for sum")
         elif idx_type == BOOL:
             return Sum([body(i) for i in range(0,2)])
         else:

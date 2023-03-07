@@ -16,7 +16,7 @@ from silver.MeasureOptions import *
 from silver.silver.ObligationGenerator import ObilgationGenerator
 from silver.silver.Program import Program
 from silver.silver.SpeqGenerator import SpeqGenerator
-from .utils import get_path
+from .utils import get_path, log_error
 
 class SilVer:
     def __init__(self, timeout=30000, seed=3, check_store=True):
@@ -55,7 +55,7 @@ class SilVer:
     def check_speq_exists(self, file):
         if not(exists(self.get_speq_file_name(file))):
             self.generate_speq_file(file)
-            raise Exception("New SilSpeq file created, you should add your specification before continuing")
+            log_error("New SilSpeq file created, you should add your specification before continuing")
     
     def make_solver_instance(self):
         s = self.__silver_tactic.solver()
@@ -101,7 +101,7 @@ class SilVer:
         if HIGH_PROB in self.config[MEASURE_OPTION]: 
             low = self.speq_flag_itp.meas_low_bound
             if low >= 0 and  low <= 1: self.config[MEASURE_BOUND] = low
-            else: raise Exception("FlagError(whp): bound given is not between 0 and 1")
+            else: log_error("FlagError(whp): bound given is not between 0 and 1")
         if SPECIFIC_VALUE in self.config[MEASURE_OPTION]: self.config[MEASURE_MARK] = self.speq_flag_itp.meas_mark
         if self.config[MEASURE_OPTION] == []: self.config[MEASURE_OPTION].append(RAND)
         self.speq_z3_itp.set_meas_cert(CERTAINTY in self.config[MEASURE_OPTION])
@@ -151,23 +151,18 @@ class SilVer:
             m = self.solver.model()
             solver = self.make_solver_instance()
             solver.add(self.solver.assertions())
-            # TODO: handle functions correctly in except
             model_obs = []
             for var in m: 
                 try:
                     if isinstance(m[var], FuncInterp): self.add_func_interp(model_obs, m, var)
                     else: model_obs.append(var() == m[var()])
                 except:
-                    logging.warn("%s was not added correctly.", var)
+                    logging.warn("%s was not added as an obligation.", var)
                     logging.warn("This may cause problems when checking.")
             solver.add(model_obs)
             logging.debug("Model Obligation:\n%s", "\n".join([str(obl) for obl in model_obs]))
             sat_check = solver.check()
-            if sat_check == z3.unsat:
-                logging.error("Erroneous model found. This means the solver returned a model that is unsatisfiable.")
-                logging.error("Erroneous model\n %s", m)
-                logging.error("Generated model failed check.")
-                sys.exit()
+            if sat_check == z3.unsat: log_error("Erroneous model found. This means the solver returned a model that is unsatisfiable.")
             logging.info("Satisfiability check passed")
         if sat == z3.unsat:
             # TODO: Fetch unsat core and check that postconditions tracker is in there
@@ -205,7 +200,7 @@ class SilVer:
         speq_obs = self.get_speq_obs(spq_name)
         
         logging.info("SilSpeq proof obligations generated")
-        logging.debug("SpeqObligations:%s", speq_obs)
+        logging.debug("SpeqObligations:\n%s", speq_obs)
 
         silq_json = self.getJSON(json_file_path)
         hash = hashlib.md5(str(silq_json).encode('utf-8') + str(self.config).encode('utf-8')).hexdigest()
@@ -222,7 +217,7 @@ class SilVer:
             prog.optimise()
 
             logging.info("Generating proof obligations from Program...")
-            logging.debug("Program:%s", prog)
+            logging.debug("Program:\n%s", prog)
             prog_obs = self.generate_program_obligations(prog)
             
             logging.info("Program obligations generated")
@@ -233,7 +228,7 @@ class SilVer:
                 if prog_sat == z3.unknown:
                     logging.warning("Warning: program obligations unkown; could be unsat.")
                     logging.warning("Reason: %s", reason)
-                else: raise Exception("SatError(" + str(prog_sat) + "): generated obligations from Silq program are invalid.")
+                else: log_error("SatError(%s): generated obligations from Silq program are invalid.", prog_sat)
 
             logging.info("Program obligations satisfiable")
             logging.info("Storing obligations...")
@@ -302,12 +297,7 @@ class SilVer:
             if sat == z3.unknown:
                 logging.warning("Warning: SilSpeq obligations unkown; could be unsat")
                 logging.warning("Reason: %s", speq_solver.reason_unknown())
-            elif sat == z3.unsat:
-                raise Exception(
-                    "SilSpeqError(" + str(sat) +
-                    "): one of your SilSpeq function specifications is not sat. " +
-                    "Check there are no contradictions in your specificaiton."
-                )
+            elif sat == z3.unsat: log_error("SilSpeqError(%s): one of your SilSpeq function specifications is not sat. Check there are no contradictions in your specificaiton.", str(sat))
             speq_solver.reset()
         
     def get_speq_file_name(self, silq_json_file):

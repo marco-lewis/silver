@@ -1,9 +1,15 @@
+import logging
 from os.path import splitext
 import re
 from z3 import *
 
 EXPTYPE = "expType"
 TYPEOBJ = "typeObj"
+
+def log_error(error_msg, *args):
+    if args == (): logging.error(error_msg)
+    else: logging.error(error_msg, args)
+    sys.exit()
 
 def delta(i, j):
     return 1 if i == j else 0
@@ -72,4 +78,4 @@ def convert_type_to_Z3_sorts(type):
         types = [convert_type_to_Z3_sorts(arg_type)
                     for arg_type in [type["lhs"], type["rhs"]]]
         return tuple(types)
-    raise Exception("TypeTODO: " + str(type))
+    log_error("TypeTODO: %s", type)
