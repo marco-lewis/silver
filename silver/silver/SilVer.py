@@ -2,7 +2,6 @@ from genericpath import exists
 import hashlib
 import json as json
 import logging
-from natsort import natsorted
 from os.path import splitext
 import subprocess
 
