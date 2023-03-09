@@ -11,7 +11,7 @@ def check(json_file, func, expected, log_level=logging.INFO, stats=False, timeou
     silver = SilVer(timeout=timeout, seed=seed, check_store=check_store)
     sat = silver.verify_func(folder + json_file, func, log_level)
     if sat == expected: logging.info("Test passed as expected")
-    else: logging.error("SatError: Expected %s but got %s", expected, sat)
+    else: logging.error("TestError: Expected %s but got %s", expected, sat)
     if sat == z3.sat:
         m = silver.solver.model()
         logging.info("Model/CEX:\n%s", m)

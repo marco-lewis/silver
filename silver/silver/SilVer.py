@@ -142,20 +142,21 @@ class SilVer:
         return sat
 
     def get_ast_folder(self, silq_file_path):
-        folder_path = get_path(silq_file_path)
-        ast_path = folder_path + "/.ast"
-        if not(exists(ast_path)):
-            os.makedirs(ast_path)
+        ast_path = get_path(silq_file_path) + "/.ast"
+        if not(exists(ast_path)): os.makedirs(ast_path)
         return ast_path
 
     def check_sat_instance(self, sat, obl_dict):
         if sat == z3.sat:
             logging.info("Performing check on satisfiable model...")
+            logging.debug("Fetching model...")
             m = self.solver.model()
             solver = self.make_solver_instance()
+            logging.debug("Adding obligations to new solver...")
             solver.add(obl_dict[PROG_OBS] + obl_dict[SPEQ_OBS])
             model_obs = []
-            for var in m: 
+            logging.debug("Assigning variables to model values...")
+            for var in m:
                 try:
                     if isinstance(m[var], FuncInterp): self.add_func_interp(model_obs, m, var)
                     else: model_obs.append(var() == m[var()])
@@ -164,9 +165,11 @@ class SilVer:
                     logging.warn("This may cause problems when checking.")
             solver.add(model_obs)
             logging.debug("Model Obligation:\n%s", "\n".join([str(obl) for obl in model_obs]))
+            logging.debug("Checking...")
             sat_check = solver.check()
             if sat_check == z3.unsat: log_error("Erroneous model found. This means the solver returned a model that is unsatisfiable.")
-            logging.info("Satisfiability check passed.")
+            elif sat_check == z3.unkown: log_error("Satisfiability check is unknown. Model cannot be verified.")
+            else: logging.info("Satisfiability check passed.")
         elif sat == z3.unknown: logging.warn("Solver returned unknown.")
         elif sat == z3.unsat:
             # TODO: Fetch unsat core and check that postconditions tracker is in there
@@ -257,19 +260,13 @@ class SilVer:
             logging.info("Obligations stored")
         return {PROG_OBS: prog_obs, SPEQ_OBS: speq_obs[func]}
 
-    def clean_obligation_list(self, obs):
-        cleaner = lambda x: not(isinstance(x, bool) and x)
-        obs = list(filter(cleaner, obs))
-        return obs
-
+    def clean_obligation_list(self, obs): return list(filter(lambda x: not(isinstance(x, bool) and x), obs))
 
     def getJSON(self, silq_json_file):
         """
         Reads the JSON silq file and stores the data in fdefs.
         """
-        with open(silq_json_file, "r") as rf:
-            data = rf.read()
-            silq_json = json.loads(data)
+        with open(silq_json_file, "r") as rf: silq_json = json.loads(rf.read())
         return silq_json
 
     def get_hash_path(self, json_file_path, func):
@@ -282,8 +279,7 @@ class SilVer:
         return path
     
     def get_stored_hash(self, hash_file_path):
-        if not(exists(hash_file_path)):
-            return ""
+        if not(exists(hash_file_path)): return ""
         with open(hash_file_path, 'rb') as r: hash = r.read()
         return hash.decode('utf-8')
 
@@ -296,9 +292,7 @@ class SilVer:
         path = "/".join(path) + ".smt2"
         return path
 
-    def load_stored_obligations(self, json_file_path, func):
-        obl_path = self.get_obligation_path(json_file_path, func)
-        self.solver.from_file(obl_path)
+    def load_stored_obligations(self, json_file_path, func): self.solver.from_file(self.get_obligation_path(json_file_path, func))
 
     def get_speq_obs(self, file):
         tree = self.speq_parser.parse_file(file)
