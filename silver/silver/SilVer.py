@@ -171,7 +171,6 @@ class SilVer:
             else: logging.info("Satisfiability check passed.")
         elif sat == z3.unknown: logging.warn("Solver returned unknown.")
         elif sat == z3.unsat:
-            # TODO: Fetch unsat core and check that postconditions tracker is in there
             logging.info("Performing check on unsat instance...")
             unsat_core = self.solver.unsat_core()
             num_of_assertions = len(self.solver.assertions())

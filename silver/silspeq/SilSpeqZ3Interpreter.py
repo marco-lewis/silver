@@ -9,14 +9,6 @@ from ..silver.utils import log_error
 def Equiv(a, b):
     return And(Implies(a, b), Implies(b, a))
 
-# Source: https://stackoverflow.com/questions/12472338/flattening-a-list-recursively
-def flatten(S):
-    if S == []:
-        return S
-    if isinstance(S[0], list):
-        return flatten(S[0]) + flatten(S[1:])
-    return S[:1] + flatten(S[1:])
-
 NAT = "NAT"
 UNIT = ()
 BOOL = "BOOL"
@@ -53,12 +45,9 @@ class SilSpeqZ3Interpreter(Interpreter):
 
     def flatten(self, old): return self.__flatten(old, [])
 
+    # Inspiration: https://stackoverflow.com/questions/12472338/flattening-a-list-recursively
     def __flatten(self, old, new):
-        for i in old:
-            if isinstance(i, list):
-                self.__flatten(i, new)
-            else:
-                new.append(i)
+        for i in old: self.__flatten(i, new) if isinstance(i, list) else new.append(i)
         return new
 
     @visit_children_decor
@@ -71,7 +60,7 @@ class SilSpeqZ3Interpreter(Interpreter):
     def post(self, stmts):
         if not(stmts == [[]]):
             obls = []
-            stmts = flatten(stmts)
+            stmts = self.flatten(stmts)
             for obl in stmts:
                 if obl != None: obls.append(obl)
             post_obl = And(obls)
