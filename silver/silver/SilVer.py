@@ -2,6 +2,7 @@ from genericpath import exists
 import hashlib
 import json as json
 import logging
+from natsort import natsorted
 from os.path import splitext
 import subprocess
 
@@ -17,6 +18,9 @@ from silver.silver.ObligationGenerator import ObilgationGenerator
 from silver.silver.Program import Program
 from silver.silver.SpeqGenerator import SpeqGenerator
 from .utils import get_path, log_error
+
+PROG_OBS = "prog_obs"
+SPEQ_OBS = "speq_obs"
 
 class SilVer:
     def __init__(self, timeout=30000, seed=3, check_store=True):
@@ -77,8 +81,7 @@ class SilVer:
         self.solver.reset()
         self.json_interp = JSONInterpreter()
         
-    def check_solver_sat(self):
-        return self.solver.check(*self.assumptions)
+    def check_solver_sat(self): return self.solver.check(*self.assumptions)
         
     def print_solver_sat(self, solver_sat):
         logging.info("Checking satisfiability...")
@@ -124,18 +127,18 @@ class SilVer:
 
     def verify_func(self, silq_file_path, func, log_level=logging.WARNING):
         logging.basicConfig(level=log_level, force=True)
-        logging.info("Verifying " + func + " in " + silq_file_path)
+        logging.info("Verifying %s in %s", func, silq_file_path)
         json_file_path = self.generate_ast_file(silq_file_path)
-        obs = self.make_obs(json_file_path, func)
-        for i in range(len(obs)):
-            if obs[i] == True: continue 
-            self.solver.assert_and_track(obs[i], func + '_tracker' + str(i))
+        obl_dict = self.make_obs(json_file_path, func)
+        obs = obl_dict[PROG_OBS] + obl_dict[SPEQ_OBS]
+        for i in range(len(obs)): self.solver.assert_and_track(obs[i], func + '_tracker' + str(i))
         logging.info("Full Obligations in Solver")
         logging.debug("Solver: %s", self.solver)
         logging.info("Verifying program with specification...")
         sat = self.check_solver_sat()
         logging.debug("Solver satisfiability: %s", sat)
-        self.check_sat_instance(sat)
+        logging.info("Checking returned solver status...")
+        self.check_sat_instance(sat, obl_dict)
         return sat
 
     def get_ast_folder(self, silq_file_path):
@@ -145,12 +148,12 @@ class SilVer:
             os.makedirs(ast_path)
         return ast_path
 
-    def check_sat_instance(self, sat):
+    def check_sat_instance(self, sat, obl_dict):
         if sat == z3.sat:
             logging.info("Performing check on satisfiable model...")
             m = self.solver.model()
             solver = self.make_solver_instance()
-            solver.add(self.solver.assertions())
+            solver.add(obl_dict[PROG_OBS] + obl_dict[SPEQ_OBS])
             model_obs = []
             for var in m: 
                 try:
@@ -163,10 +166,23 @@ class SilVer:
             logging.debug("Model Obligation:\n%s", "\n".join([str(obl) for obl in model_obs]))
             sat_check = solver.check()
             if sat_check == z3.unsat: log_error("Erroneous model found. This means the solver returned a model that is unsatisfiable.")
-            logging.info("Satisfiability check passed")
-        if sat == z3.unsat:
+            logging.info("Satisfiability check passed.")
+        elif sat == z3.unknown: logging.warn("Solver returned unknown.")
+        elif sat == z3.unsat:
             # TODO: Fetch unsat core and check that postconditions tracker is in there
-            pass
+            logging.info("Performing check on unsat instance...")
+            unsat_core = self.solver.unsat_core()
+            num_of_assertions = len(self.solver.assertions())
+            unsat_core_size = len(unsat_core)
+            speq_size = len(obl_dict[SPEQ_OBS])
+            logging.debug("# of program/specification obligations %s/%s", len(obl_dict[PROG_OBS]), speq_size)
+            logging.debug("# of trackers in unsat core/solver: %s/%s", unsat_core_size, num_of_assertions)
+            tracker_num_start_idx = str(unsat_core[0]).rfind("r") + 1
+            end_of_unsat_core = sorted([int(str(tracker)[tracker_num_start_idx:]) for tracker in unsat_core])[-speq_size:]
+            speq_in_unsat_core = end_of_unsat_core == list(range(num_of_assertions - speq_size, num_of_assertions))
+            if speq_in_unsat_core: logging.debug("Specification is in unsat core.")
+            else: log_error("Full specification is not in the unsat core. The postcondition might not be included.")
+            logging.info("Unsatisfiability check passed.")
 
     def add_func_interp(self, model_obs : list, model, var):
         fixed_inputs = []
@@ -198,7 +214,7 @@ class SilVer:
         
         logging.info("Generating SilSpeq proof obligations...")
         speq_obs = self.get_speq_obs(spq_name)
-        
+        for key in speq_obs: speq_obs[key] = self.clean_obligation_list(speq_obs[key])
         logging.info("SilSpeq proof obligations generated")
         logging.debug("SpeqObligations:\n%s", speq_obs)
 
@@ -208,6 +224,7 @@ class SilVer:
         stored_hash = self.get_stored_hash(hash_path)
 
         if hash == stored_hash and self.check_store:
+            # TODO: Fix this process
             logging.info("Obtaining stored obligations...")
             prog_obs = []
             self.load_stored_obligations(json_file_path, func)
@@ -219,26 +236,32 @@ class SilVer:
             logging.info("Generating proof obligations from Program...")
             logging.debug("Program:\n%s", prog)
             prog_obs = self.generate_program_obligations(prog)
-            
+            prog_obs = self.clean_obligation_list(prog_obs)
             logging.info("Program obligations generated")
-            logging.info("Checking program obligations satisfiable...")
 
+            logging.info("Checking program obligations satisfiable...")
             prog_sat, stats, reason = self.check_generated_obs_sat(prog_obs)
             if prog_sat != z3.sat:
                 if prog_sat == z3.unknown:
                     logging.warning("Warning: program obligations unkown; could be unsat.")
                     logging.warning("Reason: %s", reason)
                 else: log_error("SatError(%s): generated obligations from Silq program are invalid.", prog_sat)
+            else: logging.info("Program obligations satisfiable")
 
-            logging.info("Program obligations satisfiable")
             logging.info("Storing obligations...")
-            
             with open(hash_path, 'w') as writer: writer.write(str(hash))
             temp_solver = self.__silver_tactic.solver()
             temp_solver.add(prog_obs)
             prog_smt2 = temp_solver.to_smt2()
             with open(self.get_obligation_path(json_file_path, func), 'w') as writer: writer.write(str(prog_smt2))
-        return prog_obs + speq_obs[func]
+            logging.info("Obligations stored")
+        return {PROG_OBS: prog_obs, SPEQ_OBS: speq_obs[func]}
+
+    def clean_obligation_list(self, obs):
+        cleaner = lambda x: not(isinstance(x, bool) and x)
+        obs = list(filter(cleaner, obs))
+        return obs
+
 
     def getJSON(self, silq_json_file):
         """
@@ -297,7 +320,7 @@ class SilVer:
             if sat == z3.unknown:
                 logging.warning("Warning: SilSpeq obligations unkown; could be unsat")
                 logging.warning("Reason: %s", speq_solver.reason_unknown())
-            elif sat == z3.unsat: log_error("SilSpeqError(%s): one of your SilSpeq function specifications is not sat. Check there are no contradictions in your specificaiton.", str(sat))
+            elif sat == z3.unsat: log_error("SilSpeqError(%s): one of your SilSpeq function specifications is not sat. Check there are no contradictions in your specificaiton.", sat)
             speq_solver.reset()
         
     def get_speq_file_name(self, silq_json_file):
@@ -334,8 +357,6 @@ class SilVer:
         stats = s.statistics()
         return sat, stats, s.reason_unknown()
     
-    def get_prev_quantum_memory(self, prog : Program, time):
-        return prog.quantum_processes[time - 1].end_memory
+    def get_prev_quantum_memory(self, prog : Program, time): return prog.quantum_processes[time - 1].end_memory
     
-    def get_prev_classical_memory(self, prog : Program, time):
-        return prog.classical_processes[time - 1].end_memory
+    def get_prev_classical_memory(self, prog : Program, time): return prog.classical_processes[time - 1].end_memory
