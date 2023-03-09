@@ -227,10 +227,9 @@ class SilVer:
         stored_hash = self.get_stored_hash(hash_path)
 
         if hash == stored_hash and self.check_store:
-            # TODO: Fix this process
             logging.info("Obtaining stored obligations...")
-            prog_obs = []
-            self.load_stored_obligations(json_file_path, func)
+            prog_obs = [obl for obl in z3.parse_smt2_file(self.get_obligation_path(json_file_path, func))]
+            logging.debug(prog_obs)
         else:
             logging.info("Generating Program from AST...") 
             prog = self.json_interp.decode_func_in_json(silq_json, func)
@@ -291,8 +290,6 @@ class SilVer:
         if not(exists(folder)): os.mkdir(folder)
         path = "/".join(path) + ".smt2"
         return path
-
-    def load_stored_obligations(self, json_file_path, func): self.solver.from_file(self.get_obligation_path(json_file_path, func))
 
     def get_speq_obs(self, file):
         tree = self.speq_parser.parse_file(file)
