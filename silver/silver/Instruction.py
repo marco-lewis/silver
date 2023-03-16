@@ -1,4 +1,4 @@
-from utils import log_error
+from silver.silver.utils import log_error
 from silver.silver.VarRef import VarRef
 
 class Instruction():
