@@ -64,30 +64,26 @@ class Program():
         return
         
     def get_current_quantum_memory(self) -> QuantumMemory:
-        if self.quantum_processes:
-            return self.quantum_processes[self.current_time - 1].end_memory
+        if self.quantum_processes: return self.quantum_processes[self.current_time - 1].end_memory
         return QuantumMemory()
     
     def get_current_classical_memory(self) -> ClassicalMemory:
-        if self.classical_processes:
-            return self.classical_processes[self.current_time - 1].end_memory
+        if self.classical_processes: return self.classical_processes[self.current_time - 1].end_memory
         return ClassicalMemory()
     
-    def copy_current_classical_memory(self):
+    def copy_current_classical_memory(self) -> ClassicalMemory:
         try:
             classical_mem = ClassicalMemory()
             classical_mem.registers = deepcopy(self.classical_processes[self.current_time - 1].end_memory.registers)
             return classical_mem
-        except:
-            return ClassicalMemory()
+        except: return ClassicalMemory()
         
     def copy_current_quantum_memory(self):
         try:
             quantum_memory = QuantumMemory()
             quantum_memory.registers = deepcopy(self.quantum_processes[self.current_time - 1].end_memory.registers)
             return quantum_memory
-        except:
-            return QuantumMemory()
+        except: return QuantumMemory()
         
     def is_variable_ref_quantum(self, var_ref : VarRef):
         try:

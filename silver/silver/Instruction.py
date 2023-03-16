@@ -1,6 +1,5 @@
-from typing import List
+from utils import log_error
 from silver.silver.VarRef import VarRef
-
 
 class Instruction():
     def __init__(self) -> None:
@@ -18,7 +17,7 @@ class QINIT(Instruction):
     def __init__(self, value, size, variable=None) -> None:
         super().__init__()
         if value >= 2**size:
-            raise Exception("InstructionError: Value provided is greater than representation.")
+            log_error("InstructionError: Value provided is greater than representation.")
         self.__variable = variable
         self.__value = value
         self.__size = size
@@ -53,8 +52,7 @@ class QINIT(Instruction):
 class CINIT(Instruction):
     def __init__(self, value, size, variable=None) -> None:
         super().__init__()
-        if isinstance(size, int):
-            if value >= 2**size: raise Exception("InstructionError: Value provided is greater than representation.")
+        if isinstance(size, int) and (value >= 2**size): log_error("InstructionError: Value provided is greater than representation.")
         self.__variable = variable
         self.__value = value
         self.__size = size
@@ -84,7 +82,7 @@ class CINIT(Instruction):
         self.__value = value
         
     def __repr__(self) -> str:
-        return "QINIT(" + repr(self.__value) + ", " + repr(self.__size) + ", " + repr(self.variable) + ")"
+        return "CINIT(" + repr(self.__value) + ", " + repr(self.__size) + ", " + repr(self.variable) + ")"
         
 class QOP(Instruction):
     def __init__(self, operation, arg=None, out=None) -> None:

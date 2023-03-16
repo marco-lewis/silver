@@ -219,6 +219,7 @@ class SilVer:
         logging.info("SilSpeq proof obligations generated")
         logging.debug("SpeqObligations:\n%s", speq_obs)
 
+        # TODO: Move/modify so SilVer more modular; feed in functions/options?
         silq_json = self.getJSON(json_file_path)
         hash = hashlib.md5(str(silq_json).encode('utf-8') + str(self.config).encode('utf-8')).hexdigest()
         hash_path = self.get_hash_path(json_file_path, func)
@@ -324,6 +325,7 @@ class SilVer:
         speq_gen.generate_speq_file()
     
     def generate_program_obligations(self, prog : Program):
+        # TODO: Change to work either using with wp() or squash methods a bit?
         obs : list[BoolRef] = []
         ob_gen = ObilgationGenerator(self.config)
         for time in range(prog.current_time):
