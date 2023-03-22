@@ -106,7 +106,7 @@ class SilVer:
         if HIGH_PROB in self.config[MEASURE_OPTION]: 
             low = self.speq_flag_itp.meas_low_bound
             if low >= 0 and  low <= 1: self.config[MEASURE_BOUND] = low
-            else: error("FlagError(whp): bound given is not between 0 and 1")
+            else: error("Bound given for highprob flag is not between 0 and 1")
         if SPECIFIC_VALUE in self.config[MEASURE_OPTION]: self.config[MEASURE_MARK] = self.speq_flag_itp.meas_mark
         if self.config[MEASURE_OPTION] == []: self.config[MEASURE_OPTION].append(RAND)
         self.speq_z3_itp.set_meas_cert(CERTAINTY in self.config[MEASURE_OPTION])
@@ -147,8 +147,8 @@ class SilVer:
 
     def check_inputs(self, silq_file_path,func,spq_file):
         try: exists(silq_file_path)
-        except: error("SilVerError: Silq file path provided is invalid. The path %s does not exist.", silq_file_path)
-        if not(isinstance(func,str)): error("SilVerError: %s is not a string.", func)
+        except: error("Silq file path provided is invalid. The path %s does not exist.", silq_file_path)
+        if not(isinstance(func,str)): error("%s is not a string.", func)
         try:
             if not(spq_file == None): exists(spq_file)
         except: 
@@ -259,9 +259,9 @@ class SilVer:
             prog_sat, stats, reason = self.check_generated_obs_sat(prog_obs)
             if prog_sat != z3.sat:
                 if prog_sat == z3.unknown:
-                    logger.warning("Warning: program obligations unkown; could be unsat.")
+                    logger.warning("Program obligations unkown; could be unsat.")
                     logger.warning("Reason: %s", reason)
-                else: error("SatError(%s): generated obligations from Silq program are invalid.", prog_sat)
+                else: error("Generated obligations from Silq program are invalid. Expected sat but got %s.", prog_sat)
             else: logger.info("Program obligations satisfiable")
 
             logger.info("Storing obligations...")
@@ -323,9 +323,9 @@ class SilVer:
             speq_solver.add(func_obls)
             sat = speq_solver.check(*self.assumptions)
             if sat == z3.unknown:
-                logger.warning("Warning: SilSpeq obligations unkown; could be unsat")
+                logger.warning("SilSpeq obligations unkown; could be unsat")
                 logger.warning("Reason: %s", speq_solver.reason_unknown())
-            elif sat == z3.unsat: error("SilSpeqError(%s): one of your SilSpeq function specifications is not sat. Check there are no contradictions in your specificaiton.", sat)
+            elif sat == z3.unsat: error("One of your SilSpeq function specifications is %s when it should be sat. Check there are no contradictions in your specificaiton.", sat)
             speq_solver.reset()
         
     def get_speq_file_name(self, silq_json_file, spq_file=None):
