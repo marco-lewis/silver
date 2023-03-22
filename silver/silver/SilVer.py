@@ -21,6 +21,9 @@ from .utils import get_path, log_error
 PROG_OBS = "prog_obs"
 SPEQ_OBS = "speq_obs"
 
+logger = logging.getLogger('silver')
+def error(error_msg, *args): log_error(error_msg, logger) if len(args) == 0 else log_error(error_msg, logger, args)
+
 class SilVer:
     def __init__(self, timeout=30000, seed=3, check_store=True):
         self.timeout = timeout
@@ -58,7 +61,7 @@ class SilVer:
     def check_speq_exists(self, file, spq_file=None):
         if not(spq_file == None) and not(exists(self.get_speq_file_name(file))):
             self.generate_speq_file(file) if spq_file == None else self.generate_speq_file(spq_file)
-            log_error("New SilSpeq file created, you should add your specification before continuing")
+            error("New SilSpeq file created, you should add your specification before continuing")
     
     def make_solver_instance(self):
         s = self.__silver_tactic.solver()
@@ -83,16 +86,16 @@ class SilVer:
     def check_solver_sat(self): return self.solver.check(*self.assumptions)
         
     def print_solver_sat(self, solver_sat):
-        logging.info("Checking satisfiability...")
+        logger.info("Checking satisfiability...")
         if solver_sat == sat:
             m = self.solver.model()
-            logging.info("Counterexample found")
-            logging.debug("Model: %s", m)
+            logger.info("Counterexample found")
+            logger.debug("Model: %s", m)
         elif solver_sat == unsat:
-            logging.info("Program is correct!")
+            logger.info("Program is correct!")
         else:
-            logging.info("Unable to determine if satisfiable")
-            logging.debug("Satisfiability: %s", sat)
+            logger.info("Unable to determine if satisfiable")
+            logger.debug("Satisfiability: %s", sat)
             
     def check_flags(self, file):
         tree = self.speq_parser.parse_file(file)
@@ -103,7 +106,7 @@ class SilVer:
         if HIGH_PROB in self.config[MEASURE_OPTION]: 
             low = self.speq_flag_itp.meas_low_bound
             if low >= 0 and  low <= 1: self.config[MEASURE_BOUND] = low
-            else: log_error("FlagError(whp): bound given is not between 0 and 1")
+            else: error("FlagError(whp): bound given is not between 0 and 1")
         if SPECIFIC_VALUE in self.config[MEASURE_OPTION]: self.config[MEASURE_MARK] = self.speq_flag_itp.meas_mark
         if self.config[MEASURE_OPTION] == []: self.config[MEASURE_OPTION].append(RAND)
         self.speq_z3_itp.set_meas_cert(CERTAINTY in self.config[MEASURE_OPTION])
@@ -125,31 +128,31 @@ class SilVer:
         pass
 
     def verify_func(self, silq_file_path, func, log_level=logging.WARNING, spq_file=None):
-        logging.basicConfig(level=log_level, force=True)
+        logger.level = log_level
         self.check_inputs(silq_file_path,func,spq_file)
 
-        logging.info("Verifying %s in %s", func, silq_file_path)
+        logger.info("Verifying %s in %s", func, silq_file_path)
         json_file_path = self.generate_ast_file(silq_file_path)
         obl_dict = self.make_obs(json_file_path, func, spq_file=spq_file)
         obs = obl_dict[PROG_OBS] + obl_dict[SPEQ_OBS]
         for i in range(len(obs)): self.solver.assert_and_track(obs[i], func + '_tracker' + str(i))
-        logging.info("Full Obligations in Solver")
-        logging.debug("Solver:\n%s", self.solver)
-        logging.info("Verifying program with specification...")
+        logger.info("Full Obligations in Solver")
+        logger.debug("Solver:\n%s", self.solver)
+        logger.info("Verifying program with specification...")
         sat = self.check_solver_sat()
-        logging.debug("Solver satisfiability: %s", sat)
-        logging.info("Checking returned solver status...")
+        logger.debug("Solver satisfiability: %s", sat)
+        logger.info("Checking returned solver status...")
         self.check_sat_instance(sat, obl_dict)
         return sat
 
     def check_inputs(self, silq_file_path,func,spq_file):
         try: exists(silq_file_path)
-        except: log_error("SilVerError: Silq file path provided is invalid. The path %s does not exist.", silq_file_path)
-        if not(isinstance(func,str)): log_error("SilVerError: %s is not a string.", func)
+        except: error("SilVerError: Silq file path provided is invalid. The path %s does not exist.", silq_file_path)
+        if not(isinstance(func,str)): error("SilVerError: %s is not a string.", func)
         try:
             if not(spq_file == None): exists(spq_file)
         except: 
-            logging.warn("Provided path for SilSpeq file is invalid. Will continue without using path provided but this may affect later computation.")
+            logger.warn("Provided path for SilSpeq file is invalid. Will continue without using path provided but this may affect later computation.")
             spq_file = None
 
     def get_ast_folder(self, silq_file_path):
@@ -159,43 +162,43 @@ class SilVer:
 
     def check_sat_instance(self, sat, obl_dict):
         if sat == z3.sat:
-            logging.info("Performing check on satisfiable model...")
-            logging.debug("Fetching model...")
+            logger.info("Performing check on satisfiable model...")
+            logger.debug("Fetching model...")
             m = self.solver.model()
             solver = self.make_solver_instance()
-            logging.debug("Adding obligations to new solver...")
+            logger.debug("Adding obligations to new solver...")
             solver.add(obl_dict[PROG_OBS] + obl_dict[SPEQ_OBS])
             model_obs = []
-            logging.debug("Assigning variables to model values...")
+            logger.debug("Assigning variables to model values...")
             for var in m:
                 try:
                     if isinstance(m[var], FuncInterp): self.add_func_interp(model_obs, m, var)
                     else: model_obs.append(var() == m[var()])
                 except:
-                    logging.warn("%s was not added as an obligation.", var)
-                    logging.warn("This may cause problems when checking.")
+                    logger.warn("%s was not added as an obligation.", var)
+                    logger.warn("This may cause problems when checking.")
             solver.add(model_obs)
-            logging.debug("Model Obligation:\n%s", "\n".join([str(obl) for obl in model_obs]))
-            logging.debug("Checking...")
+            logger.debug("Model Obligation:\n%s", "\n".join([str(obl) for obl in model_obs]))
+            logger.debug("Checking...")
             sat_check = solver.check()
-            if sat_check == z3.unsat: log_error("Erroneous model found. This means the solver returned a model that is unsatisfiable.")
-            elif sat_check == z3.unknown: log_error("Satisfiability check is unknown. Model cannot be verified.")
-            else: logging.info("Satisfiability check passed.")
-        elif sat == z3.unknown: logging.warn("Solver returned unknown.")
+            if sat_check == z3.unsat: error("Erroneous model found. This means the solver returned a model that is unsatisfiable.")
+            elif sat_check == z3.unknown: error("Satisfiability check is unknown. Model cannot be verified.")
+            else: logger.info("Satisfiability check passed.")
+        elif sat == z3.unknown: logger.warn("Solver returned unknown.")
         elif sat == z3.unsat:
-            logging.info("Performing check on unsat instance...")
+            logger.info("Performing check on unsat instance...")
             unsat_core = self.solver.unsat_core()
             num_of_assertions = len(self.solver.assertions())
             unsat_core_size = len(unsat_core)
             speq_size = len(obl_dict[SPEQ_OBS])
-            logging.debug("# of program/specification obligations %s/%s", len(obl_dict[PROG_OBS]), speq_size)
-            logging.debug("# of trackers in unsat core/solver: %s/%s", unsat_core_size, num_of_assertions)
+            logger.debug("# of program/specification obligations %s/%s", len(obl_dict[PROG_OBS]), speq_size)
+            logger.debug("# of trackers in unsat core/solver: %s/%s", unsat_core_size, num_of_assertions)
             tracker_num_start_idx = str(unsat_core[0]).rfind("r") + 1
             last_tracker = sorted([int(str(tracker)[tracker_num_start_idx:]) for tracker in unsat_core])[-1]
             post_in_unsat_core = last_tracker == num_of_assertions - 1
-            if post_in_unsat_core: logging.debug("Post-condition is in unsat core.")
-            else: log_error("Post-condition is not in the unsat core.")
-            logging.info("Unsatisfiability check passed.")
+            if post_in_unsat_core: logger.debug("Post-condition is in unsat core.")
+            else: error("Post-condition is not in the unsat core.")
+            logger.info("Unsatisfiability check passed.")
 
     def add_func_interp(self, model_obs : list, model : ModelRef, var):
         fixed_inputs = []
@@ -225,11 +228,11 @@ class SilVer:
         spq_path = self.get_speq_file_name(json_file_path,spq_file=spq_file)
         self.check_flags(spq_path)
         
-        logging.info("Generating SilSpeq proof obligations...")
+        logger.info("Generating SilSpeq proof obligations...")
         speq_obs = self.get_speq_obs(spq_path)
         for key in speq_obs: speq_obs[key] = self.clean_obligation_list(speq_obs[key])
-        logging.info("SilSpeq proof obligations generated")
-        logging.debug("SpeqObligations:\n%s", speq_obs)
+        logger.info("SilSpeq proof obligations generated")
+        logger.debug("SpeqObligations:\n%s", speq_obs)
 
         # TODO: Move/modify so SilVer more modular; feed in functions/options?
         silq_json = self.getJSON(json_file_path)
@@ -238,36 +241,36 @@ class SilVer:
         stored_hash = self.get_stored_hash(hash_path)
 
         if hash == stored_hash and self.check_store:
-            logging.info("Obtaining stored obligations...")
+            logger.info("Obtaining stored obligations...")
             prog_obs = [obl for obl in z3.parse_smt2_file(self.get_obligation_path(json_file_path, func))]
-            logging.debug(prog_obs)
+            logger.debug(prog_obs)
         else:
-            logging.info("Generating Program from AST...") 
+            logger.info("Generating Program from AST...") 
             prog = self.json_interp.decode_func_in_json(silq_json, func)
             prog.optimise()
 
-            logging.info("Generating proof obligations from Program...")
-            logging.debug("Program:\n%s", prog)
+            logger.info("Generating proof obligations from Program...")
+            logger.debug("Program:\n%s", prog)
             prog_obs = self.generate_program_obligations(prog)
             prog_obs = self.clean_obligation_list(prog_obs)
-            logging.info("Program obligations generated")
+            logger.info("Program obligations generated")
 
-            logging.info("Checking program obligations satisfiable...")
+            logger.info("Checking program obligations satisfiable...")
             prog_sat, stats, reason = self.check_generated_obs_sat(prog_obs)
             if prog_sat != z3.sat:
                 if prog_sat == z3.unknown:
-                    logging.warning("Warning: program obligations unkown; could be unsat.")
-                    logging.warning("Reason: %s", reason)
-                else: log_error("SatError(%s): generated obligations from Silq program are invalid.", prog_sat)
-            else: logging.info("Program obligations satisfiable")
+                    logger.warning("Warning: program obligations unkown; could be unsat.")
+                    logger.warning("Reason: %s", reason)
+                else: error("SatError(%s): generated obligations from Silq program are invalid.", prog_sat)
+            else: logger.info("Program obligations satisfiable")
 
-            logging.info("Storing obligations...")
+            logger.info("Storing obligations...")
             with open(hash_path, 'w') as writer: writer.write(str(hash))
             temp_solver = self.__silver_tactic.solver()
             temp_solver.add(prog_obs)
             prog_smt2 = temp_solver.to_smt2()
             with open(self.get_obligation_path(json_file_path, func), 'w') as writer: writer.write(str(prog_smt2))
-            logging.info("Obligations stored")
+            logger.info("Obligations stored")
         return {PROG_OBS: prog_obs, SPEQ_OBS: speq_obs[func]}
 
     def clean_obligation_list(self, obs): return list(filter(lambda x: not(isinstance(x, bool) and x), obs))
@@ -320,9 +323,9 @@ class SilVer:
             speq_solver.add(func_obls)
             sat = speq_solver.check(*self.assumptions)
             if sat == z3.unknown:
-                logging.warning("Warning: SilSpeq obligations unkown; could be unsat")
-                logging.warning("Reason: %s", speq_solver.reason_unknown())
-            elif sat == z3.unsat: log_error("SilSpeqError(%s): one of your SilSpeq function specifications is not sat. Check there are no contradictions in your specificaiton.", sat)
+                logger.warning("Warning: SilSpeq obligations unkown; could be unsat")
+                logger.warning("Reason: %s", speq_solver.reason_unknown())
+            elif sat == z3.unsat: error("SilSpeqError(%s): one of your SilSpeq function specifications is not sat. Check there are no contradictions in your specificaiton.", sat)
             speq_solver.reset()
         
     def get_speq_file_name(self, silq_json_file, spq_file=None):

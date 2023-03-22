@@ -1,4 +1,5 @@
 import logging
+from silver.silver.Logger import logger
 from os.path import splitext
 import re
 from z3 import *
@@ -6,9 +7,9 @@ from z3 import *
 EXPTYPE = "expType"
 TYPEOBJ = "typeObj"
 
-def log_error(error_msg, *args):
-    if args == (): logging.error(error_msg)
-    else: logging.error(error_msg, args)
+def log_error(error_msg, logger:logging.Logger, *args):
+    if len(args) < 1: logger.error(error_msg)
+    else: logger.error(error_msg, args)
     sys.exit()
 
 def delta(i, j):
