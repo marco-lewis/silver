@@ -239,7 +239,7 @@ class SilSpeqZ3Interpreter(Interpreter):
         return BV2Int(term)
 
     @visit_children_decor
-    def mod(self,exprs): return self.handle_token(exprs[0]) % self.handle_token(exprs[1])
+    def mod(self,exprs): return self.handle_token(exprs[0]) % int(self.handle_token(exprs[1]))
 
     @visit_children_decor
     def dot(self,exprs):
