@@ -55,9 +55,9 @@ class SilVer:
                 )
             )
 
-    def check_speq_exists(self, file):
-        if not(exists(self.get_speq_file_name(file))):
-            self.generate_speq_file(file)
+    def check_speq_exists(self, file, spq_file=None):
+        if not(spq_file == None) and not(exists(self.get_speq_file_name(file))):
+            self.generate_speq_file(file) if spq_file == None else self.generate_speq_file(spq_file)
             log_error("New SilSpeq file created, you should add your specification before continuing")
     
     def make_solver_instance(self):
@@ -124,11 +124,13 @@ class SilVer:
             # 4a) Produce obligation/sat(?) files for correct functions
         pass
 
-    def verify_func(self, silq_file_path, func, log_level=logging.WARNING):
+    def verify_func(self, silq_file_path, func, log_level=logging.WARNING, spq_file=None):
         logging.basicConfig(level=log_level, force=True)
+        self.check_inputs(silq_file_path,func,spq_file)
+
         logging.info("Verifying %s in %s", func, silq_file_path)
         json_file_path = self.generate_ast_file(silq_file_path)
-        obl_dict = self.make_obs(json_file_path, func)
+        obl_dict = self.make_obs(json_file_path, func, spq_file=spq_file)
         obs = obl_dict[PROG_OBS] + obl_dict[SPEQ_OBS]
         for i in range(len(obs)): self.solver.assert_and_track(obs[i], func + '_tracker' + str(i))
         logging.info("Full Obligations in Solver")
@@ -139,6 +141,16 @@ class SilVer:
         logging.info("Checking returned solver status...")
         self.check_sat_instance(sat, obl_dict)
         return sat
+
+    def check_inputs(self, silq_file_path,func,spq_file):
+        try: exists(silq_file_path)
+        except: log_error("SilVerError: Silq file path provided is invalid. The path %s does not exist.", silq_file_path)
+        if not(isinstance(func,str)): log_error("SilVerError: %s is not a string.", func)
+        try:
+            if not(spq_file == None): exists(spq_file)
+        except: 
+            logging.warn("Provided path for SilSpeq file is invalid. Will continue without using path provided but this may affect later computation.")
+            spq_file = None
 
     def get_ast_folder(self, silq_file_path):
         ast_path = get_path(silq_file_path) + "/.ast"
@@ -208,13 +220,13 @@ class SilVer:
         os.rename(json_file_path, json_file_path_dest)
         return json_file_path_dest
 
-    def make_obs(self, json_file_path, func):
-        self.check_speq_exists(json_file_path)
-        spq_name = self.get_speq_file_name(json_file_path)
-        self.check_flags(spq_name)
+    def make_obs(self, json_file_path, func, spq_file=None):
+        self.check_speq_exists(json_file_path, spq_file=spq_file)
+        spq_path = self.get_speq_file_name(json_file_path,spq_file=spq_file)
+        self.check_flags(spq_path)
         
         logging.info("Generating SilSpeq proof obligations...")
-        speq_obs = self.get_speq_obs(spq_name)
+        speq_obs = self.get_speq_obs(spq_path)
         for key in speq_obs: speq_obs[key] = self.clean_obligation_list(speq_obs[key])
         logging.info("SilSpeq proof obligations generated")
         logging.debug("SpeqObligations:\n%s", speq_obs)
@@ -313,7 +325,8 @@ class SilVer:
             elif sat == z3.unsat: log_error("SilSpeqError(%s): one of your SilSpeq function specifications is not sat. Check there are no contradictions in your specificaiton.", sat)
             speq_solver.reset()
         
-    def get_speq_file_name(self, silq_json_file):
+    def get_speq_file_name(self, silq_json_file, spq_file=None):
+        if spq_file != None: return spq_file
         spq_path = splitext(silq_json_file)[0].split("/")
         del spq_path[-2]
         spq_path = '/'.join(spq_path)

@@ -6,10 +6,10 @@ import z3, sys
 
 folder = "examples/Silq_Programs/"
 
-def check(json_file, func, expected, log_level=logging.INFO, stats=False, timeout=5000, seed=3, check_store=False):
+def check(json_file, func, expected, log_level=logging.INFO, spq_file=None, stats=False, timeout=5000, seed=3, check_store=False):
     logging.info("Starting check on %s in %s", func, json_file)
     silver = SilVer(timeout=timeout, seed=seed, check_store=check_store)
-    sat = silver.verify_func(folder + json_file, func, log_level)
+    sat = silver.verify_func(folder + json_file, func, log_level=log_level, spq_file=spq_file)
     if sat == expected: logging.info("Test passed as expected")
     else: logging.error("TestError: Expected %s but got %s", expected, sat)
     if sat == z3.sat:
