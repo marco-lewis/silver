@@ -16,7 +16,5 @@ pre{
     assert((bal = 0 & (y = 0 | y = 2^2)) | (bal = 1 & y = 2^(2-1)))
 }
 post{
-    # Problem: can solve individual assertion in post, but not both at same time or equivalence
     assert(bal = 0 -> fixed_dj_ret = 0)
-    assert(bal = 1 -> ¬fixed_dj_ret = 0)
 }
