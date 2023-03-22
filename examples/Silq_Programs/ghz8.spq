@@ -1,4 +1,4 @@
-ghz[whp]()->(define ghz_ret:{0, 1}^8)
+ghz[whp(0.5)]()->(define ghz_ret:{0, 1}^8)
 pre{
 
 }
