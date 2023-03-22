@@ -9,7 +9,7 @@ TYPEOBJ = "typeObj"
 
 def log_error(error_msg, logger:logging.Logger, *args):
     if len(args) < 1: logger.error(error_msg)
-    else: logger.error(error_msg, args)
+    else: logger.error(error_msg, *args)
     sys.exit()
 
 def delta(i, j):

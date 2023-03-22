@@ -22,7 +22,7 @@ PROG_OBS = "prog_obs"
 SPEQ_OBS = "speq_obs"
 
 logger = logging.getLogger('silver')
-def error(error_msg, *args): log_error(error_msg, logger) if len(args) == 0 else log_error(error_msg, logger, args)
+def error(error_msg, *args): log_error(error_msg, logger) if len(args) == 0 else log_error(error_msg, logger, *args)
 
 class SilVer:
     def __init__(self, timeout=30000, seed=3, check_store=True):
