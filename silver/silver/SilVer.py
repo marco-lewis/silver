@@ -132,7 +132,7 @@ class SilVer:
         obs = obl_dict[PROG_OBS] + obl_dict[SPEQ_OBS]
         for i in range(len(obs)): self.solver.assert_and_track(obs[i], func + '_tracker' + str(i))
         logging.info("Full Obligations in Solver")
-        logging.debug("Solver: %s", self.solver)
+        logging.debug("Solver:\n%s", self.solver)
         logging.info("Verifying program with specification...")
         sat = self.check_solver_sat()
         logging.debug("Solver satisfiability: %s", sat)
@@ -167,7 +167,7 @@ class SilVer:
             logging.debug("Checking...")
             sat_check = solver.check()
             if sat_check == z3.unsat: log_error("Erroneous model found. This means the solver returned a model that is unsatisfiable.")
-            elif sat_check == z3.unkown: log_error("Satisfiability check is unknown. Model cannot be verified.")
+            elif sat_check == z3.unknown: log_error("Satisfiability check is unknown. Model cannot be verified.")
             else: logging.info("Satisfiability check passed.")
         elif sat == z3.unknown: logging.warn("Solver returned unknown.")
         elif sat == z3.unsat:
@@ -179,18 +179,18 @@ class SilVer:
             logging.debug("# of program/specification obligations %s/%s", len(obl_dict[PROG_OBS]), speq_size)
             logging.debug("# of trackers in unsat core/solver: %s/%s", unsat_core_size, num_of_assertions)
             tracker_num_start_idx = str(unsat_core[0]).rfind("r") + 1
-            end_of_unsat_core = sorted([int(str(tracker)[tracker_num_start_idx:]) for tracker in unsat_core])[-speq_size:]
-            speq_in_unsat_core = end_of_unsat_core == list(range(num_of_assertions - speq_size, num_of_assertions))
-            if speq_in_unsat_core: logging.debug("Specification is in unsat core.")
-            else: log_error("Full specification is not in the unsat core. The postcondition might not be included.")
+            last_tracker = sorted([int(str(tracker)[tracker_num_start_idx:]) for tracker in unsat_core])[-1]
+            post_in_unsat_core = last_tracker == num_of_assertions - 1
+            if post_in_unsat_core: logging.debug("Post-condition is in unsat core.")
+            else: log_error("Post-condition is not in the unsat core.")
             logging.info("Unsatisfiability check passed.")
 
-    def add_func_interp(self, model_obs : list, model, var):
+    def add_func_interp(self, model_obs : list, model : ModelRef, var):
         fixed_inputs = []
         for inout_pair in model[var].as_list():
             if isinstance(inout_pair, list):
                 model_obs.append(var(inout_pair[0]) == inout_pair[1])
-                fixed_inputs.append(var(inout_pair[0]))
+                fixed_inputs.append(inout_pair[0])
         f_in = Int(str(var) +'_in')
         model_obs.append(var(f_in) == model[var].else_value())
         if not(fixed_inputs == []): model_obs.append(And([Not(f_in == i) for i in fixed_inputs]))
