@@ -1,10 +1,14 @@
 from os import R_OK
 from lark.visitors import *
 from lark import Token
+import logging
 import numpy as np
 from z3 import *
 
 from ..silver.utils import log_error
+
+logger = logging.getLogger('silspeq')
+def error(error_msg, *args): log_error(error_msg, logger) if len(args) == 0 else log_error(error_msg, logger, *args)
 
 def Equiv(a, b):
     return And(Implies(a, b), Implies(b, a))
@@ -64,9 +68,7 @@ class SilSpeqZ3Interpreter(Interpreter):
             for obl in stmts:
                 if obl != None: obls.append(obl)
             post_obl = And(obls)
-            if self.__meas_cert:
-                t = Bool('meas_cert')
-                post_obl = And(post_obl, t == self.__meas_cert)
+            if self.__meas_cert: post_obl = And(post_obl, Bool('meas_cert') == self.__meas_cert)
             post_obl = simplify(post_obl)
             return Not(post_obl) if self.not_post else post_obl
         return True
@@ -88,8 +90,7 @@ class SilSpeqZ3Interpreter(Interpreter):
         elif df[1] == BOOL:
             self.vars[var] = Int(var)
             return Or(self.vars[var] == 0, self.vars[var] == 1)
-        elif isinstance(df[1], list):
-            return self.function_obligation(var, self.flatten(df[1]))
+        elif isinstance(df[1], list): return self.function_obligation(var, self.flatten(df[1]))
         else:
             self.vars[var] = Int(var)
             return And(0 <= self.vars[var], self.vars[var] < 2**df[1])
@@ -102,8 +103,7 @@ class SilSpeqZ3Interpreter(Interpreter):
 
     def mass_out_obl(self, in_types, fname, out_type, inputs : list):
         out = []
-        if in_types == []:
-            return self.type_obligation(self.vars[fname](inputs), out_type)
+        if in_types == []: return self.type_obligation(self.vars[fname](inputs), out_type)
         else:
             for i in range(self.type_size(in_types[0])):
                 temp = inputs
@@ -113,12 +113,9 @@ class SilSpeqZ3Interpreter(Interpreter):
             return out
 
     def type_size(self, type):
-        if type == NAT:
-            log_error("SpeqError: unable to handle NAT argument")
-        elif type == BOOL:
-            return 2
-        else:
-            return 2**type
+        if type == NAT: error("Unable to handle NAT argument")
+        elif type == BOOL: return 2
+        else: return 2**type
 
     def type_obligation(self, z3_expr, type):
         if type == NAT:
@@ -269,13 +266,9 @@ class SilSpeqZ3Interpreter(Interpreter):
     def sum(self, expr):
         body = lambda x: expr[1](x)
         idx_type = self.types[str(self.token(expr[0]))]
-        if idx_type == NAT:
-            log_error("SumError: can't use natural numbers as a parameter for sum")
-        elif idx_type == BOOL:
-            return Sum([body(i) for i in range(0,2)])
-        else:
-            s = Sum([body(i) for i in range(0, 2**idx_type)])
-            return s
+        if idx_type == NAT: error("Can't use natural numbers as a parameter for sum")
+        elif idx_type == BOOL: return Sum([body(i) for i in range(0,2)])
+        else: return Sum([body(i) for i in range(0, 2**idx_type)])
 
     # Handling variables
     @visit_children_decor
@@ -283,10 +276,8 @@ class SilSpeqZ3Interpreter(Interpreter):
 
     # Handling tokens and fetching Z3 variables
     def handle_token(self, t):
-        if isinstance(t, Token):
-            return self.token(t)
-        else:
-            return t
+        if isinstance(t, Token): return self.token(t)
+        else: return t
 
     def token(self, tok: Token):
         if tok.type == "NUMBER": return self.NUMBER(tok)
