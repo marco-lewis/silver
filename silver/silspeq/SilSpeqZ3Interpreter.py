@@ -239,7 +239,10 @@ class SilSpeqZ3Interpreter(Interpreter):
         return BV2Int(term)
 
     @visit_children_decor
-    def mod(self,exprs): return self.handle_token(exprs[0]) % int(self.handle_token(exprs[1]))
+    def mod(self,exprs):
+        base = self.handle_token(exprs[1])
+        if base.is_integer(): return self.handle_token(exprs[0]) % int(base)
+        else: error("Number (%s) in modulus term is not an integer.", base)
 
     @visit_children_decor
     def dot(self,exprs):
