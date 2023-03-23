@@ -8,4 +8,5 @@ tests_analysis.py
 examples/Silq_Programs/.ast/*
 examples/Silq_Programs/.hash/*
 examples/Silq_Programs/.obl/*
+examples/todo/*
 .VSCodeCounter/
