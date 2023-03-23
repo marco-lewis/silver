@@ -8,13 +8,10 @@ check("grover_fixed2.slq", "grover_fixed", z3.unsat)
 
 # 2 Calls
 # 3 qubits
-# Verifications is fast but finding instance is v. slow (3 qubits could not find a model in 5 minutes)
 check("grover_fixed3.slq", "grover_fixed", z3.unsat)
+
+# 3 Calls - 4-14?
 check("grover_fixed4.slq", "grover_fixed", z3.unsat)
 check("grover_fixed5.slq", "grover_fixed", z3.unsat)
 check("grover_fixed6.slq", "grover_fixed", z3.unsat)
-
-# 3 Calls - 7-14
 check("grover_fixed7.slq", "grover_fixed", z3.unsat)
-
-# 4 Calls - 15- 24
