@@ -1,3 +1,0 @@
-def g2(const x: uint[2]){
-    return x == 2;
-}
