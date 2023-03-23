@@ -1,6 +1,6 @@
 # Z3 Notes
 
-- Custom solvers (those made using tactics) cannot get a unsat core
+- Custom solvers (those made using tactics) cannot get a unsat core - doesn't seem to be the case (perhaps updated?)
 
 - 'Axioms' are given using universal/existential quantifiers (Z3 probably views such statements as true and checks that any examples satisfy them)
 
