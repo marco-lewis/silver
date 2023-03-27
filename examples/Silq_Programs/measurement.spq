@@ -1,0 +1,39 @@
+whp[whp]()->(define whp_ret:{0, 1}^4)
+pre{
+
+}
+post{
+
+}
+
+whpatval[whp]()->(define whpatval_ret:{0, 1}^4)
+pre{
+
+}
+post{
+
+}
+
+cert[cert]()->(define cert_ret:{0, 1}^2)
+pre{
+
+}
+post{
+    assert(cert_ret = 1)
+}
+
+rand[rand,whp]()->(define rand_ret:{0, 1}^2)
+pre{
+
+}
+post{
+    assert(rand_ret = 0 | rand_ret = 1)
+}
+
+atval()->(define atval_ret:{0, 1}^2)
+pre{
+
+}
+post{
+
+}

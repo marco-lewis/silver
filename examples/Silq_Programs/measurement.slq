@@ -1,0 +1,33 @@
+def rand(){
+    x := 0 :uint[2];
+    x[0] := H(x[0]);
+    x := measure(x);
+    return x;
+}
+
+def cert(){
+    x := 0 : uint[2];
+    x[0] := H(x[0]);
+    x[1] := X(x[1]);
+    x[0] := H(x[0]);
+    return x;
+}
+
+def atval(){
+    x := 0 :uint[2];
+    return x;
+}
+
+def whp(){
+    x := 0 : uint[4];
+    x[2] := H(x[2]);
+    x := measure(x);
+    return x;
+}
+
+def whpatval(){
+    x := 0 :uint[4];
+    x[1] := rotY(1.6,x[1]);
+    x := measure(x);
+    return x;
+}

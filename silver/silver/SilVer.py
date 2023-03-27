@@ -8,7 +8,7 @@ import subprocess
 from z3.z3 import *
 
 from silver.silspeq.SilSpeqParser import SilSpeqParser
-from silver.silspeq.SilSpeqZ3FlagVisitor import SilSpeqZ3FlagVisitor
+from silver.silspeq.SilSpeqFlagInterpreter import SilSpeqFlagInterpreter
 from silver.silspeq.SilSpeqZ3Interpreter import SilSpeqZ3Interpreter
 from silver.silver.Instruction import Instruction
 from silver.silver.JSONInterpreter import JSONInterpreter
@@ -35,7 +35,6 @@ class SilVer:
         self.speq_parser = SilSpeqParser()
         # TODO: Move so that Interpreters are only function specific
         self.speq_z3_itp = SilSpeqZ3Interpreter()
-        self.speq_flag_itp = SilSpeqZ3FlagVisitor()
         self.config = {}
         self.assumptions = {}
 
@@ -59,9 +58,12 @@ class SilVer:
             )
 
     def check_speq_exists(self, file, spq_file=None):
-        if not(spq_file == None) and not(exists(self.get_speq_file_name(file))):
-            self.generate_speq_file(file) if spq_file == None else self.generate_speq_file(spq_file)
-            error("New SilSpeq file created, you should add your specification before continuing")
+        if not(spq_file == None) and not(exists(spq_file)):
+            self.generate_speq_file(spq_file)
+            error("New SilSpeq file created, you should add your specification before continuing.")
+        if not(exists(self.get_speq_file_name(file))):
+            self.generate_speq_file(file)
+            error("New SilSpeq file created, you should add your specification before continuing.")
     
     def make_solver_instance(self):
         s = self.__silver_tactic.solver()
@@ -97,21 +99,24 @@ class SilVer:
             logger.info("Unable to determine if satisfiable")
             logger.debug("Satisfiability: %s", sat)
             
-    def check_flags(self, file):
+    def check_flags(self, file, func):
+        speq_flag_itp = SilSpeqFlagInterpreter(func)
         tree = self.speq_parser.parse_file(file)
-        self.speq_flag_itp.visit(tree)
+        flags = speq_flag_itp.visit(tree)
+        self.config[MEASURE_OPTION] = []
 
-        self.config[MEASURE_OPTION] = self.speq_flag_itp.meas_options
-        
-        if HIGH_PROB in self.config[MEASURE_OPTION]: 
-            low = self.speq_flag_itp.meas_low_bound
-            if low >= 0 and  low <= 1: self.config[MEASURE_BOUND] = low
-            else: error("Bound given for highprob flag is not between 0 and 1")
-        if SPECIFIC_VALUE in self.config[MEASURE_OPTION]: self.config[MEASURE_MARK] = self.speq_flag_itp.meas_mark
-        if self.config[MEASURE_OPTION] == []: self.config[MEASURE_OPTION].append(RAND)
+        for flag, other in flags:
+            if isinstance(flag, MeasureOptions): self.config[MEASURE_OPTION].append(flag)
+            if flag == HIGH_PROB:
+                low = other
+                if low >= 0 and low <= 1: self.config[MEASURE_BOUND] = low
+                else: error("Bound given for highprob flag is not between 0 and 1")
+            if flag == SPECIFIC_VALUE:
+                self.config[MEASURE_MARK] = other
         self.speq_z3_itp.set_meas_cert(CERTAINTY in self.config[MEASURE_OPTION])
+        if self.config[MEASURE_OPTION] == []: self.config[MEASURE_OPTION].append(RAND)
 
-        if self.speq_flag_itp.quantum_out: pass
+        if speq_flag_itp.quantum_out: pass
     
     def verify_slq_file(self, silq_file):
         # Call silq with this command to get ast
@@ -194,7 +199,9 @@ class SilVer:
             logger.debug("# of program/specification obligations %s/%s", len(obl_dict[PROG_OBS]), speq_size)
             logger.debug("# of trackers in unsat core/solver: %s/%s", unsat_core_size, num_of_assertions)
             tracker_num_start_idx = str(unsat_core[0]).rfind("r") + 1
-            last_tracker = sorted([int(str(tracker)[tracker_num_start_idx:]) for tracker in unsat_core])[-1]
+            sorted_core = sorted([int(str(tracker)[tracker_num_start_idx:]) for tracker in unsat_core])
+            logger.debug("Tracker (numbers) in unsatcore: %s", sorted_core)
+            last_tracker = sorted_core[-1]
             post_in_unsat_core = last_tracker == num_of_assertions - 1
             if post_in_unsat_core: logger.debug("Post-condition is in unsat core.")
             else: error("Post-condition is not in the unsat core.")
@@ -226,7 +233,7 @@ class SilVer:
     def make_obs(self, json_file_path, func, spq_file=None):
         self.check_speq_exists(json_file_path, spq_file=spq_file)
         spq_path = self.get_speq_file_name(json_file_path,spq_file=spq_file)
-        self.check_flags(spq_path)
+        self.check_flags(spq_path, func)
         
         logger.info("Generating SilSpeq proof obligations...")
         speq_obs = self.get_speq_obs(spq_path)

@@ -4,40 +4,41 @@ from z3 import *
 
 from silver.MeasureOptions import *
 
-class SilSpeqZ3FlagVisitor(Visitor):
+class SilSpeqFlagInterpreter(Interpreter):
     oracles = []
     quantum_out = False
     
-    def __init__(self):
-        self.meas_options = []
-        self.meas_low_bound = -1
-        self.meas_mark = 0
+    def __init__(self, func):
+        self.func = func
         super().__init__()
     
+    @visit_children_decor
     def specs(self, specs):
-        pass
+        for spec in specs:
+            if spec[0] == self.func: return spec[1]
     
-    def funcspec(self, tree):
-        pass
+    @visit_children_decor
+    def funcspec(self, flags): return flags
     
-    def qout(self, v):
-        self.quantum_out = True
+    def pre(self, tree): pass
+
+    def post(self, tree): pass
+
+    def qout(self, v): pass
         
     def rand(self, v):
-        self.meas_options.append(RAND)
+        return (RAND,None)
 
     def cert(self, v):
-        self.meas_options.append(CERTAINTY)
+        return (CERTAINTY,None)
 
     def whp(self, v):
-        self.meas_options.append(HIGH_PROB)
-        self.meas_low_bound = 0.5
+        return (HIGH_PROB, 0.5)
 
     def whpvalue(self, v:Tree):
         if list(v.find_data('pdec')): d = self.pdec(v.children[0])
         elif list(v.find_data('pdiv')): d = self.pdiv(v.children[0])
-        self.meas_options.append(HIGH_PROB)
-        self.meas_low_bound = d
+        return (HIGH_PROB, d)
 
     def pdec(self, v:Tree):
         return float("0." + str(self.token(v.children[0])))
@@ -50,9 +51,8 @@ class SilSpeqZ3FlagVisitor(Visitor):
     def atvalue(self, v: Tree):
         dtree = list(v.find_data('definition'))[0]
         mark = self.definition(dtree)
-        self.meas_options.append(SPECIFIC_VALUE)
-        self.meas_mark = mark
-
+        return (SPECIFIC_VALUE, mark)
+    
     def oracle(self, v):
         return lambda name: self.oracles.append(name)
 
