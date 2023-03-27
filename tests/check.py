@@ -5,10 +5,11 @@ from silver.silver.SilVer import SilVer
 import z3, sys
 
 folder = "examples/Silq_Programs/"
+logging.basicConfig(format="(%(relativeCreated)dms)%(name)s:%(levelname)s:%(message)s",datefmt="%H:%M:%S")
 logger = logging.getLogger("check")
-
+    
 def check(json_file, func, expected, log_level=logging.INFO, spq_file=None, stats=False, timeout=5000, seed=3, check_store=False):
-    logging.basicConfig(level=log_level,format="(%(relativeCreated)dms)%(name)s:%(levelname)s:%(message)s",datefmt="%H:%M:%S")
+    logging.getLogger().setLevel(log_level)
     logger.info("Starting check on %s in %s", func, json_file)
     silver = SilVer(timeout=timeout, seed=seed, check_store=check_store)
     sat = silver.verify_func(folder + json_file, func, log_level=log_level, spq_file=spq_file)
