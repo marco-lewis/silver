@@ -25,10 +25,7 @@ class SilSpeqZ3Interpreter(Interpreter):
         self.types = {}
         self.not_post = not_post
         self.assumptions = []
-        self.__meas_cert = False
         super().__init__()
-
-    def set_meas_cert(self, val): self.__meas_cert = val
 
     # Handling pre, post, spec etc.
     @visit_children_decor
@@ -68,7 +65,6 @@ class SilSpeqZ3Interpreter(Interpreter):
             for obl in stmts:
                 if obl != None: obls.append(obl)
             post_obl = And(obls)
-            if self.__meas_cert: post_obl = And(post_obl, Bool('meas_cert') == self.__meas_cert)
             post_obl = simplify(post_obl)
             return Not(post_obl) if self.not_post else post_obl
         return True

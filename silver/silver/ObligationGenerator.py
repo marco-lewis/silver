@@ -231,9 +231,8 @@ class ObilgationGenerator:
         return obligations
 
     def obligation_qmeas_with_certainty(self, var, probs_z3_vars, value):
-        meas_cert = Bool('meas_cert')
         obligations = []
-        obligations += [Equiv(meas_cert == True, Or([p == 1 for p in probs_z3_vars]))]
+        obligations += [Or([p == 1 for p in probs_z3_vars])]
         obligations += [Implies(value == i, probs_z3_vars[i] == 1)
                         for i in range(len(probs_z3_vars))]
         return obligations

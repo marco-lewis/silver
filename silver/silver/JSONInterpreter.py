@@ -43,14 +43,14 @@ class JSONInterpreter:
             if json[i]["func"] == fname:
                 func_json = json[i]
                 break
-        if not(func_json): log_error("Function %s was not detected in json file", logger, fname)
+        if not(func_json): log_error("Function %s was not detected in json file.", logger, fname)
         return self.make_program(func_json)
         
     def make_program(self, func_json):
         logger.info("Make Program for " + func_json["func"] + "...")
         self.func_arg = {}
         prog = self.decode_func(func_json)
-        logger.info("Done")
+        logger.info("Done.")
         return prog
         
     def decode_func(self, func_json):

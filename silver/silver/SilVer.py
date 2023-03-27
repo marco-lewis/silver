@@ -113,7 +113,6 @@ class SilVer:
                 else: error("Bound given for highprob flag is not between 0 and 1")
             if flag == SPECIFIC_VALUE:
                 self.config[MEASURE_MARK] = other
-        self.speq_z3_itp.set_meas_cert(CERTAINTY in self.config[MEASURE_OPTION])
         if self.config[MEASURE_OPTION] == []: self.config[MEASURE_OPTION].append(RAND)
 
         if speq_flag_itp.quantum_out: pass
