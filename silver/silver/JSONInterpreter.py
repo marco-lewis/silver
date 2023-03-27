@@ -7,7 +7,9 @@ Integers for now only
 '''
 
 from cmath import exp
+import logging
 from lib2to3.pgen2.token import RIGHTSHIFT
+from .utils import log_error
 from z3 import *
 
 from silver.silver.ClassicalMemory import ClassicalMemory
@@ -17,6 +19,8 @@ from silver.silver.QuantumMemory import QuantumMemory
 from silver.silver.QuantumOps import *
 from silver.silver.VarRef import VarRef
 from silver.silver.utils import *
+
+logger = logging.getLogger("JSONinter")
 
 class JSONInterpreter:
     isqrt2 = Real("isqrt2")
@@ -39,14 +43,14 @@ class JSONInterpreter:
             if json[i]["func"] == fname:
                 func_json = json[i]
                 break
-        if not(func_json): raise Exception("Function " + fname + " was not detected in json file")
+        if not(func_json): log_error("Function %s was not detected in json file", logger, fname)
         return self.make_program(func_json)
         
-    def make_program(self, func_json, verbose = False):
-        if verbose: print("Make Program for " + func_json["func"] + "...")
+    def make_program(self, func_json):
+        logger.info("Make Program for " + func_json["func"] + "...")
         self.func_arg = {}
         prog = self.decode_func(func_json)
-        if verbose: print("Done")
+        logger.info("Done")
         return prog
         
     def decode_func(self, func_json):
@@ -166,7 +170,7 @@ class JSONInterpreter:
                 self.decode_statement(fname, stmt['body'])
             return 0
         
-        raise Exception("TODO: statement " + e, stmt)
+        log_error("TODO: statement %s, %s", logger, e, stmt)
 
 
     def decode_expression(self, exp):
@@ -225,7 +229,7 @@ class JSONInterpreter:
             rhs = self.decode_expression(exp["right"])
             return BOOLOP(lhs, lambda l, r: l != r, rhs)
         
-        raise Exception("TODO: expression " + e, exp)
+        log_error("TODO: expression %s", logger , exp)
     
     def add_qinit(self, instruction : QINIT):
         new_memory = self.get_quantum_memory_copy()
@@ -250,7 +254,7 @@ class JSONInterpreter:
             return 1
         if re.match(r"uint\[[0-9]+\]", type):
             return int(type.split("[")[1].split("]")[0])
-        raise Exception("TypeError: unable to handle type ", type)
+        log_error("TypeError: unable to handle type %s", logger, type)
         
     def is_arg(self, ref):
         return ref in self.func_arg
