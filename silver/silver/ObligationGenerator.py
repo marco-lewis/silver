@@ -1,3 +1,4 @@
+import logging
 from math import floor
 from typing import List
 from z3 import *
@@ -15,6 +16,8 @@ from silver.silver.utils import *
 
 # ENHANCE: Handle return statements differently based on quantum or classical
 
+logger = logging.getLogger("OblGen")
+
 class ObilgationGenerator:
     def __init__(self, config = {}):
         self.__config = config
@@ -28,7 +31,7 @@ class ObilgationGenerator:
             to_return = Int(prev_mem.get_obligation_variable(instruction.value_refs[0].variable))
             return_z3var = Int(instruction.function_name + "_ret")
             return [return_z3var == to_return]
-        raise Exception("GenerationError: Unable to make obligation for instruction " +  repr(instruction))
+        log_error("GenerationError: Unable to make obligation for instruction %s", logger, repr(instruction))
     
     def cmeas_obligation(self, instruction: CMEAS, prev_memory : ClassicalMemory, end_memory : ClassicalMemory):
         meas = Int('meas_' + instruction.quantum_ref.variable)
@@ -44,25 +47,28 @@ class ObilgationGenerator:
             rhs = self.qinit_obligation(instruction, prev_mem)
             obs += self.obligation_quantum_assignment(lhs, rhs)
             return obs
-        if isinstance(instruction, QOP):
-            rhs = self.qop_obligation(instruction, prev_mem, controls)
+        elif isinstance(instruction, QOP):
+            rot = 0
+            if isinstance(instruction, QROT):
+                rot = instruction.rot if not(isinstance(instruction.rot, Instruction)) else self.interpret_instruction(instruction.rot)
+            rhs = self.qop_obligation(instruction, prev_mem, controls, rot=rot)
             obs += self.obligation_quantum_assignment(lhs, rhs)
             return obs
-        if isinstance(instruction, QPAR):
+        elif isinstance(instruction, QPAR):
             rhs = self.qpar_obligation(instruction, prev_mem, controls)
             obs += self.obligation_quantum_assignment(lhs, rhs)
             return obs
-        if isinstance(instruction, QPHASE):
+        elif isinstance(instruction, QPHASE):
             rhs = self.qphase_obligation(instruction, prev_mem, controls)
             obs += self.obligation_quantum_assignment(lhs, rhs)
             return obs
-        if isinstance(instruction, QMEAS):
+        elif isinstance(instruction, QMEAS):
             return self.obligation_quantum_measurement(q_process, prev_mem, self.__config[MEASURE_OPTION])
-        if isinstance(instruction, QFORGET):
+        elif isinstance(instruction, QFORGET):
             return self.obligation_quantum_forget(q_process, prev_mem)
-        if isinstance(instruction, RETURN):
+        elif isinstance(instruction, RETURN):
             return [True]
-        raise Exception("GenerationError: Unable to make obligation for instruction " +  repr(instruction))
+        log_error("GenerationError: Unable to make obligation for instruction %s", logger, repr(instruction))
     
     def quantum_memory_to_literals(self, memory : QuantumMemory):
         return [Complex(string) for string in memory.get_obligation_variables()]
@@ -85,9 +91,9 @@ class ObilgationGenerator:
         obligations = [sum_of_sqrs == 1]
         return obligations
     
-    def qop_obligation(self, instruction : QOP, prev_mem : QuantumMemory, controls : list):
+    def qop_obligation(self, instruction : QOP, prev_mem : QuantumMemory, controls : list, rot = 0):
         loc = prev_mem.get_loc(instruction.arg.variable, instruction.arg.index)
-        matrix = self.matrix_from_string(instruction.operation)
+        matrix = self.matrix_from_string(instruction.operation, rot=rot)
         op = self.make_operation([loc], [matrix], prev_mem, controls)
         return self.obligation_operation(op, self.quantum_memory_to_literals(prev_mem))
 
@@ -142,22 +148,22 @@ class ObilgationGenerator:
             if isinstance(control, QOP):
                 vars.append(control.arg)
                 ops.append(lambda t: control.operation(t) == 1)
-            if isinstance(control, BOOLOP):
+            if isinstance(control, BINARYOP):
                 v, f = self.get_control_variable_and_function(control.left)
-                if v : ops.append(lambda x: control.comparitor(f(x), control.right))
+                if v : ops.append(lambda x: control.op(f(x), control.right))
                 else:
                     v, f = self.get_control_variable_and_function(control.right)
-                    ops.append(lambda x: control.comparitor(control.left, f(x)))
+                    ops.append(lambda x: control.op(control.left, f(x)))
                 vars.append(v)
         return vars, ops
 
     def get_control_variable_and_function(self, control):
         if isinstance(control, QOP): return control.arg, lambda t: control.operation(t)
         if isinstance(control, VarRef): return control, lambda t: t
-        raise Exception("Unable to handle " + str(control))
+        log_error("Unable to handle %s", logger, str(control))
 
     def obligation_quantum_assignment(self, lhs, rhs):
-        if len(lhs) != len(rhs): raise Exception("LengthError: lengths of lists don't match")
+        if len(lhs) != len(rhs): log_error("LengthError: lengths of lists don't match", logger)
         return [simplify(lhs[i] == rhs[i]) for i in range(len(lhs))]
 
     def obligation_quantum_literal(self, size, literal = 0):
@@ -268,9 +274,25 @@ class ObilgationGenerator:
             out_obligations.append(Sum([to_complex(row[col]) * obligations[col] for col in range(len(row))]))
         return out_obligations
     
-    def matrix_from_string(self, op):
+    def interpret_instruction(self, inst):
+        print(inst)
+        itp_arg = lambda arg: arg if not(isinstance(arg, Instruction)) else self.interpret_instruction(arg)
+        if isinstance(inst, UNIARYOP):
+            arg = itp_arg(inst.arg)
+            return inst.op(arg)
+        if isinstance(inst, BINARYOP):
+            l = itp_arg(inst.left)
+            r = itp_arg(inst.right)
+            print(l,r)
+            return inst.op(l, r)
+        log_error("TODO: an instruction (%s) is not interpretted.", logger, inst)
+    
+    def matrix_from_string(self, op, rot=0):
         if op == 'X': return X
         if op == 'Y': return Y
         if op == 'Z\'': return Z
         if op == 'H': return H
-        raise Exception("ConversionError: no matrix for " + op)
+        if op == "rotX": return ROTX(rot)
+        if op == "rotY": return ROTY(rot)
+        if op == "rotZ": return ROTZ(rot)
+        log_error("ConversionError: no matrix for %s", logger, op)

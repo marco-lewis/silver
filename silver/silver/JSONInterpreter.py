@@ -9,6 +9,7 @@ Integers for now only
 from cmath import exp
 import logging
 from lib2to3.pgen2.token import RIGHTSHIFT
+from numpy import *
 from .utils import log_error
 from z3 import *
 
@@ -182,8 +183,7 @@ class JSONInterpreter:
             return [self.decode_expression(e) for e in exp]
 
         e = exp[EXPTYPE]
-        if e == "varDecl":
-            pass
+        if e == "varDecl": pass
         if e == "indexExp":
             # TODO: Handle non-const index
             idx = self.decode_expression(exp["index"])
@@ -193,41 +193,41 @@ class JSONInterpreter:
         if e == "callExp":
             op = exp["op"]
             arg = self.decode_expression(exp["arg"])
-            if self.is_quantum_op(op):
-                inst = QOP(op)
-                inst.arg = arg
-                return inst
-            if self.is_arg(op):
-                inst = QOP(self.func_arg[op])
-                inst.arg = arg
-                return inst
-            if op == 'measure':
-                inst = QMEAS(arg)
-                return inst
-        if e == "litExp":
-            val = exp["value"]
-            return val
-        if e == "tupleExp":
-            return self.decode_expression(exp["values"])
+            if self.is_quantum_op(op): return QOP(op, arg=arg)
+            if self.is_rot_op(op): return QROT(op, arg[0], arg=arg[1])
+            if self.is_arg(op): return QOP(self.func_arg[op], arg=arg)
+            if self.is_trig(op):
+                if op[0] == "a": op = "arc" + op[1:]
+                return UNIARYOP(eval(op), arg=arg)
+            if op == 'measure': return QMEAS(arg)
+        if e == "litExp": return exp["value"]
+        if e == "tupleExp": return self.decode_expression(exp["values"])
 
         if e == "typeChangeExp":
             val = self.decode_expression(exp["expr"])
             type = exp["type"]
-            if self.is_function(type):
-                pass
-            if self.is_classical(type):
-                pass
-            else:
-                return QINIT(val, self.interpret_type_size(type))
+            if self.is_function(type): pass
+            if self.is_classical(type): pass
+            else: return QINIT(val, self.interpret_type_size(type))
 
         if e == "eqExp":
             lhs = self.decode_expression(exp["left"])
             rhs = self.decode_expression(exp["right"])
-            return BOOLOP(lhs, lambda l, r: l == r, rhs)
+            return BINARYOP(lhs, lambda l, r: l == r, rhs)
         if e == "neqExp":
             lhs = self.decode_expression(exp["left"])
             rhs = self.decode_expression(exp["right"])
-            return BOOLOP(lhs, lambda l, r: l != r, rhs)
+            return BINARYOP(lhs, lambda l, r: l != r, rhs)
+        
+
+        if e == "mulExp":
+            lhs = self.decode_expression(exp["left"])
+            rhs = self.decode_expression(exp["right"])
+            return BINARYOP(lhs, lambda l, r: l * r, rhs)
+        if e == "divExp":
+            lhs = self.decode_expression(exp["left"])
+            rhs = self.decode_expression(exp["right"])
+            return BINARYOP(lhs, lambda l, r: l / r, rhs)
         
         log_error("TODO: expression %s", logger , exp)
     
@@ -271,8 +271,14 @@ class JSONInterpreter:
     def is_quantum_op(self, op):
         return (op == "Y") or (op == "X") or (op == "Z'") or (op == "H")
     
+    def is_rot_op(self, op):
+        return (op == "rotX") or (op == "rotY") or (op == "rotZ")
+    
     def is_phase(self, op):
         return (op == "phase")
+    
+    def is_trig(self, op):
+        return (op == "sin") or (op == "asin") or (op == "cos") or (op == "acos") or (op == "tan") or (op == "atan")
     
     def get_quantum_memory_copy(self):
         new_memory = QuantumMemory()

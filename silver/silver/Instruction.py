@@ -117,6 +117,23 @@ class QOP(Instruction):
 
     def __repr__(self) -> str:
         return "QOP(" + repr(self.__operation) + ", " + repr(self.__arg) + ", " + repr(self.__out) + ")"
+    
+class QROT(QOP):
+    def __init__(self, operation, rot, arg=None, out=None) -> None:
+        super().__init__(operation, arg, out)
+        self.__rot = rot
+
+    @property
+    def rot(self):
+        return self.__rot
+
+    @rot.setter
+    def rot(self, value):
+        self.__rot = value
+
+    def __repr__(self) -> str:
+        return "QROT(" + repr(self.operation) + ", " + repr(self.__rot) + ", " + repr(self.arg) + ", " + repr(self.out) + ")"
+
 
 class QPAR(Instruction):
     def __init__(self, operations) -> None:
@@ -204,12 +221,12 @@ class QMEAS(Instruction):
     def __repr__(self) -> str:
         return "QMEAS(" + repr(self.__quantum_ref) + ")"
 
-class BOOLOP(Instruction):
-    def __init__(self, lhs, comparitor, rhs) -> None:
+class BINARYOP(Instruction):
+    def __init__(self, lhs, op, rhs) -> None:
         super().__init__()
         self.__left = lhs
         self.__right = rhs
-        self.__comparitor = comparitor
+        self.__op = op
         
     @property
     def left(self):
@@ -228,24 +245,56 @@ class BOOLOP(Instruction):
         self.__right = value
         
     @property
-    def comparitor(self):
-        return self.__comparitor
+    def op(self):
+        return self.__op
     
-    @comparitor.setter
+    @op.setter
     def comparitor(self, value):
-        self.__comparitor = value
+        self.__op = value
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             l = self.left == other.left
             r = self.right == other.right
-            c = self.comparitor.__code__.co_code == other.comparitor.__code__.co_code
-            print(self.left, other.left)
+            c = self.op.__code__.co_code == other.op.__code__.co_code
             return l and r and c and super().__eq__(other)
         return NotImplemented
         
     def __repr__(self) -> str:
-        return "BOOLOP(" + repr(self.left) + "," + repr(self.comparitor) + "," + repr(self.right) + ")"
+        return "BINARYOP(" + repr(self.left) + "," + repr(self.op) + "," + repr(self.right) + ")"
+
+class UNIARYOP(Instruction):
+    def __init__(self, op, arg) -> None:
+        super().__init__()
+        self.__arg = arg
+        self.__op = op
+                
+    @property
+    def arg(self):
+        return self.__arg
+    
+    @arg.setter
+    def right(self, value):
+        self.__arg = value
+        
+    @property
+    def op(self):
+        return self.__op
+    
+    @op.setter
+    def comparitor(self, value):
+        self.__op = value
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, self.__class__):
+            a = self.arg == other.arg
+            c = self.op.__code__.co_code == other.op.__code__.co_code
+            return a and c and super().__eq__(other)
+        return NotImplemented
+        
+    def __repr__(self) -> str:
+        return "UNIARYOP(" + repr(self.op) + "," + repr(self.arg) + ")"
+
 
 class CMEAS(Instruction):
     def __init__(self, quantum_ref, classical_ref) -> None:

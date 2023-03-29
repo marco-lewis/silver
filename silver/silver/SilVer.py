@@ -268,7 +268,7 @@ class SilVer:
                     logger.warning("Program obligations unkown; could be unsat.")
                     logger.warning("Reason: %s", reason)
                 else:
-                    logger.debug("Program obligations: %s", prog_obs)
+                    logger.debug("Program obligations:\n%s", prog_obs)
                     error("Generated obligations from Silq program are invalid. Expected sat but got %s.", prog_sat)
             else: logger.info("Program obligations satisfiable")
 
