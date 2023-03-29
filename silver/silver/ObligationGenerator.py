@@ -105,7 +105,7 @@ class ObilgationGenerator:
         return self.obligation_operation(op, self.quantum_memory_to_literals(prev_mem))
 
     def qphase_obligation(self, instruction : QPHASE, prev_mem : QuantumMemory, controls : list):
-        phase = PHASE(instruction.phase)
+        phase = PHASE(self.interpret_val(instruction.phase))
         op = self.make_operation([], [], prev_mem, controls, phase=phase)
         return self.obligation_operation(op, self.quantum_memory_to_literals(prev_mem))
         

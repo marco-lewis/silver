@@ -7,9 +7,9 @@ def rand(){
 
 def cert(){
     x := 0 : uint[2];
-    // x[0] := H(x[0]);
+    x[0] := H(x[0]);
     x[1] := X(x[1]);
-    // x[0] := H(x[0]);
+    x[0] := H(x[0]);
     x := measure(x);
     return x;
 }

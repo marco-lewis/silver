@@ -19,7 +19,7 @@ pre{
 
 }
 post{
-    assert(cert_ret = 2)
+    assert(cert_ret = 1)
 }
 
 rand[rand]()->(define rand_ret:{0, 1}^2)
