@@ -51,7 +51,7 @@ class JSONInterpreter:
         logger.info("Make Program for " + func_json["func"] + "...")
         self.func_arg = {}
         prog = self.decode_func(func_json)
-        logger.info("Done.")
+        logger.info("Program made.")
         return prog
         
     def decode_func(self, func_json):
