@@ -6,9 +6,9 @@ post{
     assert(whp_ret = 0 | whp_ret = 4)
 }
 
-whpatval[atval(define a : {0,1}^4), whp]()->(define whpatval_ret:{0, 1}^4)
+whpatval[atval(define a : {0,1}^2), whp]()->(define whpatval_ret:{0, 1}^2)
 pre{
-
+    assert(a = 1)
 }
 post{
     assert(whpatval_ret = a)

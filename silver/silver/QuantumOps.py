@@ -14,7 +14,6 @@ Y = [[0, I],
 Z = [[1,0],
      [0,-1]]
 
-# isqrt2 = Real('isqrt2')
 isqrt2 = 1/Sqrt(2)
 H = [[isqrt2, isqrt2],
      [isqrt2, -isqrt2]]

@@ -30,8 +30,8 @@ def whp(){
 }
 
 def whpatval(){
-    x := 0 :uint[4];
-    x[1] := rotY(1.6,x[1]);
+    x := 0 :uint[2];
+    x[1] := rotY(2*asin(sqrt(9/10)),x[1]);
     x := measure(x);
     return x;
 }

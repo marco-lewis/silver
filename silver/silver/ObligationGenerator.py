@@ -1,5 +1,4 @@
 import logging
-from math import floor
 from typing import List
 import numbers
 import numpy as np

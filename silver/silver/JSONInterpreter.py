@@ -199,6 +199,7 @@ class JSONInterpreter:
             if self.is_trig(op):
                 if op[0] == "a": op = "arc" + op[1:]
                 return UNIARYOP(eval(op), arg=arg)
+            if op == "sqrt": return UNIARYOP(eval(op), arg=arg)
             if op == 'measure': return QMEAS(arg)
         if e == "litExp": return exp["value"]
         if e == "tupleExp": return self.decode_expression(exp["values"])
