@@ -113,6 +113,7 @@ class Program():
             else: counter += 1
 
     def can_parallelise(self, proc:QuantumProcess, next_proc:QuantumProcess, ctrl, next_ctrl):
+        if not(len(ctrl) == len(next_ctrl)): return False
         b = (isinstance(proc.instruction, QOP) or isinstance(proc.instruction, QPAR)) 
         b = b and isinstance(next_proc.instruction, QOP) and all([c == n for c, n in zip(ctrl, next_ctrl)])
         return b and not(self.intersecting_memory(proc.instruction, next_proc.instruction))

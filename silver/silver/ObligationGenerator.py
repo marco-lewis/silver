@@ -149,6 +149,9 @@ class ObilgationGenerator:
             if isinstance(control, QOP):
                 vars.append(control.arg)
                 ops.append(lambda t: control.operation(t) == 1)
+            if isinstance(control, VarRef):
+                vars.append(control)
+                ops.append(lambda x: x == 1)
             if isinstance(control, BINARYOP):
                 v, f = self.get_control_variable_and_function(control.left)
                 if v : ops.append(lambda x: control.op(f(x), control.right))
@@ -160,7 +163,7 @@ class ObilgationGenerator:
 
     def get_control_variable_and_function(self, control):
         if isinstance(control, QOP): return control.arg, lambda t: control.operation(t)
-        if isinstance(control, VarRef): return control, lambda t: t
+        if isinstance(control, VarRef): return control, lambda t: t == 1
         log_error("Unable to handle %s", logger, str(control))
 
     def obligation_quantum_assignment(self, lhs, rhs):
