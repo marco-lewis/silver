@@ -1,5 +1,4 @@
 import logging
-from silver.silver.Logger import logger
 from os.path import splitext
 import re
 from z3 import *

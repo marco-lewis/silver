@@ -1,6 +1,8 @@
 import logging
 from math import floor
 from typing import List
+import numbers
+import numpy as np
 from z3 import *
 
 from silver.silspeq.SilSpeqZ3Interpreter import Equiv
@@ -50,7 +52,7 @@ class ObilgationGenerator:
         elif isinstance(instruction, QOP):
             rot = 0
             if isinstance(instruction, QROT):
-                rot = instruction.rot if not(isinstance(instruction.rot, Instruction)) else self.interpret_instruction(instruction.rot)
+                rot = self.interpret_val(instruction.rot)
             rhs = self.qop_obligation(instruction, prev_mem, controls, rot=rot)
             obs += self.obligation_quantum_assignment(lhs, rhs)
             return obs
@@ -274,18 +276,12 @@ class ObilgationGenerator:
             out_obligations.append(Sum([to_complex(row[col]) * obligations[col] for col in range(len(row))]))
         return out_obligations
     
-    def interpret_instruction(self, inst):
-        print(inst)
-        itp_arg = lambda arg: arg if not(isinstance(arg, Instruction)) else self.interpret_instruction(arg)
-        if isinstance(inst, UNIARYOP):
-            arg = itp_arg(inst.arg)
-            return inst.op(arg)
-        if isinstance(inst, BINARYOP):
-            l = itp_arg(inst.left)
-            r = itp_arg(inst.right)
-            print(l,r)
-            return inst.op(l, r)
-        log_error("TODO: an instruction (%s) is not interpretted.", logger, inst)
+    def interpret_val(self, val):
+        if isinstance(val, UNIARYOP): return val.op(self.interpret_val(val.arg))
+        if isinstance(val, BINARYOP): return val.op(self.interpret_val(val.left), self.interpret_val(val.right))
+        if val == "pi": return np.pi
+        if isinstance(val, numbers.Number): return val
+        log_error("TODO: an instruction (%s, %s) is not interpretted.", logger, val, type(val))
     
     def matrix_from_string(self, op, rot=0):
         if op == 'X': return X

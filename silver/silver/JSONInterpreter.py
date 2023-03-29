@@ -176,7 +176,7 @@ class JSONInterpreter:
 
     def decode_expression(self, exp):
         if isinstance(exp, str):
-            if exp == "pi": return math.pi
+            if exp == "pi": return "pi"
             if exp in self.loop_ids.keys(): return self.loop_ids[exp]
             return VarRef(exp)
         if isinstance(exp, list):
