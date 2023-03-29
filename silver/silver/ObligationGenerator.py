@@ -226,19 +226,20 @@ class ObilgationGenerator:
         return obligations + meas_obligations + post_state_obligations
     
     def obligation_qmeas_with_specific_value(self, var, probs_z3_vars, classical_value, mark):
-        obligations = [Equiv(classical_value == i, And([probs_z3_vars[i] >= p for p in probs_z3_vars]))
+        obligations = []
+        obligations += [Implies(And(classical_value == i, mark == i), And([probs_z3_vars[i] >= p for p in probs_z3_vars]))
                         for i in range(len(probs_z3_vars))]
         return obligations
 
-    def obligation_qmeas_with_certainty(self, var, probs_z3_vars, value):
+    def obligation_qmeas_with_certainty(self, var, probs_z3_vars, classical_value):
         obligations = []
         obligations += [Or([p == 1 for p in probs_z3_vars])]
-        obligations += [Implies(value == i, probs_z3_vars[i] == 1)
+        obligations += [Implies(classical_value == i, probs_z3_vars[i] == 1)
                         for i in range(len(probs_z3_vars))]
         return obligations
     
-    def obligation_qmeas_with_high_prob(self, var, probs_z3_vars, value, prob_bound=1/2):
-        obligations = [Implies(value == i, prob_bound <= probs_z3_vars[i])
+    def obligation_qmeas_with_high_prob(self, var, probs_z3_vars, classical_value, prob_bound=1/2):
+        obligations = [Implies(classical_value == i, prob_bound <= probs_z3_vars[i])
                         for i in range(len(probs_z3_vars))]
         return obligations
     
