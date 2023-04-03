@@ -15,7 +15,9 @@ class SilSpeqFlagInterpreter(Interpreter):
     @visit_children_decor
     def specs(self, specs):
         for spec in specs:
-            if spec[0] == self.func: return spec[1] if isinstance(spec[1], list) else [spec[1]]
+            if spec[0] == self.func:
+                if isinstance(spec[1], list): return spec[1]
+                else: return [spec[1]] if isinstance(spec[1], tuple) else []
     
     @visit_children_decor
     def funcspec(self, flags): return flags
