@@ -30,7 +30,7 @@ class SilVer:
         self.seed = seed
         self.check_store = check_store
         self.make_silver_tactic()
-        self.solver = self.make_solver_instance()
+        self.solver = self.make_solver_instance(self.timeout)
         self.json_interp = JSONInterpreter()
         self.speq_parser = SilSpeqParser()
         # TODO: Move so that Interpreters are only function specific
@@ -65,10 +65,10 @@ class SilVer:
             self.generate_speq_file(file)
             error("New SilSpeq file created, you should add your specification before continuing.")
     
-    def make_solver_instance(self):
+    def make_solver_instance(self, timeout=0):
         s = self.__silver_tactic.solver()
         s.set(
-            timeout=self.timeout,
+            timeout=timeout,
             random_seed=self.seed,
             seed=self.seed,
             unsat_core=True,
@@ -195,7 +195,7 @@ class SilVer:
             num_of_assertions = len(self.solver.assertions())
             unsat_core_size = len(unsat_core)
             speq_size = len(obl_dict[SPEQ_OBS])
-            logger.debug("# of program/specification obligations %s/%s", len(obl_dict[PROG_OBS]), speq_size)
+            logger.debug("# of program/specification obligations: %s/%s", len(obl_dict[PROG_OBS]), speq_size)
             logger.debug("# of trackers in unsat core/solver: %s/%s", unsat_core_size, num_of_assertions)
             tracker_num_start_idx = str(unsat_core[0]).rfind("r") + 1
             sorted_core = sorted([int(str(tracker)[tracker_num_start_idx:]) for tracker in unsat_core])
