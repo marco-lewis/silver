@@ -33,12 +33,10 @@ class SilVer:
         self.solver = self.make_solver_instance(self.timeout)
         self.json_interp = JSONInterpreter()
         self.speq_parser = SilSpeqParser()
-        # TODO: Move so that Interpreters are only function specific
-        self.speq_z3_itp = SilSpeqZ3Interpreter()
         self.config = {}
         self.assumptions = {}
 
-    def make_silver_tactic(self):
+    def make_silver_tactic(self, timeout=0):
         self.__silver_tactic = Then(
             'propagate-values',
             'elim-and',
@@ -51,8 +49,8 @@ class SilVer:
             'bit-blast',
             'tseitin-cnf',
             OrElse(
-                TryFor('smt', self.timeout),
-                TryFor('nlsat', self.timeout),
+                TryFor('smt', timeout),
+                TryFor('nlsat', timeout),
                 Then('nlsat', 'smt'),
                 )
             )
@@ -316,7 +314,8 @@ class SilVer:
     def get_speq_obs(self, file):
         tree = self.speq_parser.parse_file(file)
         self.check_speq_sat(tree)
-        return self.speq_z3_itp.visit(tree)
+        speq_z3_itp = SilSpeqZ3Interpreter()
+        return speq_z3_itp.visit(tree)
     
     def check_speq_sat(self, tree):
         """
