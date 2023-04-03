@@ -54,15 +54,7 @@ class SilVer:
                 Then('nlsat', 'smt'),
                 )
             )
-
-    def check_speq_exists(self, file, spq_file=None):
-        if not(spq_file == None) and not(exists(spq_file)):
-            self.generate_speq_file(spq_file)
-            error("New SilSpeq file created, you should add your specification before continuing.")
-        if not(exists(self.get_speq_file_name(file))):
-            self.generate_speq_file(file)
-            error("New SilSpeq file created, you should add your specification before continuing.")
-    
+        
     def make_solver_instance(self, timeout=0):
         s = self.__silver_tactic.solver()
         s.set(
@@ -78,11 +70,7 @@ class SilVer:
         # s.set("arith.ignore_int", True)
         # s.set("eq2ineq", True)
         return s
-
-    def reset(self):
-        self.solver.reset()
-        self.json_interp = JSONInterpreter()
-        
+    
     def check_solver_sat(self): return self.solver.check(*self.assumptions)
         
     def print_solver_sat(self, solver_sat):
@@ -335,6 +323,14 @@ class SilVer:
             elif sat == z3.unsat: error("One of your SilSpeq function specifications is %s when it should be sat. Check there are no contradictions in your specificaiton.", sat)
             speq_solver.reset()
         
+    def check_speq_exists(self, file, spq_file=None):
+        if not(spq_file == None) and not(exists(spq_file)):
+            self.generate_speq_file(spq_file)
+            error("New SilSpeq file created, you should add your specification before continuing.")
+        if not(exists(self.get_speq_file_name(file))):
+            self.generate_speq_file(file)
+            error("New SilSpeq file created, you should add your specification before continuing.")
+
     def get_speq_file_name(self, silq_json_file, spq_file=None):
         if spq_file != None: return spq_file
         spq_path = splitext(silq_json_file)[0].split("/")
