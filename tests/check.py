@@ -26,5 +26,5 @@ def check(json_file, func, expected, log_level=logging.INFO, spq_file=None, stat
     try: logger.info("Solver time to solve (s) %s", silver_stats.get_key_value('time'))
     except: logger.warn("Unable to get time (possibly 0)")
     if stats: logger.info("Stats:\n%s", silver_stats)
-    logger.info("Done.")
+    logger.info("Done.\n")
     sys.stdout.flush()
