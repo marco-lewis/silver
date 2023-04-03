@@ -6,7 +6,7 @@ post{
 
 }
 
-grover_fixed[atval(define a : {0,1}^2)](define f:{0, 1}^2->{0, 1})->(define grover_fixed_ret:{0, 1}^2)
+grover_fixed[atval(define a : {0,1}^2), whp](define f:{0, 1}^2->{0, 1})->(define grover_fixed_ret:{0, 1}^2)
 pre{
     assert(f(a) = 1)
     assert(SUM[a](f) = 1)
