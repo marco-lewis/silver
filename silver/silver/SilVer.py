@@ -344,20 +344,8 @@ class SilVer:
         speq_gen.generate_speq_file()
     
     def generate_program_obligations(self, prog : Program):
-        # TODO: Change to work either using with wp() or squash methods a bit?
-        obs : list[BoolRef] = []
-        ob_gen = ObilgationGenerator(self.config)
-        for time in range(prog.current_time):
-            if prog.quantum_processes[time].instruction != Instruction():
-                prev_memory = self.get_prev_quantum_memory(prog, time)
-                if time == 0: obs += ob_gen.make_quantum_memory_initial_obligations(prev_memory)
-                process_obligation = ob_gen.make_quantum_process_obligation(prog.quantum_processes[time], prev_memory, prog.controls[time])
-                obs += process_obligation
-            if prog.classical_processes[time].instruction != Instruction():
-                # TODO: Handle classical obligation
-                prev_memory = self.get_prev_classical_memory(prog, time)
-                classical_obligation = ob_gen.make_classical_process_obligation(prog.classical_processes[time], prev_memory, prog.controls[time])
-                obs += classical_obligation
+        ob_gen = ObilgationGenerator(prog, self.config)
+        obs = ob_gen.make_obligations()
         return obs
         
     def check_generated_obs_sat(self, obs : list[BoolRef]):
@@ -366,7 +354,3 @@ class SilVer:
         sat = s.check()
         stats = s.statistics()
         return sat, stats, s.reason_unknown()
-    
-    def get_prev_quantum_memory(self, prog : Program, time): return prog.quantum_processes[time - 1].end_memory
-    
-    def get_prev_classical_memory(self, prog : Program, time): return prog.classical_processes[time - 1].end_memory

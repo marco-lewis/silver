@@ -10,6 +10,7 @@ from silver.silver.complex import *
 from silver.silver.ComplexVector import *
 from silver.silver.Instruction import *
 from silver.silver.Process import ClassicalProcess, QuantumProcess
+from silver.silver.Program import Program
 from silver.MeasureOptions import *
 from silver.silver.QuantumMemory import QuantumMemory
 from silver.silver.QuantumOps import *
@@ -20,9 +21,31 @@ from silver.silver.utils import *
 logger = logging.getLogger("OblGen")
 
 class ObilgationGenerator:
-    def __init__(self, config = {}):
+    def __init__(self, program : Program, config = {}):
+        self.program = program
         self.__config = config
     
+    def make_obligations(self):
+        obs : list[BoolRef] = []
+        for key, creg in self.program.classical_processes[-1].end_memory.registers.items():
+            obs.append(creg.get_z3speqarg() == creg.get_z3instance())
+        for time in range(self.program.current_time):
+            if self.program.quantum_processes[time].instruction != Instruction():
+                prev_memory = self.get_prev_quantum_memory(time)
+                if time == 0: obs += self.make_quantum_memory_initial_obligations(prev_memory)
+                process_obligation = self.make_quantum_process_obligation(self.program.quantum_processes[time], prev_memory, self.program.controls[time])
+                obs += process_obligation
+            if self.program.classical_processes[time].instruction != Instruction():
+                # TODO: Handle classical obligation
+                prev_memory = self.get_prev_classical_memory(time)
+                classical_obligation = self.make_classical_process_obligation(self.program.classical_processes[time], prev_memory, self.program.controls[time])
+                obs += classical_obligation
+        return obs
+    
+    def get_prev_quantum_memory(self, time): return self.program.quantum_processes[time - 1].end_memory
+    
+    def get_prev_classical_memory(self, time): return self.program.classical_processes[time - 1].end_memory
+
     def make_classical_process_obligation(self, c_process : ClassicalProcess, prev_mem : ClassicalMemory, control : list) -> list[BoolRef]:
         instruction = c_process.instruction
         if isinstance(instruction, CMEAS):
@@ -109,7 +132,6 @@ class ObilgationGenerator:
         op = self.make_operation([], [], prev_mem, controls, phase=phase)
         return self.obligation_operation(op, self.quantum_memory_to_literals(prev_mem))
         
-    # TODO: Fix bug with if x {...}
     def make_operation(self, op_locs, matrices, prev_mem : QuantumMemory, controls : list, phase = 1):
         s = prev_mem.get_total_size()
         U = np.array(self.make_quantum_op(op_locs, matrices, s))
@@ -125,21 +147,33 @@ class ObilgationGenerator:
             else: final_op = kronecker(ID, final_op)
         return final_op
     
-    def make_control_vector(self, prev_mem : QuantumMemory, controls : list):
+    def make_control_vector(self, prev_mem: QuantumMemory, controls : list):
         size = prev_mem.get_total_size()
         states = 2**size
         if controls == []: return ID_N(states)
-
-        vars, control_ops = self.get_control_variables_and_ops(controls)
-        control_locs = [prev_mem.get_loc_from_VarRef(var) for var in vars]
-        control_sizes = [var.index if var.index else prev_mem.get_size(var.variable) for var in vars]
+        varrefs, control_ops = self.get_control_variables_and_ops(controls)
+        control_qlocs = []
+        control_cz3vars = []
+        control_sep_ops = {"q": [], "c": []}
+        control_sizes = {"q": [], "c": []}
+        for var, op in zip(varrefs, control_ops):
+            if var.isquantum:
+                control_qlocs.append(prev_mem.get_loc_from_VarRef(var))
+                control_sep_ops["q"].append(op)
+                control_sizes["q"].append(var.index if var.index else prev_mem.get_size(var.variable))
+            else:
+                control_cz3vars.append(self.program.get_z3var_from_VarRef(var))
+                control_sep_ops["c"].append(op)
 
         F = [0]*states
+        classical_ctrls = []
+        for z3_var, op in zip(control_cz3vars, control_sep_ops["c"]):
+            classical_ctrls.append(op(z3_var))
         for state in range(states):
             bitstate = bin(state)[2:].zfill(size)
-            control_states = [int(bitstate[size-l-s:size-l], 2) for l, s in zip(control_locs, control_sizes)]
-            control_term = [op(s) for s, op in zip(control_states, control_ops)]
-            F[state] = z3.simplify(If(And([c for c in control_term]), RealVal(1), RealVal(0)))
+            control_states = [int(bitstate[size-l-s:size-l], 2) for l, s in zip(control_qlocs, control_sizes["q"])]
+            control_term = [op(s) for s, op in zip(control_states, control_sep_ops["q"])]
+            F[state] = z3.simplify(If(And([c for c in control_term] + classical_ctrls), RealVal(1), RealVal(0)))
         return F
 
     def get_control_variables_and_ops(self, controls : list):

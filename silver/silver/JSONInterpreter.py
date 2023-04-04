@@ -61,10 +61,14 @@ class JSONInterpreter:
             if isinstance(z3_type, tuple):
                 z3_arg = Function(arg['name'], z3_type)
                 self.func_arg[arg['name']] = z3_arg
+            elif self.is_classical(arg['type']):
+                size = self.interpret_type_size(arg['type'])
+                self.program.add_classical_to_initial_memory(arg["name"], size)
+            elif self.is_quantum(arg['type']):
+                size = self.interpret_type_size(arg['type'])
+                self.program.add_quantum_to_initial_memory(arg["name"], size)
             else:
-                if self.is_quantum(arg['type']):
-                    size = self.interpret_type_size(arg['type'])
-                    self.program.add_quantum_to_initial_memory(arg["name"], size)
+                log_error("TODO: argument %s of type %s not handled", arg['name'], arg['type'], logger=logger)
         
         for stmt in func_json["statements"]:
             self.controls = []
@@ -131,7 +135,6 @@ class JSONInterpreter:
                 return 0
         
         if e == "iteExp":
-            # TODO: Handle decode of cond separately
             cond = self.decode_expression(stmt['cond'])
             self.controls.append(cond)
             self.decode_statement(fname, stmt['then'])
@@ -178,7 +181,8 @@ class JSONInterpreter:
         if isinstance(exp, str):
             if exp == "pi": return "pi"
             if exp in self.loop_ids.keys(): return self.loop_ids[exp]
-            return VarRef(exp)
+            isquantum = self.program.get_current_quantum_memory().is_stored(exp)
+            return VarRef(exp, isquantum=isquantum,time=self.program.current_time-1)
         if isinstance(exp, list):
             return [self.decode_expression(e) for e in exp]
 
@@ -261,7 +265,7 @@ class JSONInterpreter:
         return ref in self.func_arg
 
     def is_classical(self, type):
-        return "!" in type
+        return type['classical']
     
     def is_quantum(self, type):
         return not(self.is_classical(type))
