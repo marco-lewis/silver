@@ -1,0 +1,7 @@
+ctrl1(define a:{0, 1})->(define ctrl1_ret:{0, 1})
+pre{
+
+}
+post{
+    assert(a = ctrl1_ret)
+}
