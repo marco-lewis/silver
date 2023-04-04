@@ -1,4 +1,3 @@
-# TODO: Change name to something more appropriate (Z3 has IntRef)
 # If index is none - use whole variable
 # Otherwise just use index
 class VarRef():

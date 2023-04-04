@@ -24,7 +24,6 @@ class SpeqGenerator():
             wf.write(silspeq)
             
     def convert_type(self, jsonType: dict):
-        print(jsonType)
         t = jsonType["typeObj"]
         if (re.match(r"𝟙", t)): return "()"
         if (re.match(r"[B|𝔹]", t)): return "{0, 1}"
