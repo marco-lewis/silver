@@ -6,7 +6,7 @@
 #
 # Author: Leonardo de Moura (leonardo)
 ############################################
-from __future__ import print_function
+
 import sys
 if sys.version_info.major >= 3:
     from functools import reduce
@@ -118,25 +118,3 @@ I = ComplexExpr(RealVal(0), RealVal(1))
 
 def evaluate_cexpr(m, e):
     return ComplexExpr(m[e.r], m[e.i])
-
-def complex_ex():
-    x = Complex("x")
-    s = Tactic('qfnra-nlsat').solver()
-    s.add(x*x == -2)
-    print(s)
-    print(s.check())
-    m = s.model()
-    print('x = %s' % evaluate_cexpr(m, x))
-    print((evaluate_cexpr(m,x)*evaluate_cexpr(m,x)).simplify())
-    s.add(x.i != -1)
-    print(s)
-    print(s.check())
-    print(s.model())
-    s.add(x.i != 1)
-    print(s.check())
-    # print(s.model())
-    print(((3 + I) ** 2)/(5 - I))
-    print(((3 + I) ** -3)/(5 - I))
-
-if __name__ == "main":
-    complex_ex()
