@@ -234,15 +234,39 @@ class JSONInterpreter:
             lhs = self.decode_expression(exp["left"])
             rhs = self.decode_expression(exp["right"])
             return BINARYOP(lhs, lambda l, r: not(l == r), rhs)
+        if e == "andExp":
+            lhs = self.decode_expression(exp["left"])
+            rhs = self.decode_expression(exp["right"])
+            return BINARYOP(lhs, lambda l, r: l & r, rhs)
+        if e == "orExp":
+            lhs = self.decode_expression(exp["left"])
+            rhs = self.decode_expression(exp["right"])
+            return BINARYOP(lhs, lambda l, r: l | r, rhs)
+        if e == "leExp":
+            lhs = self.decode_expression(exp["left"])
+            rhs = self.decode_expression(exp["right"])
+            return BINARYOP(lhs, lambda l, r: l <= r, rhs)
         if e == "ltExp":
             lhs = self.decode_expression(exp["left"])
             rhs = self.decode_expression(exp["right"])
             return BINARYOP(lhs, lambda l, r: l < r, rhs)
+        if e == "geExp":
+            lhs = self.decode_expression(exp["left"])
+            rhs = self.decode_expression(exp["right"])
+            return BINARYOP(lhs, lambda l, r: l >= r, rhs)
+        if e == "gtExp":
+            lhs = self.decode_expression(exp["left"])
+            rhs = self.decode_expression(exp["right"])
+            return BINARYOP(lhs, lambda l, r: l > r, rhs)
         
         if e == "addExp":
             lhs = self.decode_expression(exp["left"])
             rhs = self.decode_expression(exp["right"])
             return BINARYOP(lhs, lambda l, r: l + r, rhs)
+        if e == "subExp":
+            lhs = self.decode_expression(exp["left"])
+            rhs = self.decode_expression(exp["right"])
+            return BINARYOP(lhs, lambda l, r: l - r, rhs)
         if e == "mulExp":
             lhs = self.decode_expression(exp["left"])
             rhs = self.decode_expression(exp["right"])
@@ -251,6 +275,10 @@ class JSONInterpreter:
             lhs = self.decode_expression(exp["left"])
             rhs = self.decode_expression(exp["right"])
             return BINARYOP(lhs, lambda l, r: l / r, rhs)
+        if e == "powExp":
+            lhs = self.decode_expression(exp["left"])
+            rhs = self.decode_expression(exp["right"])
+            return BINARYOP(lhs, lambda l, r: l ** r, rhs)
         
         log_error("TODO: expression %s", logger , exp)
     
