@@ -178,6 +178,7 @@ class ObilgationGenerator:
     
     def get_classical_control_obls(self, controls):
         varrefs, control_ops = self.get_control_variables_and_ops(controls)
+        for varref in varrefs: varref.time -= 1
         control_cz3vars, control_cops = [], []
         for var, op in zip(varrefs, control_ops):
             if not(var.isquantum):
