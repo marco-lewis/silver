@@ -46,7 +46,7 @@ class ObilgationGenerator:
     
     def get_prev_classical_memory(self, time): return self.program.classical_processes[time - 1].end_memory
 
-    def make_classical_process_obligation(self, c_process : ClassicalProcess, prev_mem : ClassicalMemory, control : list) -> list[BoolRef]:
+    def make_classical_process_obligation(self, c_process : ClassicalProcess, prev_mem : ClassicalMemory, controls : list) -> list[BoolRef]:
         instruction = c_process.instruction
         if isinstance(instruction, CMEAS):
             return self.cmeas_obligation(instruction, prev_mem, c_process.end_memory)
@@ -55,6 +55,14 @@ class ObilgationGenerator:
             to_return = Int(prev_mem.get_obligation_variable(instruction.value_refs[0].variable))
             return_z3var = Int(instruction.function_name + "_ret")
             return [return_z3var == to_return]
+        if isinstance(instruction, CINIT):
+            z3_var = self.program.get_z3var_from_VarRef(instruction.variable)
+            value = self.interpret_val(instruction.value)
+            ctrl_obls = self.get_classical_control_obls(controls)
+            if prev_mem.is_stored(instruction.variable.variable):
+                prev_z3_var = prev_mem.get_z3variable(instruction.variable)
+                return [z3.simplify(If(And(ctrl_obls), z3_var == value, z3_var == prev_z3_var))]
+            return [z3.simplify(If(And(ctrl_obls), z3_var == value, True))]
         log_error("GenerationError: Unable to make obligation for instruction %s", logger, repr(instruction))
     
     def cmeas_obligation(self, instruction: CMEAS, prev_memory : ClassicalMemory, end_memory : ClassicalMemory):
@@ -152,29 +160,33 @@ class ObilgationGenerator:
         states = 2**size
         if controls == []: return ID_N(states)
         varrefs, control_ops = self.get_control_variables_and_ops(controls)
-        control_qlocs = []
-        control_cz3vars = []
-        control_sep_ops = {"q": [], "c": []}
-        control_sizes = {"q": [], "c": []}
+        control_qlocs, control_qops, control_qsizes = [], [], []
         for var, op in zip(varrefs, control_ops):
             if var.isquantum:
                 control_qlocs.append(prev_mem.get_loc_from_VarRef(var))
-                control_sep_ops["q"].append(op)
-                control_sizes["q"].append(var.index if var.index else prev_mem.get_size(var.variable))
-            else:
-                control_cz3vars.append(self.program.get_z3var_from_VarRef(var))
-                control_sep_ops["c"].append(op)
+                control_qops.append(op)
+                control_qsizes.append(var.index if var.index else prev_mem.get_size(var.variable))
+        classical_ctrls_obls = self.get_classical_control_obls(controls)
 
         F = [0]*states
-        classical_ctrls = []
-        for z3_var, op in zip(control_cz3vars, control_sep_ops["c"]):
-            classical_ctrls.append(op(z3_var))
         for state in range(states):
             bitstate = bin(state)[2:].zfill(size)
-            control_states = [int(bitstate[size-l-s:size-l], 2) for l, s in zip(control_qlocs, control_sizes["q"])]
-            control_term = [op(s) for s, op in zip(control_states, control_sep_ops["q"])]
-            F[state] = z3.simplify(If(And([c for c in control_term] + classical_ctrls), RealVal(1), RealVal(0)))
+            control_states = [int(bitstate[size-l-s:size-l], 2) for l, s in zip(control_qlocs, control_qsizes)]
+            control_term = [op(s) for s, op in zip(control_states, control_qops)]
+            F[state] = z3.simplify(If(And([c for c in control_term] + classical_ctrls_obls), RealVal(1), RealVal(0)))
         return F
+    
+    def get_classical_control_obls(self, controls):
+        varrefs, control_ops = self.get_control_variables_and_ops(controls)
+        control_cz3vars, control_cops = [], []
+        for var, op in zip(varrefs, control_ops):
+            if not(var.isquantum):
+                control_cz3vars.append(self.program.get_z3var_from_VarRef(var))
+                control_cops.append(op)
+        classical_ctrls = []
+        for z3_var, op in zip(control_cz3vars, control_cops):
+            classical_ctrls.append(op(z3_var))
+        return classical_ctrls if len(classical_ctrls) > 0 else [True]
 
     def get_control_variables_and_ops(self, controls : list):
         vars = []
@@ -317,6 +329,8 @@ class ObilgationGenerator:
         if isinstance(val, BINARYOP): return val.op(self.interpret_val(val.left), self.interpret_val(val.right))
         if val == "pi": return np.pi
         if isinstance(val, numbers.Number): return val
+        if isinstance(val, VarRef):
+            if not(val.isquantum): return self.program.get_z3var_from_VarRef(val)
         log_error("TODO: an instruction (%s, %s) is not interpretted.", logger, val, type(val))
     
     def matrix_from_string(self, op, rot=0):

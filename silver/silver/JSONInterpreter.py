@@ -83,12 +83,6 @@ class JSONInterpreter:
         if e == "defineExp":
             lhs = self.decode_expression(stmt["lhs"])
             rhs = self.decode_expression(stmt["rhs"])
-            if isinstance(rhs, int) & isinstance(lhs, VarRef):
-                instruction = CINIT(rhs, None, lhs)
-                new_memory = self.get_classical_memory_copy()
-                new_memory.add_var(lhs.variable)
-                self.program.add_classical_process(instruction, new_memory)
-                return 0
             if isinstance(rhs, QINIT):
                 instruction = rhs
                 instruction.variable = lhs
@@ -113,6 +107,23 @@ class JSONInterpreter:
                 new_memory.iterate_all()
                 classical_instruction = CMEAS(instruction.quantum_ref, lhs)
                 self.program.add_quantum_to_classical(instruction, new_memory, classical_instruction, copy.deepcopy(self.controls))
+                return 0
+            if isinstance(lhs, VarRef):
+                instruction = CINIT(rhs, None, lhs)
+                new_memory = self.get_classical_memory_copy()
+                new_memory.append(lhs.variable)
+                self.program.add_classical_process(instruction, new_memory, copy.deepcopy(self.controls))
+                return 0
+            
+        if e == "assignExp":
+            lhs = self.decode_expression(stmt["lhs"])
+            rhs = self.decode_expression(stmt["rhs"])
+            if isinstance(lhs, VarRef):
+                instruction = CINIT(rhs, None, lhs)
+                new_memory = self.get_classical_memory_copy()
+                if self.program.get_current_classical_memory().is_stored(lhs.variable): new_memory.iterate_reg(lhs.variable)
+                else: new_memory.append(lhs.variable)
+                self.program.add_classical_process(instruction, new_memory, copy.deepcopy(self.controls))
                 return 0
             
         if e == "compoundExp":
@@ -153,7 +164,7 @@ class JSONInterpreter:
             return 0
         
         if e == "forgetExp":
-            # TODO: Handle classical/quantum forget, assume quantum for now
+            # TODO: Handle classical forget
             variable = self.decode_expression(stmt['var'])
             value = self.decode_expression(stmt['val'])
             instruction = QFORGET(variable, value)
@@ -182,7 +193,7 @@ class JSONInterpreter:
             if exp == "pi": return "pi"
             if exp in self.loop_ids.keys(): return self.loop_ids[exp]
             isquantum = self.program.get_current_quantum_memory().is_stored(exp)
-            return VarRef(exp, isquantum=isquantum,time=self.program.current_time-1)
+            return VarRef(exp, isquantum=isquantum,time=self.program.current_time)
         if isinstance(exp, list):
             return [self.decode_expression(e) for e in exp]
 
@@ -223,8 +234,15 @@ class JSONInterpreter:
             lhs = self.decode_expression(exp["left"])
             rhs = self.decode_expression(exp["right"])
             return BINARYOP(lhs, lambda l, r: not(l == r), rhs)
+        if e == "ltExp":
+            lhs = self.decode_expression(exp["left"])
+            rhs = self.decode_expression(exp["right"])
+            return BINARYOP(lhs, lambda l, r: l < r, rhs)
         
-
+        if e == "addExp":
+            lhs = self.decode_expression(exp["left"])
+            rhs = self.decode_expression(exp["right"])
+            return BINARYOP(lhs, lambda l, r: l + r, rhs)
         if e == "mulExp":
             lhs = self.decode_expression(exp["left"])
             rhs = self.decode_expression(exp["right"])

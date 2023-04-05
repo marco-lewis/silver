@@ -1,0 +1,7 @@
+def ctrl2(a : !uint[3]){
+    b := a;
+    if a < 3 {
+        b = a + 3;
+    }
+    return b;
+}

@@ -33,7 +33,7 @@ class ClassicalMemory:
     def verify_size(self, size):
         if not(type(size) == int):
             raise TypeError("Size is not an int")
-            
+    
     def get_obligation_variable(self, variable) -> str:
         return str(self.registers[variable])
     
@@ -43,11 +43,14 @@ class ClassicalMemory:
     def get_z3variable(self, var_ref: VarRef):
         if self.is_stored(var_ref.variable):
             return self.registers[var_ref.variable].get_z3instance()
-        raise Exception("Unable to do that")
+        raise Exception("Unable to fetch variable %s", var_ref)
         
     def append(self, var, size=0):
         self.verify_size(size)
         self.registers[var] = ClassicalRegister(var, size=size)
+
+    def iterate_reg(self, var):
+        self.registers[var].iterate()
         
     def __repr__(self):
         return "ClassicalMemory(" + repr(self.registers) + ")"
