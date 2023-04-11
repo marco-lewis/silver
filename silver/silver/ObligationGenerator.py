@@ -55,7 +55,7 @@ class ObilgationGenerator:
             to_return = Int(prev_mem.get_obligation_variable(instruction.value_refs[0].variable))
             return_z3var = Int(instruction.function_name + "_ret")
             return [return_z3var == to_return]
-        if isinstance(instruction, CINIT):
+        if isinstance(instruction, COP):
             z3_var = self.program.get_z3var_from_VarRef(instruction.variable)
             value = self.interpret_val(instruction.value)
             ctrl_obls = self.get_classical_control_obls(controls)

@@ -36,7 +36,7 @@ class SilVer:
         self.config = {}
         self.assumptions = {}
 
-    def make_silver_tactic(self, timeout=0):
+    def make_silver_tactic(self, timeout=5000):
         self.__silver_tactic = Then(
             'propagate-values',
             'elim-and',
@@ -55,7 +55,7 @@ class SilVer:
                 )
             )
         
-    def make_solver_instance(self, timeout=0):
+    def make_solver_instance(self, timeout=5000):
         s = self.__silver_tactic.solver()
         s.set(
             timeout=timeout,

@@ -109,7 +109,7 @@ class JSONInterpreter:
                 self.program.add_quantum_to_classical(instruction, new_memory, classical_instruction, copy.deepcopy(self.controls))
                 return 0
             if isinstance(lhs, VarRef):
-                instruction = CINIT(rhs, None, lhs)
+                instruction = COP(rhs, None, lhs)
                 new_memory = self.get_classical_memory_copy()
                 new_memory.append(lhs.variable)
                 self.program.add_classical_process(instruction, new_memory, copy.deepcopy(self.controls))
@@ -119,7 +119,7 @@ class JSONInterpreter:
             lhs = self.decode_expression(stmt["lhs"])
             rhs = self.decode_expression(stmt["rhs"])
             if isinstance(lhs, VarRef):
-                instruction = CINIT(rhs, None, lhs)
+                instruction = COP(rhs, None, lhs)
                 new_memory = self.get_classical_memory_copy()
                 if self.program.get_current_classical_memory().is_stored(lhs.variable): new_memory.iterate_reg(lhs.variable)
                 else: new_memory.append(lhs.variable)
