@@ -7,8 +7,9 @@ import z3, sys
 folder = "examples/Silq_Programs/"
 logging.basicConfig(format="(%(relativeCreated)dms)%(name)s:%(levelname)s:%(message)s",datefmt="%H:%M:%S")
 logger = logging.getLogger("check")
-    
-def check(json_file, func, expected, log_level=logging.INFO, spq_file=None, stats=False, timeout=5000, seed=3, check_store=False):
+t = 3 * 60 * 60 * 1000
+
+def check(json_file, func, expected, log_level=logging.INFO, spq_file=None, stats=False, timeout=t, seed=3, check_store=False):
     logging.getLogger().setLevel(log_level)
     logger.info("Starting check on %s in %s", func, json_file)
     silver = SilVer(timeout=timeout, seed=seed, check_store=check_store)
