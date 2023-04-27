@@ -193,11 +193,11 @@ class ObilgationGenerator:
         vars = []
         ops = []
         for control in controls:
-            # TODO: Remove?
-            if isinstance(control, QOP):
-                vars.append(control.arg)
-                ops.append(lambda t: control.operation(t) == 1)
-            # TODO: Make UNARYOP condition
+            # TODO: Combine?
+            if isinstance(control, UNIARYOP):
+                v, f = self.get_control_variable_and_function(control.arg)
+                vars.append(v)
+                ops.append(lambda x: control.op(f(x)) == 1)
             if isinstance(control, BINARYOP):
                 v, f = self.get_control_variable_and_function(control.left)
                 if v : ops.append(lambda x: control.op(f(x), control.right))

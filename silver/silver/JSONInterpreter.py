@@ -214,7 +214,7 @@ class JSONInterpreter:
             arg = self.decode_expression(exp["arg"])
             if self.is_quantum_op(op): return QOP(op, arg=arg)
             if self.is_rot_op(op): return QROT(op, arg[0], arg=arg[1])
-            if self.is_arg(op): return QOP(self.func_arg[op], arg=arg)
+            if self.is_arg(op): return UNIARYOP(self.func_arg[op], arg=arg)
             if self.is_trig(op):
                 if op[0] == "a": op = "arc" + op[1:]
                 return UNIARYOP(eval(op), arg=arg)
