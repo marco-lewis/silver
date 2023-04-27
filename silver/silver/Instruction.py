@@ -1,5 +1,6 @@
 from silver.silver.utils import log_error
 from silver.silver.VarRef import VarRef
+from z3 import Not
 
 class Instruction():
     def __init__(self) -> None:
@@ -249,8 +250,11 @@ class BINARYOP(Instruction):
         return self.__op
     
     @op.setter
-    def comparitor(self, value):
+    def op(self, value):
         self.__op = value
+
+    def get_not(self):
+        return BINARYOP(self.left, lambda l, r: Not(self.op(l,r)), self.right)
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
@@ -274,7 +278,7 @@ class UNIARYOP(Instruction):
         return self.__arg
     
     @arg.setter
-    def right(self, value):
+    def arg(self, value):
         self.__arg = value
         
     @property
@@ -282,8 +286,11 @@ class UNIARYOP(Instruction):
         return self.__op
     
     @op.setter
-    def comparitor(self, value):
+    def op(self, value):
         self.__op = value
+
+    def get_not(self):
+        return UNIARYOP(lambda a: Not(self.op(a)), self.arg)
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):

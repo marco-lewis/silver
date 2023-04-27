@@ -150,7 +150,10 @@ class JSONInterpreter:
             if isinstance(cond, VarRef): cond = BINARYOP(cond, lambda l, r: l == r, 1)
             self.controls.append(cond)
             self.decode_statement(fname, stmt['then'])
-            # self.decode_statement(fname, stmt['othw'])
+            self.controls.pop()
+            not_cond = cond.get_not()
+            self.controls.append(not_cond)
+            self.decode_statement(fname, stmt['othw'])
             self.controls.pop()
             return 0
                     
