@@ -147,6 +147,7 @@ class JSONInterpreter:
         
         if e == "iteExp":
             cond = self.decode_expression(stmt['cond'])
+            if isinstance(cond, VarRef): cond = BINARYOP(cond, lambda l, r: l == r, 1)
             self.controls.append(cond)
             self.decode_statement(fname, stmt['then'])
             # self.decode_statement(fname, stmt['othw'])

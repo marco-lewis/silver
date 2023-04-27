@@ -197,10 +197,6 @@ class ObilgationGenerator:
             if isinstance(control, QOP):
                 vars.append(control.arg)
                 ops.append(lambda t: control.operation(t) == 1)
-            # TODO: Move behaviour to JSONInterpreter
-            if isinstance(control, VarRef):
-                vars.append(control)
-                ops.append(lambda x: x == 1)
             # TODO: Make UNARYOP condition
             if isinstance(control, BINARYOP):
                 v, f = self.get_control_variable_and_function(control.left)
