@@ -237,15 +237,15 @@ class JSONInterpreter:
         if e == "neqExp":
             lhs = self.decode_expression(exp["left"])
             rhs = self.decode_expression(exp["right"])
-            return BINARYOP(lhs, lambda l, r: not(l == r), rhs)
+            return BINARYOP(lhs, lambda l, r: Not(l == r), rhs)
         if e == "andExp":
             lhs = self.decode_expression(exp["left"])
             rhs = self.decode_expression(exp["right"])
-            return BINARYOP(lhs, lambda l, r: l & r, rhs)
+            return BINARYOP(lhs, lambda l, r: And(l, r), rhs)
         if e == "orExp":
             lhs = self.decode_expression(exp["left"])
             rhs = self.decode_expression(exp["right"])
-            return BINARYOP(lhs, lambda l, r: l | r, rhs)
+            return BINARYOP(lhs, lambda l, r: Or(l, r), rhs)
         if e == "leExp":
             lhs = self.decode_expression(exp["left"])
             rhs = self.decode_expression(exp["right"])
