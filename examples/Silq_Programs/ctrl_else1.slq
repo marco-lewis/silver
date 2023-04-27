@@ -1,0 +1,13 @@
+def ctrl_else1(a:!B){
+    x := 0:B;
+    x := H(x);
+    if a{
+        x := Z(x);
+        x := H(x);
+    }
+    else{
+        x := H(x);
+    }
+    x := measure(x);
+    return x;
+}

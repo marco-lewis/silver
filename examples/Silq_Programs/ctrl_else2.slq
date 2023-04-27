@@ -1,0 +1,10 @@
+def ctrl_else2(a : !uint[3]){
+    b := a;
+    if a < 3 {
+        b = a + 3;
+    }
+    else {
+        b = a - 1;
+    }
+    return b;
+}
