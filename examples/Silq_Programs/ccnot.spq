@@ -4,4 +4,5 @@ pre{
 }
 post{
     assert(a * b = 1 -> ccnot_ret = 1 - c)
+    assert( (¬(a * b = 1)) -> ccnot_ret = c)
 }
