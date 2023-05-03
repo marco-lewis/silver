@@ -3,5 +3,5 @@ pre{
 
 }
 post{
-    assert(ccnot_ret = (c - (a * b)) mod 2)
+    assert(a * b = 1 -> ccnot_ret = 1 - c)
 }
