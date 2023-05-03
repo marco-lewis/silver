@@ -22,6 +22,9 @@ class SilSpeqFlagInterpreter(Interpreter):
     @visit_children_decor
     def funcspec(self, flags): return flags
     
+    @visit_children_decor
+    def funcflags(self, flags): return flags
+    
     def pre(self, tree): pass
 
     def post(self, tree): pass

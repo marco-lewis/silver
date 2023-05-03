@@ -1,9 +1,9 @@
 ?start: (func_spec)* -> specs
 
-?func_spec: func ("[" funcflags "]")? "(" (defs)? ")" "->" "(" (defs)? ")" pre post -> funcspec
+?func_spec: func funcflags "(" (defs)? ")" "->" "(" (defs)? ")" pre post -> funcspec
 
 // Flag Rules
-?funcflags: funcflag ("," funcflag)*
+?funcflags: ("["funcflag ("," funcflag)*"]")?    -> funcflags
 ?funcflag: "qout"               -> qout
         | "rand"                -> rand
         | "cert"                -> cert
