@@ -331,6 +331,12 @@ class ObilgationGenerator:
         if isinstance(val, numbers.Number): return val
         if isinstance(val, VarRef):
             if not(val.isquantum): return self.program.get_z3var_from_VarRef(val)
+        # TODO: Fix in Silq fork
+        if isinstance(val, QOP):
+            if val.operation == 'X':
+                z3var = self.program.get_z3var_from_VarRef(val.arg)
+                if isinstance(z3var, BoolRef): return Not(z3var)
+                else: return 1 - z3var
         log_error("TODO: an instruction (%s, %s) is not interpretted.", logger, val, type(val))
     
     def matrix_from_string(self, op, rot=0):
