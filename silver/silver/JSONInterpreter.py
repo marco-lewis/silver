@@ -217,11 +217,11 @@ class JSONInterpreter:
             arg = self.decode_expression(exp["arg"])
             if self.is_quantum_op(op): return QOP(op, arg=arg)
             if self.is_rot_op(op): return QROT(op, arg[0], arg=arg[1])
-            if self.is_arg(op): return UNIARYOP(self.func_arg[op], arg=arg)
+            if self.is_arg(op): return UNARYOP(self.func_arg[op], arg=arg)
             if self.is_trig(op):
                 if op[0] == "a": op = "arc" + op[1:]
-                return UNIARYOP(eval(op), arg=arg)
-            if op == "sqrt": return UNIARYOP(eval(op), arg=arg)
+                return UNARYOP(eval(op), arg=arg)
+            if op == "sqrt": return UNARYOP(eval(op), arg=arg)
             if op == 'measure': return QMEAS(arg)
         if e == "litExp": return exp["value"]
         if e == "tupleExp": return self.decode_expression(exp["values"])

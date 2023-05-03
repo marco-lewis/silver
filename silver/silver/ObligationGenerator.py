@@ -194,7 +194,7 @@ class ObilgationGenerator:
         ops = []
         for control in controls:
             # TODO: Combine?
-            if isinstance(control, UNIARYOP):
+            if isinstance(control, UNARYOP):
                 v, f = self.get_control_variable_and_function(control.arg)
                 vars.append(v)
                 ops.append(lambda x: control.op(f(x)) == 1)
@@ -325,7 +325,7 @@ class ObilgationGenerator:
         return out_obligations
     
     def interpret_val(self, val):
-        if isinstance(val, UNIARYOP): return val.op(self.interpret_val(val.arg))
+        if isinstance(val, UNARYOP): return val.op(self.interpret_val(val.arg))
         if isinstance(val, BINARYOP): return val.op(self.interpret_val(val.left), self.interpret_val(val.right))
         if val == "pi": return np.pi
         if isinstance(val, numbers.Number): return val

@@ -267,7 +267,7 @@ class BINARYOP(Instruction):
     def __repr__(self) -> str:
         return "BINARYOP(" + repr(self.left) + "," + repr(self.op) + "," + repr(self.right) + ")"
 
-class UNIARYOP(Instruction):
+class UNARYOP(Instruction):
     def __init__(self, op, arg) -> None:
         super().__init__()
         self.__arg = arg
@@ -290,7 +290,7 @@ class UNIARYOP(Instruction):
         self.__op = value
 
     def get_not(self):
-        return UNIARYOP(lambda a: Not(self.op(a)), self.arg)
+        return UNARYOP(lambda a: Not(self.op(a)), self.arg)
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
