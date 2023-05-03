@@ -1,0 +1,9 @@
+def ccnot(a:!B, b:!B, c:!B):!B{
+    r := c;
+    if a{
+        if b{
+            r = X(c);
+        }
+    }
+    return r;
+}

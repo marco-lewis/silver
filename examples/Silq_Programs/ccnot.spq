@@ -1,0 +1,7 @@
+ccnot(define a:{0, 1},define b:{0, 1}, define c:{0, 1})->(define ccnot_ret:{0, 1})
+pre{
+
+}
+post{
+    assert(ccnot_ret = (c - (a * b)) mod 2)
+}
