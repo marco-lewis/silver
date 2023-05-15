@@ -238,7 +238,6 @@ class ObilgationGenerator:
         probs_sum = Real("Pr_" + prev_memory.get_reg_string(variable) + "_sum")
         obligations.append(probs_sum == Sum(probs_z3_vars))
         obligations.append(probs_sum == 1)
-        
         # Calculate probabilities based on amplitudes of memory
         memory_obligation_variables = [Complex(memory_str) for memory_str in prev_memory.get_obligation_variables()]
         for meas_value in range(len(probs_z3_vars)):
@@ -246,7 +245,7 @@ class ObilgationGenerator:
                         if (x & (2**(size)- 1<<loc) == (meas_value) << loc)]
             s = [memory_obligation_variables[l].len_sqr() for l in mem_locs]
             obligations.append(probs_z3_vars[meas_value] == Sum(s))
-            
+        
         # Measurement options
         classical_value = Int('meas_' + variable)
         meas_obligations = []
