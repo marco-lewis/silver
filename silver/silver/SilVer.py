@@ -344,10 +344,7 @@ class SilVer:
     def check_solver_sat(self, mode="z3", silq_file_path="", delta=0.0001):
         if mode==Z3:
             sat = self.solver.check(*self.assumptions)
-            try:
-                model = self.solver.model()
-            except:
-                model = []
+            model = [] if not sat == z3.sat else self.solver.model()
             return sat, model
         if mode==DREAL:
             smt2 = self.solver.to_smt2()
