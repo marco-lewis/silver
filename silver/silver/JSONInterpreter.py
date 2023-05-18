@@ -28,15 +28,6 @@ class JSONInterpreter:
 
     def __init__(self):
         self.program = Program()
-        
-    def decode_json(self, fdefs):
-        # Have functions that contain an array of statements
-        # (which may or may not have arrays/objects inside them)
-        # Get function name
-        for func_json in fdefs:
-            # Generate proof obligations by using information from JSON
-            self.make_program(func_json)
-
 
     def decode_func_in_json(self, json, fname):
         func_json = 0
