@@ -174,6 +174,9 @@ class SilVer:
             if post_in_unsat_core: logger.debug("Post-condition is in unsat core.")
             else: error("Post-condition is not in the unsat core.")
             logger.info("Unsatisfiability check passed.")
+    
+    def check_drealsat_instance(self, sat, model, obl_dict):
+        logger.warn("Not checking dreal instances")
 
     def add_func_interp(self, model_obs : list, model : ModelRef, var):
         fixed_inputs = []
