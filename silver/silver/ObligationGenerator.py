@@ -248,7 +248,7 @@ class ObilgationGenerator:
         
         # Measurement options
         classical_value = Int('meas_' + variable)
-        meas_obligations = []
+        meas_obligations = [classical_value >= 0, classical_value < 2**size]
         if RAND in measure_option: pass
         if HIGH_PROB in measure_option:
             meas_obligations += self.obligation_qmeas_with_high_prob(variable, probs_z3_vars, classical_value, prob_bound=self.__config[MEASURE_BOUND])
@@ -256,7 +256,7 @@ class ObilgationGenerator:
             meas_obligations += self.obligation_qmeas_with_certainty(variable, probs_z3_vars, classical_value)
         if SPECIFIC_VALUE in measure_option:
             meas_obligations += self.obligation_qmeas_with_specific_value(variable, probs_z3_vars, classical_value, self.__config[MEASURE_MARK])
-        for meas_value in range(2**size): meas_obligations.append(Implies(classical_value == meas_value, probs_z3_vars[meas_value] != 0))
+        for meas_value in range(2**size): meas_obligations.append(Implies(classical_value == meas_value, Not(probs_z3_vars[meas_value] == 0)))
 
         # State after measurement
         post_memory = q_process.end_memory
