@@ -258,13 +258,13 @@ class SilVer:
                     error("Generated obligations from Silq program are invalid. Expected sat but got %s.", prog_sat)
             else: logger.info("Program obligations satisfiable")
 
-            logger.info("Storing obligations...")
+            logger.info("Storing program obligations...")
             with open(hash_path, 'w') as writer: writer.write(str(hash))
             temp_solver = self.__silver_tactic.solver()
             temp_solver.add(prog_obs)
             prog_smt2 = temp_solver.to_smt2()
             with open(self.get_obligation_path(json_file_path, func), 'w') as writer: writer.write(str(prog_smt2))
-            logger.info("Obligations stored")
+            logger.info("Program obligations stored")
         return {PROG_OBS: prog_obs, SPEQ_OBS: speq_obs[func]}
 
     def clean_obligation_list(self, obs): return list(filter(lambda x: not(isinstance(x, bool) and x), obs))
