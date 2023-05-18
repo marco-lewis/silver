@@ -3,8 +3,17 @@ from os.path import splitext
 import re
 from z3 import *
 
+# TODO: Detect dreal path
+DREAL_PATH = '/opt/dreal/4.21.06.2/bin/dreal'
+
 EXPTYPE = "expType"
 TYPEOBJ = "typeObj"
+
+PROG_OBS = "prog_obs"
+SPEQ_OBS = "speq_obs"
+
+Z3 = "z3"
+DREAL = "dreal"
 
 def log_error(error_msg, logger:logging.Logger, *args):
     if len(args) < 1: logger.error(error_msg)

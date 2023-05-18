@@ -16,10 +16,7 @@ from silver.MeasureOptions import *
 from silver.silver.ObligationGenerator import ObilgationGenerator
 from silver.silver.Program import Program
 from silver.silver.SpeqGenerator import SpeqGenerator
-from .utils import get_path, log_error
-
-PROG_OBS = "prog_obs"
-SPEQ_OBS = "speq_obs"
+from .utils import *
 
 logger = logging.getLogger('silver')
 def error(error_msg, *args): log_error(error_msg, logger) if len(args) == 0 else log_error(error_msg, logger, *args)
@@ -64,8 +61,6 @@ class SilVer:
             unsat_core=True,
         )
         return s
-    
-    def check_solver_sat(self): return self.solver.check(*self.assumptions)
         
     def print_solver_sat(self, solver_sat):
         logger.info("Checking satisfiability...")
@@ -97,7 +92,7 @@ class SilVer:
 
         if speq_flag_itp.quantum_out: pass
 
-    def verify_func(self, silq_file_path, func, log_level=logging.WARNING, spq_file=None):
+    def verify_func(self, silq_file_path, func, log_level=logging.WARNING, spq_file=None, mode=Z3, delta = 0.0001):
         logger.level = log_level
         self.check_inputs(silq_file_path,func,spq_file)
 
@@ -109,11 +104,11 @@ class SilVer:
         logger.info("Full Obligations in Solver")
         logger.debug("Solver:\n%s", self.solver)
         logger.info("Verifying program with specification...")
-        sat = self.check_solver_sat()
+        sat, model = self.check_solver_sat(mode, silq_file_path=silq_file_path, delta=delta)
         logger.debug("Solver satisfiability: %s", sat)
         logger.info("Checking returned solver status...")
-        self.check_sat_instance(sat, obl_dict)
-        return sat
+        self.check_sat_instance(sat, model, obl_dict, mode)
+        return sat, model
 
     def check_inputs(self, silq_file_path,func,spq_file):
         try: exists(silq_file_path)
@@ -129,12 +124,20 @@ class SilVer:
         ast_path = get_path(silq_file_path) + "/.ast"
         if not(exists(ast_path)): os.makedirs(ast_path)
         return ast_path
+    
+    def check_sat_instance(self, sat, model, obl_dict, mode=Z3):
+        if mode == Z3:
+            self.check_z3sat_instance(sat, model, obl_dict)
+            return 0
+        elif mode == DREAL:
+            return 0
+        error("Mode %s is not supported", mode)
 
-    def check_sat_instance(self, sat, obl_dict):
+    def check_z3sat_instance(self, sat, model, obl_dict):
         if sat == z3.sat:
             logger.info("Performing check on satisfiable model...")
             logger.debug("Fetching model...")
-            m = self.solver.model()
+            m = model
             solver = self.make_solver_instance()
             logger.debug("Adding obligations to new solver...")
             solver.add(obl_dict[PROG_OBS] + obl_dict[SPEQ_OBS])
@@ -334,3 +337,82 @@ class SilVer:
         sat = s.check()
         stats = s.statistics()
         return sat, stats, s.reason_unknown()
+    
+    def check_solver_sat(self, mode="z3", silq_file_path="", delta=0.0001):
+        if mode==Z3:
+            sat = self.solver.check(*self.assumptions)
+            try:
+                model = self.solver.model()
+            except:
+                model = []
+            return sat, model
+        if mode==DREAL:
+            smt2 = self.solver.to_smt2()
+            smt2 = self.z3_to_dreal(smt2)
+            smt2_path = self.generate_smt2_file(silq_file_path)
+            with open(smt2_path, "w") as smt2file:
+                smt2file.write(smt2)
+            command = [DREAL_PATH, '--precision', str(delta), smt2_path]
+            result = subprocess.run(command, stdout=subprocess.PIPE)
+            output = result.stdout.decode('utf-8')
+            print(smt2)
+            sat = output[:output.index("\n")]
+            model = output[output.index("\n") + 1:-1]
+            os.remove(smt2_path)
+            return sat, model
+        error("Mode %s is not supported", mode)
+
+    def z3_to_dreal(self, smt2: str):
+        clean = False
+        roots = 0
+        trackers = 0
+        smt2 = smt2[:smt2.index("(")] + ";" + smt2[smt2.index("("):]
+        smt2 = smt2[:smt2.index("(check-sat)")] 
+        while not clean:
+            clean = True
+            if "root-obj" in smt2:
+                # Get expression
+                start = smt2.index("root-obj") - 1
+                end = start + 8
+                i = 1
+                while not i == 0:
+                    if smt2[end] == "(": i += 1
+                    elif smt2[end] == ")": i -= 1
+                    end += 1
+                old_root_expr = smt2[start:end+1]
+
+                # Find root value
+                s = Solver()
+                s.from_string("(declare-fun a () Real)\n(assert (= "+old_root_expr+"a))\n(check-sat)\n")
+                s.check()
+                v = s.model()[Real("a")].approx(2).numerator_as_long()
+
+                # Make a new root
+                root = Real("root" + str(roots))
+                new_root_expr = "(declare-fun " + str(root) + " () Real)\n" + "(assert (= " + old_root_expr[10:-4].replace("x", str(root)) + " 0))\n" + "(assert ("
+                if v > 0: new_root_expr += "< 0 " + str(root)
+                else: new_root_expr += "> 0 " + str(root)
+                new_root_expr += "))\n"
+
+                # Replace it in the smt2 string
+                smt2 = smt2.replace(old_root_expr, str(root) + " ")
+                smt2 = new_root_expr + smt2
+                roots += 1
+                clean = False
+            
+            # Add trackers to the end
+            tracker_tok = "_tracker" + str(trackers)
+            if  tracker_tok in smt2:
+                tracker = smt2[:smt2.index(tracker_tok) + len(tracker_tok)]
+                tracker = tracker[tracker.rfind(" ") + 1:]
+                smt2 += "(assert (= " + tracker + " true))\n"
+                trackers += 1
+                clean = False
+
+        smt2 += '(check-sat)\n'
+        smt2 += '(get-model)\n'
+        smt2 += '(exit)\n'
+        return smt2
+
+    def generate_smt2_file(self, silq_file_path=""):
+        return str("/tmp/" + silq_file_path[silq_file_path.rfind("/") + 1:][:-4] + ".smt2")
