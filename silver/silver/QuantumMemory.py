@@ -36,7 +36,7 @@ class QuantumMemory:
             t = []
             for i in range(0, 2**qreg.size):
                 tok = self.__make_token(qreg, i)
-                t += [tok + "|" + obl for obl in out] if not(out == []) else [tok]
+                t += [tok + "!" + obl for obl in out] if not(out == []) else [tok]
             out = t
         return out
 
