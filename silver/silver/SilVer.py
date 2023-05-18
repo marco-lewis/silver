@@ -63,12 +63,6 @@ class SilVer:
             seed=self.seed,
             unsat_core=True,
         )
-        # s.set("parallel.enable", True)
-        # s.set("threads", 4)
-        # s.set("arith.solver", 6)
-        # s.set("arith.nl.rounds", 100)
-        # s.set("arith.ignore_int", True)
-        # s.set("eq2ineq", True)
         return s
     
     def check_solver_sat(self): return self.solver.check(*self.assumptions)
@@ -102,20 +96,6 @@ class SilVer:
         if self.config[MEASURE_OPTION] == []: self.config[MEASURE_OPTION].append(RAND)
 
         if speq_flag_itp.quantum_out: pass
-    
-    def verify_slq_file(self, silq_file):
-        # Call silq with this command to get ast
-        # Make sure ast is stored in a hidden folder
-        # Run one of the other commands on this file
-        pass
-    
-    def verify_json_file(self, file):
-        # 1) Check file is a valid JSON file
-        # 2) Generate speq file if it doesn't already exist
-        # 3) Rank functions by looking into JSON
-        # 4) Verify functions in order. Stop if something is wrong
-            # 4a) Produce obligation/sat(?) files for correct functions
-        pass
 
     def verify_func(self, silq_file_path, func, log_level=logging.WARNING, spq_file=None):
         logger.level = log_level
