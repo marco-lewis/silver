@@ -352,7 +352,7 @@ class SilVer:
         if mode==DREAL:
             smt2 = self.solver.to_smt2()
             smt2 = self.z3_to_dreal(smt2)
-            smt2_path = self.generate_smt2_file(silq_file_path)
+            smt2_path = self.generate_smt2_path(silq_file_path)
             with open(smt2_path, "w") as smt2file:
                 smt2file.write(smt2)
             command = [DREAL_PATH, '--precision', str(delta), smt2_path]
@@ -417,5 +417,5 @@ class SilVer:
         smt2 += '(exit)\n'
         return smt2
 
-    def generate_smt2_file(self, silq_file_path=""):
+    def generate_smt2_path(self, silq_file_path=""):
         return str("/tmp/" + silq_file_path[silq_file_path.rfind("/") + 1:][:-4] + ".smt2")
