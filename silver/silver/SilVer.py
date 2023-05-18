@@ -355,7 +355,6 @@ class SilVer:
             command = [DREAL_PATH, '--precision', str(delta), smt2_path]
             result = subprocess.run(command, stdout=subprocess.PIPE)
             output = result.stdout.decode('utf-8')
-            print(smt2)
             sat = output[:output.index("\n")]
             model = output[output.index("\n") + 1:-1]
             os.remove(smt2_path)
@@ -368,6 +367,7 @@ class SilVer:
         trackers = 0
         smt2 = smt2[:smt2.index("(")] + ";" + smt2[smt2.index("("):]
         smt2 = smt2[:smt2.index("(check-sat)")] 
+        smt2 = "(set-logc QF_NRA)\n" + smt2
         while not clean:
             clean = True
             if "root-obj" in smt2:
