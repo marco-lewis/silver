@@ -1,0 +1,7 @@
+ghz()->(define ghz_ret:{0, 1}^10)
+pre{
+
+}
+post{
+    assert(ghz_ret = 0 | ghz_ret = (2^10 - 1))
+}
