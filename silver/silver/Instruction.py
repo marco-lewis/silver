@@ -295,7 +295,9 @@ class UNARYOP(Instruction):
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             a = self.arg == other.arg
-            c = self.op.__code__.co_code == other.op.__code__.co_code
+            try:
+                c = self.op.__code__.co_code == other.op.__code__.co_code
+            except: return False
             return a and c and super().__eq__(other)
         return NotImplemented
         
