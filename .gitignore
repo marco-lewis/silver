@@ -9,5 +9,5 @@ examples/Silq_Programs/.ast/*
 examples/Silq_Programs/.hash/*
 examples/Silq_Programs/.obl/*
 examples/todo/*
-logs/*.logs
+logs/*.log
 .VSCodeCounter/
