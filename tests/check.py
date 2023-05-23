@@ -1,9 +1,11 @@
 import logging
 import sys
 sys.path.append('../silver')
+
 from silver.silver.SilVer import SilVer
 from silver.silver.utils import DREAL, Z3
-import z3, sys
+
+import z3
 
 folder = "examples/Silq_Programs/"
 logging.basicConfig(format="(%(relativeCreated)dms)%(name)s:%(levelname)s:%(message)s",datefmt="%H:%M:%S")
