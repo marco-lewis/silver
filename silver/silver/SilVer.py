@@ -367,7 +367,6 @@ class SilVer:
         trackers = 0
         smt2 = smt2[:smt2.index("(")] + ";" + smt2[smt2.index("("):]
         smt2 = smt2[:smt2.index("(check-sat)")] 
-        smt2 = "(set-logc QF_NRA)\n" + smt2
         while not clean:
             clean = True
             if "root-obj" in smt2:
@@ -409,6 +408,17 @@ class SilVer:
                 trackers += 1
                 clean = False
 
+            if  "to_real" in smt2:
+                start = smt2.index("to_real") - 1
+                end = start + smt2[start:].find(")")
+                expr = smt2[start:end+1]
+                spaceidx = expr.find(" ")
+                var = expr[spaceidx+1:-1]
+                var = Int(var)
+                smt2 = smt2.replace(expr, str(var))
+                clean = False
+
+        # smt2 = "(set-logc QF_NRA)\n" + smt2
         smt2 += '(check-sat)\n'
         smt2 += '(get-model)\n'
         smt2 += '(exit)\n'

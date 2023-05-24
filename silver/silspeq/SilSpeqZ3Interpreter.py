@@ -89,7 +89,7 @@ class SilSpeqZ3Interpreter(Interpreter):
         elif isinstance(df[1], list): return self.function_obligation(var, self.flatten(df[1]))
         else:
             self.vars[var] = Int(var)
-            return And(0 <= self.vars[var], self.vars[var] < 2**df[1])
+            return And(0 <= self.vars[var], self.vars[var] < int(2**df[1]))
 
     # TODO: Test with tuples/arrays types?
     def function_obligation(self, fname, typing):
@@ -111,7 +111,7 @@ class SilSpeqZ3Interpreter(Interpreter):
     def type_size(self, type):
         if type == NAT: error("Unable to handle NAT argument")
         elif type == BOOL: return 2
-        else: return 2**type
+        else: return int(2**type)
 
     def type_obligation(self, z3_expr, type):
         if type == NAT:
@@ -119,7 +119,7 @@ class SilSpeqZ3Interpreter(Interpreter):
         elif type == BOOL:
             return Or(z3_expr == 0, z3_expr == 1)
         else:
-            return And(0 <= z3_expr, z3_expr < 2**type)
+            return And(0 <= z3_expr, z3_expr < int(2**type))
 
     @visit_children_decor
     def assertion(self, zexpr): return zexpr
