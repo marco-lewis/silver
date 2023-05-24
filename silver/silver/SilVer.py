@@ -353,8 +353,9 @@ class SilVer:
             with open(smt2_path, "w") as smt2file:
                 smt2file.write(smt2)
             command = [DREAL_PATH, '--precision', str(delta), smt2_path]
-            result = subprocess.run(command, stdout=subprocess.PIPE)
+            result = subprocess.run(command, stdout=subprocess.PIPE, timeout=self.timeout)
             output = result.stdout.decode('utf-8')
+            logger.debug("dreal output:\n" + output)
             sat = output[:output.index("\n")]
             model = output[output.index("\n") + 1:-1]
             os.remove(smt2_path)
