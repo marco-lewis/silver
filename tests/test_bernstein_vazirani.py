@@ -5,8 +5,8 @@ import z3
 
 # Verification of Bernstein-Vazirani
 # bv_fixed<n> - Deutsch-Jozsa for n-qubits
-setup_logger("bv.log")
-check("bv_fixed2.slq", "fixed_bv", z3.unsat)
-check("bv_fixed5.slq", "fixed_bv", z3.unsat)
-check("bv_fixed10.slq", "fixed_bv", z3.unsat, check_store=True)
-check("bv_fixed12.slq", "fixed_bv", z3.unsat)
+logger = setup_logger("bv.log")
+for i in range(2,9):
+    logger.info("Checking bv_fixed" + str(i))
+    avg_setup, avg_solve = check("bv_fixed" + str(i) + ".slq", "fixed_bv", z3.unsat, log_level=logging.ERROR, runs=1)
+    logger.info("Setup average: %ss, Run average: %ss", str(avg_setup), str(avg_solve))

@@ -7,8 +7,8 @@ import z3
 # Start thinking on BMC
 # Give variable that is being BMC'd and check program with different sizes
 # dj_fixed<n> - Deutsch-Jozsa for n-qubits
-setup_logger("dj.log")
-check("dj_fixed2.slq", "fixed_dj", z3.unsat)
-check("dj_fixed5.slq", "fixed_dj", z3.unsat)
-check("dj_fixed10.slq", "fixed_dj", z3.unsat)
-check("dj_fixed12.slq", "fixed_dj", z3.unsat)
+logger = setup_logger("dj.log")
+for i in range(2,9):
+    logger.info("Checking fixed_dj" + str(i))
+    avg_setup, avg_solve = check("dj_fixed" + str(i) + ".slq", "fixed_dj", z3.unsat, log_level=logging.ERROR, runs=1)
+    logger.info("Setup average: %s, Run average: %s", str(avg_setup), str(avg_solve))
