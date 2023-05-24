@@ -4,7 +4,9 @@ import json as json
 import logging
 from os.path import splitext
 import subprocess
+import time
 
+import numpy as np
 from z3.z3 import *
 
 from silver.silspeq.SilSpeqParser import SilSpeqParser
@@ -22,9 +24,9 @@ logger = logging.getLogger('silver')
 def error(error_msg, *args): log_error(error_msg, logger) if len(args) == 0 else log_error(error_msg, logger, *args)
 
 class SilVer:
-    def __init__(self, timeout=30000, seed=3, check_store=True):
+    def __init__(self, timeout=30000, seed=None, check_store=True):
         self.timeout = timeout
-        self.seed = seed
+        self.seed = seed if isinstance(seed, int) else np.random.randint(0, 100000)
         self.check_store = check_store
         self.make_silver_tactic()
         self.solver = self.make_solver_instance(self.timeout)
@@ -61,6 +63,11 @@ class SilVer:
             unsat_core=True,
         )
         return s
+    
+    def get_times(self):
+        try: solve_time = self.solver.statistics().get_key_value('time')
+        except: solve_time = 0
+        return {"setup": self.setup_time, "solve": solve_time}
         
     def print_solver_sat(self, solver_sat):
         logger.info("Checking satisfiability...")
@@ -94,6 +101,8 @@ class SilVer:
 
     def verify_func(self, silq_file_path, func, log_level=logging.WARNING, spq_file=None, mode=Z3, delta = 0.0001):
         logger.level = log_level
+        self.json_interp.set_log_level(log_level)
+        self.solver.reset()
         self.check_inputs(silq_file_path,func,spq_file)
 
         logger.info("Verifying %s in %s", func, silq_file_path)
@@ -202,6 +211,8 @@ class SilVer:
         return json_file_path_dest
 
     def make_obs(self, json_file_path, func, spq_file=None):
+        self.setup_time = 0
+        start = time.time()
         self.check_speq_exists(json_file_path, spq_file=spq_file)
         spq_path = self.get_speq_file_name(json_file_path,spq_file=spq_file)
         self.check_flags(spq_path, func)
@@ -251,6 +262,8 @@ class SilVer:
             prog_smt2 = temp_solver.to_smt2()
             with open(self.get_obligation_path(json_file_path, func), 'w') as writer: writer.write(str(prog_smt2))
             logger.info("Program obligations stored")
+
+        self.setup_time = time.time() - start
         return {PROG_OBS: prog_obs, SPEQ_OBS: speq_obs[func]}
 
     def clean_obligation_list(self, obs): return list(filter(lambda x: not(isinstance(x, bool) and x), obs))

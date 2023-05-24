@@ -18,8 +18,12 @@ logger = logging.getLogger("JSONinter")
 class JSONInterpreter:
     isqrt2 = Real("isqrt2")
 
-    def __init__(self):
+    def __init__(self, log_level=logging.INFO):
         self.program = Program()
+        logger.setLevel(log_level)
+
+    def set_log_level(self, log_level):
+        logger.setLevel(log_level)
 
     def decode_func_in_json(self, json, fname):
         func_json = 0
