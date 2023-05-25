@@ -38,12 +38,13 @@ def check(json_file, func, expected, log_level=logging.INFO, spq_file=None, stat
             times["solve"].append(time_dict["solve"])
             
         if mode == DREAL:
+            # TODO: Fix d-sat
             if sat == "d-sat": logger.debug("Model/CEX:\n%s", model)
             if sat == "unsat": logger.debug("Unable to produce unsat core")
             time_dict = silver.get_times()
             times["setup"].append(time_dict["setup"])
             times["solve"].append(time_dict["solve"])
-            logger.error("No stats for dreal yet")
+            if stats: logger.error("No stats for dreal")
         
         logger.info("Done.\n")
         sys.stdout.flush()

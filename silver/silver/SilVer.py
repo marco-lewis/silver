@@ -362,18 +362,22 @@ class SilVer:
             model = [] if not sat == z3.sat else self.solver.model()
             return sat, model
         if mode==DREAL:
+            logging.info("Converting smt2 to dreal...")
             smt2 = self.solver.to_smt2()
             smt2 = self.z3_to_dreal(smt2)
+            logging.info("Converted.")
             smt2_path = self.generate_smt2_path(silq_file_path)
             with open(smt2_path, "w") as smt2file:
                 smt2file.write(smt2)
             command = [DREAL_PATH, '--precision', str(delta), smt2_path]
+            logging.info("Running...")
             start = time.time()
             # Timeout is in seconds for subprocess
             result = subprocess.run(command, stdout=subprocess.PIPE, timeout=self.timeout/1000)
             self.dreal_time = time.time() - start
+            logging.info("dReal ran successfully.")
             output = result.stdout.decode('utf-8')
-            logger.debug("dreal output:\n" + output)
+            logger.debug("dReal output:\n" + output)
             sat = output[:output.index("\n")]
             model = output[output.index("\n") + 1:-1]
             os.remove(smt2_path)
@@ -381,13 +385,13 @@ class SilVer:
         error("Mode %s is not supported", mode)
 
     def z3_to_dreal(self, smt2: str):
-        clean = False
         roots = 0
         trackers = 0
         smt2 = smt2[:smt2.index("(")] + ";" + smt2[smt2.index("("):]
         smt2 = smt2[:smt2.index("(check-sat)")] 
-        while not clean:
-            clean = True
+        while True:
+            tracker_tok = "_tracker" + str(trackers)
+            # Replace root-objects with variables taking on value
             if "root-obj" in smt2:
                 # Get expression
                 start = smt2.index("root-obj") - 1
@@ -407,7 +411,9 @@ class SilVer:
 
                 # Make a new root
                 root = Real("root" + str(roots))
-                new_root_expr = "(declare-fun " + str(root) + " () Real)\n" + "(assert (= " + old_root_expr[10:-4].replace("x", str(root)) + " 0))\n" + "(assert ("
+                new_root_expr = "(declare-fun " + str(root) + " () Real)\n" 
+                new_root_expr += "(assert (= " + old_root_expr[10:-4].replace("x", str(root)) + " 0))\n"
+                new_root_expr += "(assert ("
                 if v > 0: new_root_expr += "< 0 " + str(root)
                 else: new_root_expr += "> 0 " + str(root)
                 new_root_expr += "))\n"
@@ -416,18 +422,14 @@ class SilVer:
                 smt2 = smt2.replace(old_root_expr, str(root) + " ")
                 smt2 = new_root_expr + smt2
                 roots += 1
-                clean = False
-            
-            # Add trackers to the end
-            tracker_tok = "_tracker" + str(trackers)
-            if  tracker_tok in smt2:
+            # Add trackers to the end; must be true
+            elif  tracker_tok in smt2:
                 tracker = smt2[:smt2.index(tracker_tok) + len(tracker_tok)]
                 tracker = tracker[tracker.rfind(" ") + 1:]
                 smt2 += "(assert (= " + tracker + " true))\n"
                 trackers += 1
-                clean = False
-
-            if  "to_real" in smt2:
+            # Remove to_real functions
+            elif  "to_real" in smt2:
                 start = smt2.index("to_real") - 1
                 end = start + smt2[start:].find(")")
                 expr = smt2[start:end+1]
@@ -435,7 +437,30 @@ class SilVer:
                 var = expr[spaceidx+1:-1]
                 var = Int(var)
                 smt2 = smt2.replace(expr, str(var))
-                clean = False
+            # Replace functions
+            elif "(Int) Int" in smt2:
+                idx = smt2.index("(Int) Int")
+                start = smt2[:idx].rfind("(")
+                end = idx + len("(Int) Int") + 1
+                old_expr = smt2[start:end]
+                var = old_expr[old_expr.index(" ")+1:]
+                var = var[:var.index(" ")]
+                # Replace all calls to function
+                while True:
+                    if "(" + var + " " in smt2:
+                        idx = smt2.find("(" + var + " ")
+                        var_call = smt2[idx:]
+                        var_call = var_call[: var_call.find(")") + 1]
+                        var_i = var_call[var_call.find(" ") + 1:-1]
+                        new_var = var + "_" + var_i
+                        decl_expr = "(declare-fun " + new_var + " () Int)\n"
+                        smt2 = smt2.replace(var_call, new_var)
+                        smt2 = decl_expr + smt2
+                    else:
+                        break
+                smt2 = smt2.replace(old_expr + "\n", "")
+            else:
+                break
 
         # smt2 = "(set-logc QF_NRA)\n" + smt2
         smt2 += '(check-sat)\n'
