@@ -362,20 +362,20 @@ class SilVer:
             model = [] if not sat == z3.sat else self.solver.model()
             return sat, model
         if mode==DREAL:
-            logging.info("Converting smt2 to dreal...")
+            logger.info("Converting smt2 to dreal...")
             smt2 = self.solver.to_smt2()
             smt2 = self.z3_to_dreal(smt2)
-            logging.info("Converted.")
+            logger.info("Converted.")
             smt2_path = self.generate_smt2_path(silq_file_path)
             with open(smt2_path, "w") as smt2file:
                 smt2file.write(smt2)
             command = [DREAL_PATH, '--precision', str(delta), smt2_path]
-            logging.info("Running...")
+            logger.info("Running...")
             start = time.time()
             # Timeout is in seconds for subprocess
             result = subprocess.run(command, stdout=subprocess.PIPE, timeout=self.timeout/1000)
             self.dreal_time = time.time() - start
-            logging.info("dReal ran successfully.")
+            logger.info("dReal ran successfully.")
             output = result.stdout.decode('utf-8')
             logger.debug("dReal output:\n" + output)
             sat = output[:output.index("\n")]
