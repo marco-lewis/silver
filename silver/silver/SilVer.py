@@ -369,7 +369,8 @@ class SilVer:
                 smt2file.write(smt2)
             command = [DREAL_PATH, '--precision', str(delta), smt2_path]
             start = time.time()
-            result = subprocess.run(command, stdout=subprocess.PIPE, timeout=self.timeout)
+            # Timeout is in seconds for subprocess
+            result = subprocess.run(command, stdout=subprocess.PIPE, timeout=self.timeout/1000)
             self.dreal_time = time.time() - start
             output = result.stdout.decode('utf-8')
             logger.debug("dreal output:\n" + output)
