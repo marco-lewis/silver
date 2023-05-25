@@ -33,20 +33,17 @@ def check(json_file, func, expected, log_level=logging.INFO, spq_file=None, stat
             try: logger.info("Solver time to solve (s) %s", silver_stats.get_key_value('time'))
             except: logger.warn("Unable to get time (possibly 0)")
             if stats: logger.info("Stats:\n%s", silver_stats)
-            time_dict = silver.get_times()
-            times["setup"].append(time_dict["setup"])
-            times["solve"].append(time_dict["solve"])
             
         if mode == DREAL:
             if sat == "delta-sat": 
                 logger.debug("delta:%s", silver.delta)
                 logger.debug("Model/CEX:\n%s", model)
             if sat == "unsat": logger.debug("Unable to produce unsat core")
-            time_dict = silver.get_times()
-            times["setup"].append(time_dict["setup"])
-            times["solve"].append(time_dict["solve"])
             if stats: logger.error("No stats for dreal")
-        
+
+        time_dict = silver.get_times(mode=mode)
+        times["setup"].append(time_dict["setup"])
+        times["solve"].append(time_dict["solve"])
         logger.info("Done.")
         sys.stdout.flush()
     return sum(times["setup"])/runs, sum(times["solve"])/runs
