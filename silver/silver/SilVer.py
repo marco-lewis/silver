@@ -34,6 +34,7 @@ class SilVer:
         self.speq_parser = SilSpeqParser()
         self.config = {}
         self.assumptions = {}
+        self.dreal_time = 0
 
     def make_silver_tactic(self, timeout=5000):
         self.__silver_tactic = Then(
@@ -64,9 +65,9 @@ class SilVer:
         )
         return s
     
-    def get_times(self):
+    def get_times(self, mode=Z3):
         try: solve_time = self.solver.statistics().get_key_value('time')
-        except: solve_time = 0
+        except: solve_time = 0 if mode == Z3 else self.dreal_time
         return {"setup": self.setup_time, "solve": solve_time}
         
     def print_solver_sat(self, solver_sat):
@@ -103,6 +104,7 @@ class SilVer:
         logger.level = log_level
         self.json_interp.set_log_level(log_level)
         self.solver.reset()
+        self.dreal_time = 0
         self.check_inputs(silq_file_path,func,spq_file)
 
         logger.info("Verifying %s in %s", func, silq_file_path)
@@ -366,7 +368,9 @@ class SilVer:
             with open(smt2_path, "w") as smt2file:
                 smt2file.write(smt2)
             command = [DREAL_PATH, '--precision', str(delta), smt2_path]
+            start = time.time()
             result = subprocess.run(command, stdout=subprocess.PIPE, timeout=self.timeout)
+            self.dreal_time = time.time() - start
             output = result.stdout.decode('utf-8')
             logger.debug("dreal output:\n" + output)
             sat = output[:output.index("\n")]
