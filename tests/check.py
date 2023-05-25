@@ -46,6 +46,6 @@ def check(json_file, func, expected, log_level=logging.INFO, spq_file=None, stat
             times["solve"].append(time_dict["solve"])
             if stats: logger.error("No stats for dreal")
         
-        logger.info("Done.\n")
+        logger.info("Done.")
         sys.stdout.flush()
     return sum(times["setup"])/runs, sum(times["solve"])/runs

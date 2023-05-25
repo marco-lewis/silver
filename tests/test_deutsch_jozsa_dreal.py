@@ -1,5 +1,5 @@
 import logging
-from tests.check import check
+from tests.check import check, DREAL
 from tests.log_settings import setup_logger
 import z3
 
@@ -10,5 +10,12 @@ import z3
 logger = setup_logger("dj.log")
 for i in range(2,9):
     logger.info("Checking fixed_dj" + str(i))
-    avg_setup, avg_solve = check("dj_fixed" + str(i) + ".slq", "fixed_dj", z3.unsat, log_level=logging.ERROR, runs=10)
+    avg_setup, avg_solve = check("dj_fixed" + str(i) + ".slq",
+                                 "fixed_dj",
+                                 "unsat",
+                                 check_store=True,
+                                 log_level=logging.INFO,
+                                 mode=DREAL,
+                                 runs=1
+                                 )
     logger.info("Setup average: %s, Run average: %s", str(avg_setup), str(avg_solve))
