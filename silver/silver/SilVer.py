@@ -105,6 +105,7 @@ class SilVer:
         self.json_interp.set_log_level(log_level)
         self.solver.reset()
         self.dreal_time = 0
+        self.delta = delta
         self.check_inputs(silq_file_path,func,spq_file)
 
         logger.info("Verifying %s in %s", func, silq_file_path)
@@ -379,6 +380,7 @@ class SilVer:
             output = result.stdout.decode('utf-8')
             logger.debug("dReal output:\n" + output)
             sat = output[:output.index("\n")]
+            sat = "delta-sat" if "delta-sat" in sat else sat
             model = output[output.index("\n") + 1:-1]
             os.remove(smt2_path)
             return sat, model
