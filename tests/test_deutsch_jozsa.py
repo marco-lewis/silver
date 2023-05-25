@@ -10,5 +10,5 @@ import z3
 logger = setup_logger("dj.log")
 for i in range(2,9):
     logger.info("Checking fixed_dj" + str(i))
-    avg_setup, avg_solve = check("dj_fixed" + str(i) + ".slq", "fixed_dj", z3.unsat, log_level=logging.ERROR, runs=1)
+    avg_setup, avg_solve = check("dj_fixed" + str(i) + ".slq", "fixed_dj", z3.unsat, log_level=logging.ERROR, runs=10)
     logger.info("Setup average: %s, Run average: %s", str(avg_setup), str(avg_solve))
