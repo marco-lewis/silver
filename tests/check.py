@@ -29,10 +29,7 @@ def check(json_file, func, expected, log_level=logging.INFO, spq_file=None, stat
             if sat == z3.sat: logger.debug("Model/CEX:\n%s", model)
             if sat == z3.unsat: logger.debug("Unsat core:\n%s", silver.solver.unsat_core())
             if sat == z3.unknown: logger.error('Reason: %s', silver.solver.reason_unknown())
-            silver_stats = silver.solver.statistics()
-            try: logger.info("Solver time to solve (s) %s", silver_stats.get_key_value('time'))
-            except: logger.warn("Unable to get time (possibly 0)")
-            if stats: logger.info("Stats:\n%s", silver_stats)
+            if stats: logger.info("Stats:\n%s", silver.solver.statistics())
             
         if mode == DREAL:
             if sat == "delta-sat": 
@@ -42,6 +39,7 @@ def check(json_file, func, expected, log_level=logging.INFO, spq_file=None, stat
             if stats: logger.error("No stats for dreal")
 
         time_dict = silver.get_times(mode=mode)
+        logger.info("Setup time: %s, Verification time: %s", time_dict["setup"], time_dict["solve"])
         times["setup"].append(time_dict["setup"])
         times["solve"].append(time_dict["solve"])
         logger.info("Done.")
