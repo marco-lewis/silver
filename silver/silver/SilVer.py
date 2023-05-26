@@ -237,7 +237,7 @@ class SilVer:
             prog_obs = [obl for obl in z3.parse_smt2_file(self.get_obligation_path(json_file_path, func))]
             logger.debug(prog_obs)
         else:
-            logger.info("Generating Program from AST...") 
+            logger.info("Generating Program from AST...")
             prog = self.json_interp.decode_func_in_json(silq_json, func)
             prog.optimise()
 
