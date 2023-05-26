@@ -42,7 +42,6 @@ class JSONInterpreter:
         return prog
         
     def decode_func(self, func_json):
-        self.program = Program()
         for arg in func_json["args"]:
             # TODO: Handle non-function args in program
             z3_type = convert_type_to_Z3_sorts(arg['type'])

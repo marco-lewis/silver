@@ -30,8 +30,6 @@ class SilVer:
         self.check_store = check_store
         self.make_silver_tactic()
         self.solver = self.make_solver_instance(self.timeout)
-        self.json_interp = JSONInterpreter()
-        self.speq_parser = SilSpeqParser()
         self.config = {}
         self.assumptions = {}
         self.dreal_time = 0
@@ -101,6 +99,9 @@ class SilVer:
         if speq_flag_itp.quantum_out: pass
 
     def verify_func(self, silq_file_path, func, log_level=logging.WARNING, spq_file=None, mode=Z3, delta = 0.0001):
+        self.json_interp = JSONInterpreter()
+        self.speq_parser = SilSpeqParser()
+
         logger.level = log_level
         self.json_interp.set_log_level(log_level)
         self.solver.reset()
