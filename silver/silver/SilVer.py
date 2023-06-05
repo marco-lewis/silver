@@ -472,7 +472,7 @@ class SilVer:
                 # Assume has form (mod t m)
                 idx = smt2.find("(mod ")
                 end = idx + 1 + smt2[idx:].find(")")
-                
+
                 mod_expr = smt2[idx:end]
                 term = mod_expr[mod_expr.find(" ") + 1:]
                 mod = term[term.find(" ") + 1:-1]
@@ -489,7 +489,7 @@ class SilVer:
                 smt2 = decl_expr + smt2
                 smt2 += def_expr
                 smt2 = smt2.replace(mod_expr, rem_tok)
-                smt2 = smt2.replace(old_div_expr, div_tok) if old_div_expr in smt2 else smt2
+                smt2 = smt2.replace(old_div_expr, div_tok)
                 remainders += 1
                 divisors += 1
             else:
