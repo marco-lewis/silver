@@ -394,6 +394,8 @@ class SilVer:
     def z3_to_dreal(self, smt2: str):
         roots = 0
         trackers = 0
+        remainders = 0
+        divisors = 0
         smt2 = smt2[:smt2.index("(")] + ";" + smt2[smt2.index("("):]
         smt2 = smt2[:smt2.index("(check-sat)")] 
         while True:
@@ -466,6 +468,30 @@ class SilVer:
                     else:
                         break
                 smt2 = smt2.replace(old_expr + "\n", "")
+            elif "(mod " in smt2:
+                # Assume has form (mod t m)
+                idx = smt2.find("(mod ")
+                end = idx + 1 + smt2[idx:].find(")")
+                
+                mod_expr = smt2[idx:end]
+                term = mod_expr[mod_expr.find(" ") + 1:]
+                mod = term[term.find(" ") + 1:-1]
+                term = term[:term.find(" ")]
+                rem_tok = "rem" + str(remainders)
+                div_tok = "div" + str(divisors)
+
+                decl_expr = "(declare-fun " + rem_tok + " () Int)\n(declare-fun " + div_tok + " () Int)\n"
+                def_expr = "(assert (= (+ " + term + " (- (* " + mod + " " + div_tok + "))) " + rem_tok + "))\n"
+                def_expr += "(assert (< " + rem_tok + " " + mod + "))\n"
+                def_expr += "(assert (>= " + rem_tok + " 0))\n"
+                old_div_expr = "(div " + term + " " + mod + ")"
+                
+                smt2 = decl_expr + smt2
+                smt2 += def_expr
+                smt2 = smt2.replace(mod_expr, rem_tok)
+                smt2 = smt2.replace(old_div_expr, div_tok) if old_div_expr in smt2 else smt2
+                remainders += 1
+                divisors += 1
             else:
                 break
 
