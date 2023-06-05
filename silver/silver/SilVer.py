@@ -46,6 +46,7 @@ class SilVer:
             'dt2bv',
             'bit-blast',
             'tseitin-cnf',
+            'purify-arith',
             OrElse(
                 TryFor('smt', timeout),
                 TryFor('nlsat', timeout),
@@ -60,6 +61,7 @@ class SilVer:
             random_seed=self.seed,
             seed=self.seed,
             unsat_core=True,
+            blast_distinct=True,
         )
         return s
     
