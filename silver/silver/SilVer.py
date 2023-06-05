@@ -377,8 +377,10 @@ class SilVer:
             logger.info("Running...")
             start = time.time()
             # Timeout is in seconds for subprocess
-            result = subprocess.run(command, stdout=subprocess.PIPE, timeout=self.timeout/1000)
+            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=self.timeout/1000)
             self.dreal_time = time.time() - start
+            error_msg = result.stderr.decode('utf-8')[:-1]
+            if error_msg: error("dreal ran into an error:\n%s", error_msg)
             logger.info("dReal ran successfully.")
             output = result.stdout.decode('utf-8')
             logger.debug("dReal output:\n" + output)
