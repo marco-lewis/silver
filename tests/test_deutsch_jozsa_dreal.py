@@ -1,5 +1,5 @@
 import logging
-from tests.check import check, DREAL
+from tests.check import DREAL, folder, check
 from tests.log_settings import setup_logger
 import z3
 
@@ -10,12 +10,26 @@ import z3
 logger = setup_logger("djdreal.log")
 for i in range(2,9):
     logger.info("Checking fixed_dj" + str(i))
-    avg_setup, avg_solve = check("dj_fixed" + str(i) + ".slq",
+    logger.info("Checking constant")
+    avg_setupC, avg_solveC = check("dj_fixed" + str(i) + ".slq",
+                                "fixed_dj",
+                                "unsat",
+                                spq_file=folder+"dj_fixed" + str(i) + "const.spq",
+                                check_store=True,
+                                log_level=logging.ERROR,
+                                mode=DREAL,
+                                runs=10
+                                )
+    logger.info("(Constant) Setup average: %s, Run average: %s", str(avg_setupC), str(avg_solveC))
+    logger.info("Checking balanced")
+    avg_setupB, avg_solveB = check("dj_fixed" + str(i) + ".slq",
                                  "fixed_dj",
-                                 "unsat",
+                                 z3.unsat,
+                                 spq_file=folder+"dj_fixed" + str(i) + "bal.spq",
                                  check_store=True,
                                  log_level=logging.ERROR,
-                                 mode=DREAL,
-                                 runs=10
-                                 )
+                                 runs=10)
+    logger.info("(Balanced) Setup average: %s, Run average: %s", str(avg_setupB), str(avg_solveB))
+    avg_setup = avg_setupC
+    avg_solve = (avg_solveB + avg_solveC)/2
     logger.info("Setup average: %s, Run average: %s", str(avg_setup), str(avg_solve))

@@ -1,0 +1,20 @@
+main()->(define main_ret:())
+pre{
+
+}
+post{
+
+}
+
+fixed_dj[rand](define f:{0, 1}^3->{0, 1})->(define fixed_dj_ret:{0, 1}^3)
+pre{
+    define y : N
+    define x : {0,1}^3
+    define bal : {0,1}
+
+    assert(SUM[x](f) = y)
+    assert((bal = 0 & (y = 0 | y = 2^3)) | (bal = 1 & y = 2^(3-1)))
+}
+post{
+    assert(bal = 1 -> ¬fixed_dj_ret = 0)
+}
