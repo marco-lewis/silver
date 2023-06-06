@@ -12,7 +12,7 @@ logger = logging.getLogger("check")
 root = logging.getLogger()
 t = 3 * 60 * 60 * 1000
 
-def check(json_file, func, expected, log_level=logging.INFO, spq_file=None, stats=False, timeout=t, seed=1, check_store=False, mode=Z3, runs=1):
+def check(json_file, func, expected, log_level=logging.INFO, silver_log_level=logging.ERROR, spq_file=None, stats=False, timeout=t, seed=1, check_store=False, mode=Z3, runs=1):
     times = {"setup": [], "solve": []}
     logger.setLevel(log_level)
     logger.info("Starting check on %s in %s", func, json_file)
@@ -21,7 +21,7 @@ def check(json_file, func, expected, log_level=logging.INFO, spq_file=None, stat
 
     for i in range(runs):
         root.info("Run %s", i + 1)
-        sat, model = silver.verify_func(folder + json_file, func, log_level=log_level, spq_file=spq_file, mode=mode)
+        sat, model = silver.verify_func(folder + json_file, func, log_level=silver_log_level, spq_file=spq_file, mode=mode)
         if sat == expected: logger.info("Test passed as expected")
         else: logger.error("Expected %s but got %s", expected, sat)
 
