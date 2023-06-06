@@ -28,6 +28,7 @@ for i in range(2,9):
                                  spq_file=folder+"dj_fixed" + str(i) + "bal.spq",
                                  check_store=True,
                                  log_level=logging.ERROR,
+                                 mode=DREAL,
                                  runs=10)
     logger.info("(Balanced) Setup average: %s, Run average: %s", str(avg_setupB), str(avg_solveB))
     avg_setup = avg_setupC
