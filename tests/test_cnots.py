@@ -3,7 +3,7 @@ from tests.check import check
 from tests.log_settings import setup_logger
 import z3
 
-logger = setup_logger("had.log")
+logger = setup_logger("ctrl.log")
 avg_setup, avg_solve = check("cnot.slq",
                              "cnot",
                              z3.unsat,
