@@ -1,0 +1,7 @@
+cz[cert](define a:{0, 1})->(define cz_ret:{0, 1})
+pre{
+
+}
+post{
+    assert(cz_ret = a)
+}
