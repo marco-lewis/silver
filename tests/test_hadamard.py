@@ -17,3 +17,16 @@ avg_setup, avg_solve = check("hadamard5.slq",
                                mode=DREAL,
                                runs=10)
 logger.info("Setup average: %s, Run average: %s", str(avg_setup), str(avg_solve))
+
+avg_setup, avg_solve = check("hadamard5_partial.slq",
+                               "hadamard",
+                               z3.unsat,
+                               runs=10)
+logger.info("Setup average: %s, Run average: %s", str(avg_setup), str(avg_solve))
+avg_setup, avg_solve = check("hadamard5_partial.slq",
+                               "hadamard",
+                               DREAL_UNSAT,
+                               check_store=True,
+                               mode=DREAL,
+                               runs=10)
+logger.info("Setup average: %s, Run average: %s", str(avg_setup), str(avg_solve))
