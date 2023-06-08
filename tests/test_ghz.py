@@ -7,5 +7,9 @@ import z3
 logger = setup_logger("ghz.log")
 for i in range(2,9):
     logger.info("Checking ghz" + str(i))
-    avg_setup, avg_solve = check("ghz" + str(i) + ".slq", "ghz", z3.unsat, log_level=logging.ERROR, runs=10)
+    avg_setup, avg_solve = check("ghz" + str(i) + ".slq",
+                                 "ghz",
+                                 z3.unsat,
+                                 log_level=logging.ERROR,
+                                 runs=10)
     logger.info("Setup average: %s, Run average: %s", str(avg_setup), str(avg_solve))

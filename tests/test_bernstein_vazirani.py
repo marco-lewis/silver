@@ -8,5 +8,9 @@ import z3
 logger = setup_logger("bv.log")
 for i in range(2,9):
     logger.info("Checking bv_fixed" + str(i))
-    avg_setup, avg_solve = check("bv_fixed" + str(i) + ".slq", "fixed_bv", z3.unsat, log_level=logging.ERROR, runs=10)
+    avg_setup, avg_solve = check("bv_fixed" + str(i) + ".slq",
+                                 "fixed_bv",
+                                 z3.unsat,
+                                 log_level=logging.ERROR,
+                                 runs=10)
     logger.info("Setup average: %ss, Run average: %ss", str(avg_setup), str(avg_solve))
