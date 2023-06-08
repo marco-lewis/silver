@@ -13,6 +13,7 @@ logger.info("Setup average: %s, Run average: %s", str(avg_setup), str(avg_solve)
 avg_setup, avg_solve = check("hadamard5.slq",
                                "hadamard",
                                DREAL_UNSAT,
+                               check_store=True,
                                mode=DREAL,
                                runs=10)
 logger.info("Setup average: %s, Run average: %s", str(avg_setup), str(avg_solve))
