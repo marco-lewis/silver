@@ -1,5 +1,6 @@
 import logging
-from tests.check import DREAL, folder, check
+from silver.silver.utils import DREAL, DREAL_UNSAT
+from tests.check import folder, check
 from tests.log_settings import setup_logger
 import z3
 
@@ -13,7 +14,7 @@ for i in range(2,9):
     logger.info("Checking constant")
     avg_setupC, avg_solveC = check("dj_fixed" + str(i) + ".slq",
                                 "fixed_dj",
-                                "unsat",
+                                DREAL_UNSAT,
                                 spq_file=folder+"dj_fixed" + str(i) + "const.spq",
                                 check_store=True,
                                 log_level=logging.ERROR,
@@ -24,7 +25,7 @@ for i in range(2,9):
     logger.info("Checking balanced")
     avg_setupB, avg_solveB = check("dj_fixed" + str(i) + ".slq",
                                  "fixed_dj",
-                                 z3.unsat,
+                                 DREAL_UNSAT,
                                  spq_file=folder+"dj_fixed" + str(i) + "bal.spq",
                                  check_store=True,
                                  log_level=logging.ERROR,

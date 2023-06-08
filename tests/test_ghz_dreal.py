@@ -1,5 +1,6 @@
 import logging
-from tests.check import check, DREAL, Z3
+from silver.silver.utils import DREAL, DREAL_UNSAT
+from tests.check import check, Z3
 from tests.log_settings import setup_logger
 import z3
 
@@ -9,7 +10,7 @@ for i in range(2,9):
     logger.info("Checking ghz" + str(i))
     avg_setup, avg_solve = check("ghz" + str(i) + ".slq",
                                  "ghz",
-                                 "unsat",
+                                 DREAL_UNSAT,
                                  log_level=logging.ERROR,
                                  check_store=True,
                                  mode=DREAL,

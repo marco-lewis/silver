@@ -14,6 +14,7 @@ SPEQ_OBS = "speq_obs"
 
 Z3 = "z3"
 DREAL = "dreal"
+DREAL_UNSAT = "unsat"
 
 def log_error(error_msg, logger:logging.Logger, *args):
     if len(args) < 1: logger.error(error_msg)
