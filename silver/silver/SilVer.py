@@ -108,7 +108,6 @@ class SilVer:
         self.json_interp.set_log_level(log_level)
         self.solver.reset()
         self.dreal_time = 0
-        self.delta = delta
         self.check_inputs(silq_file_path,func,spq_file)
 
         logger.info("Verifying %s in %s", func, silq_file_path)
