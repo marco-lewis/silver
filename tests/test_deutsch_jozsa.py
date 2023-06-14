@@ -28,5 +28,5 @@ for i in range(2,9):
                                  runs=10)
     logger.info("(Balanced) Setup average: %s, Run average: %s", str(avg_setupB), str(avg_solveB))
     avg_setup = avg_setupC
-    avg_solve = (avg_solveB + avg_solveC)/2
+    avg_solve = avg_solveB + avg_solveC
     logger.info("Setup average: %s, Run average: %s", str(avg_setup), str(avg_solve))
