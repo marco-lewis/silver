@@ -10,9 +10,9 @@ import z3
 folder = "examples/Silq_Programs/"
 logger = logging.getLogger("check")
 root = logging.getLogger()
-t = 3 * 60 * 60 * 1000
+three_hours = 3 * 60 * 60 * 1000
 
-def check(json_file, func, expected, log_level=logging.INFO, silver_log_level=logging.ERROR, spq_file=None, stats=False, timeout=t, seed=1, check_store=False, mode=Z3, runs=1):
+def check(json_file, func, expected, log_level=logging.INFO, silver_log_level=logging.ERROR, spq_file=None, stats=False, timeout=three_hours, seed=1, check_store=False, mode=Z3, runs=1):
     times = {"setup": [], "solve": []}
     logger.setLevel(log_level)
     logger.info("Starting check on %s in %s", func, json_file)
