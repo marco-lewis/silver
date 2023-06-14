@@ -385,7 +385,7 @@ class SilVer:
             output = result.stdout.decode('utf-8')
             logger.debug("dReal output:\n" + output)
             sat = output[:output.index("\n")]
-            sat = "delta-sat" if "delta-sat" in sat else sat
+            sat = DREAL_SAT if "delta-sat" in sat else sat
             model = output[output.index("\n") + 1:-1]
             os.remove(smt2_path)
             return sat, model

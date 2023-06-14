@@ -3,7 +3,7 @@ import sys
 sys.path.append('../silver')
 
 from silver.silver.SilVer import SilVer
-from silver.silver.utils import DREAL, Z3
+from silver.silver.utils import DREAL, DREAL_SAT, DREAL_UNSAT, Z3
 
 import z3
 
@@ -32,10 +32,10 @@ def check(json_file, func, expected, log_level=logging.INFO, silver_log_level=lo
             if stats: logger.info("Stats:\n%s", silver.solver.statistics())
             
         if mode == DREAL:
-            if sat == "delta-sat": 
+            if sat == DREAL_SAT: 
                 logger.debug("delta:%s", silver.delta)
                 logger.debug("Model/CEX:\n%s", model)
-            if sat == "unsat": logger.debug("Unable to produce unsat core")
+            if sat == DREAL_UNSAT: logger.debug("Unable to produce unsat core")
             if stats: logger.error("No stats for dreal")
 
         time_dict = silver.get_times(mode=mode)

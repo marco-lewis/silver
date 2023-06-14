@@ -14,6 +14,7 @@ SPEQ_OBS = "speq_obs"
 
 Z3 = "z3"
 DREAL = "dreal"
+DREAL_SAT = "delta-sat"
 DREAL_UNSAT = "unsat"
 
 def log_error(error_msg, logger:logging.Logger, *args):
