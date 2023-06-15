@@ -28,7 +28,7 @@ class SilVer:
         self.timeout = timeout
         self.seed = seed if isinstance(seed, int) else np.random.randint(0, 100000)
         self.check_store = check_store
-        self.make_silver_tactic()
+        self.make_silver_tactic(self.timeout)
         self.solver = self.make_solver_instance(self.timeout)
         self.config = {}
         self.assumptions = {}
