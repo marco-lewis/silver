@@ -1,27 +1,35 @@
-# SilVer [In Development/Unstable]
+# SilVer: Silq Verification
 
-Development of the SilVer tool for verifying Silq programs using the Z3 SMT solver.
+SilVer (**Sil**q **Ver**ification) is an automated verification tool for Silq programs using the Z3 SMT solver. It allows users to specify behaviours they want their programs to follow and then verify that the program does meet the specification given.
 
-## File Navigation
+## Installation
 
-`Silq Programs/` - folder containing a number of programs written in Silq and respective SilSpeq files. Also, contains `.ast` where AST of program files in json format
+TBD
 
-`silspeq/` - SilSpeq submodule for specifying behaviour
+### Running Tests
 
-`silver/` - contains files for SilVer
+While within the directory `<path_to_project>/verif-silq/`:
 
-`tests/` - contains tests for checking SilVer functionality
+```python -m tests.test_<test_to_run>```
 
-### Misc Files
+## Usage
+Import SilVer into your python file:
 
-`get_ast(_silq_folder).sh` - makes calls to Silq to generate json and store them in tests. Requires Silq binary from [this Silq fork](https://github.com/marco-lewis/silq/tree/ast-file).
+`import silver`
 
-## Current Workflow
+Create a Python file that creates a `silver = silver.SilVer()` object and run:
 
-1. Add your Silq file to `Silq_Programs`
-
-2. Create a Python file that creates a `silver = SilVer()` object and run:
-
-    `silver.verify_func(<silq-file-location>,<function-to-verify>)`
+`silver.verify_func(<path-to-silq-file>, <function-to-verify>)`
     
-    On the first run a spq file will be created which can be used to specify behaviour using SilSpeq. When ran again, SilVer will verify the function specified.
+On the first run a spq file will be created which can be used to specify behaviour using SilSpeq. When ran again, SilVer will verify the function against the behaviour specified.
+
+## Credits
+
+SilVer was developed by [Marco Lewis](https://github.com/marco-lewis).
+
+SilVer makes use of a fork of [Silq](https://github.com/eth-sri/silq) and the [Z3](https://github.com/Z3Prover/z3) SMT solver.
+
+Other packages used can be found in the [requirements.txt](requirements.txt).
+
+## License
+SilVer is publically available under the MIT License. See [LICENSE](LICENSE) for full details.
