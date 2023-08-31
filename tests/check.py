@@ -17,7 +17,8 @@ def check(json_file, func, expected, log_level=logging.INFO, silver_log_level=lo
     times = {"setup": [], "solve": []}
     memory_used = []
     logger.setLevel(log_level)
-    logger.info("Starting check on %s in %s", func, json_file)
+    
+    root.info("Starting check on %s in %s", func, json_file)
 
     silver = SilVer(timeout=timeout, seed=seed, check_store=check_store)
 

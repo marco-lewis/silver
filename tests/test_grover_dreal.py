@@ -8,7 +8,7 @@ import z3
 logger = setup_logger("groverdreal.log")
 # 1 Call
 # 2 qubits - uses certainty
-logger.info("Checking grover_fixed2")
+
 times = check("grover_fixed2.slq",
                 "grover_fixed",
                 DREAL_UNSAT,
@@ -19,7 +19,7 @@ times = check("grover_fixed2.slq",
 
 
 # 2 Calls
-logger.info("Checking grover_fixed3")
+
 times = check("grover_fixed3.slq",
                 "grover_fixed",
                 DREAL_UNSAT,

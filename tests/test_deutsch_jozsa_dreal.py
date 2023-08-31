@@ -10,8 +10,6 @@ import z3
 # dj_fixed<n> - Deutsch-Jozsa for n-qubits
 logger = setup_logger("djdreal.log")
 for i in range(2,9):
-    logger.info("Checking fixed_dj" + str(i))
-    logger.info("Checking constant")
     times = check("dj_fixed" + str(i) + ".slq",
                     "fixed_dj",
                     DREAL_UNSAT,

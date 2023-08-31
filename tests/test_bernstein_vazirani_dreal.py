@@ -8,7 +8,7 @@ import z3
 # bv_fixed<n> - Deutsch-Jozsa for n-qubits
 logger = setup_logger("bvdreal.log")
 for i in range(2,9):
-    logger.info("Checking bv_fixed" + str(i))
+    )
     times = check("bv_fixed" + str(i) + ".slq",
                 "fixed_bv",
                 DREAL_UNSAT,

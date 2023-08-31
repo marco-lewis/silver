@@ -9,7 +9,6 @@ import z3
 # dj_fixed<n> - Deutsch-Jozsa for n-qubits
 logger = setup_logger("dj.log")
 for i in range(2,9):
-    logger.info("Checking fixed_dj" + str(i))
     times = check("dj_fixed" + str(i) + ".slq",
                 "fixed_dj",
                 z3.unsat,
