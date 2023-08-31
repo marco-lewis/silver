@@ -14,7 +14,6 @@ times = check("grover_fixed2.slq",
                 DREAL_UNSAT,
                 log_level=logging.ERROR,
                 mode=DREAL,
-                runs=10,
                 check_store=True)
 
 
@@ -25,5 +24,4 @@ times = check("grover_fixed3.slq",
                 DREAL_UNSAT,
                 log_level=logging.ERROR,
                 mode=DREAL,
-                runs=10,
                 check_store=True)
