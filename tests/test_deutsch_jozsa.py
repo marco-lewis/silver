@@ -14,5 +14,5 @@ for i in range(2,9):
                 "fixed_dj",
                 z3.unsat,
                 spq_file=folder+"dj_fixed" + str(i) + ".spq",
-                log_level=logging.INFO,
+                log_level=logging.ERROR,
                 )

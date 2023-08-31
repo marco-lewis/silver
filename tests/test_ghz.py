@@ -1,5 +1,5 @@
 import logging
-from tests.check import check, report_results
+from tests.check import check
 from tests.log_settings import setup_logger
 import z3
 

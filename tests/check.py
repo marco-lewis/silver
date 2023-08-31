@@ -15,6 +15,7 @@ THREE_HOURS = 3 * 60 * 60 * 1000
 
 def check(json_file, func, expected, log_level=logging.INFO, silver_log_level=logging.ERROR, spq_file=None, stats=False, timeout=THREE_HOURS, seed=1, check_store=False, mode=Z3, delta=0.0001, runs=10):
     times = {"setup": [], "solve": []}
+    memory_used = []
     logger.setLevel(log_level)
     logger.info("Starting check on %s in %s", func, json_file)
 
@@ -43,9 +44,11 @@ def check(json_file, func, expected, log_level=logging.INFO, silver_log_level=lo
         logger.info("Setup time: %s, Verification time: %s", time_dict["setup"], time_dict["solve"])
         times["setup"].append(time_dict["setup"])
         times["solve"].append(time_dict["solve"])
+        memory_used.append(silver.solver.statistics().get_key_value("memory"))
         logger.info("Done.")
         sys.stdout.flush()
     
-    root.info("Setup average: %s, Run average: %s", str(sum(times["setup"])/runs), str(sum(times["solve"])/runs))
-    root.info("Setup standard deviation: %s, Run standard deviation: %s", str(std(times["setup"])), str(std(times["solve"])))
+    root.info("Setup average (s): %s, Run average (s): %s", str(sum(times["setup"])/runs), str(sum(times["solve"])/runs))
+    root.info("Setup standard deviation (s): %s, Run standard deviation (s): %s", str(std(times["setup"])), str(std(times["solve"])))
+    root.info("Average memory usage (MB): %s, Standard dev: %s", str(sum(memory_used)/runs), str(std(memory_used)))
     return times

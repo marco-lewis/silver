@@ -1,6 +1,6 @@
 import logging
 from silver.silver.utils import DREAL, DREAL_UNSAT
-from tests.check import check, folder, report_results
+from tests.check import check, folder
 from tests.log_settings import setup_logger
 import z3
 
@@ -16,7 +16,7 @@ times = check("grover_fixed2.slq",
                 mode=DREAL,
                 runs=10,
                 check_store=True)
-report_results(logger, times)
+
 
 # 2 Calls
 logger.info("Checking grover_fixed3")
@@ -27,4 +27,3 @@ times = check("grover_fixed3.slq",
                 mode=DREAL,
                 runs=10,
                 check_store=True)
-report_results(logger, times)
