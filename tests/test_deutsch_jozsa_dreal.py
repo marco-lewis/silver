@@ -20,4 +20,3 @@ for i in range(2,9):
                     log_level=logging.ERROR,
                     mode=DREAL,
                     )
-    report_results(logger, times)

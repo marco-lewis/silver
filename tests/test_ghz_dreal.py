@@ -15,4 +15,3 @@ for i in range(2,9):
                 check_store=True,
                 mode=DREAL,
                 )
-    report_results(logger, times)

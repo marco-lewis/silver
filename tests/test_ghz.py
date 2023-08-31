@@ -12,4 +12,3 @@ for i in range(2,9):
                   z3.unsat,
                   log_level=logging.ERROR,
                   )
-    report_results(logger, times)

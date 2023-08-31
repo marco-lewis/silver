@@ -1,5 +1,5 @@
 import logging
-from tests.check import check, folder, report_results
+from tests.check import check, folder
 from tests.log_settings import setup_logger
 import z3
 
@@ -14,6 +14,5 @@ for i in range(2,9):
                 "fixed_dj",
                 z3.unsat,
                 spq_file=folder+"dj_fixed" + str(i) + ".spq",
-                log_level=logging.ERROR,
+                log_level=logging.INFO,
                 )
-    report_results(logger, times)
