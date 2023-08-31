@@ -17,7 +17,7 @@ def check(json_file, func, expected, log_level=logging.INFO, silver_log_level=lo
     times = {"setup": [], "solve": []}
     memory_used = []
     logger.setLevel(log_level)
-    
+
     root.info("Starting check on %s in %s", func, json_file)
 
     silver = SilVer(timeout=timeout, seed=seed, check_store=check_store)
@@ -49,7 +49,7 @@ def check(json_file, func, expected, log_level=logging.INFO, silver_log_level=lo
         logger.info("Done.")
         sys.stdout.flush()
     
-    root.info("Setup average (s): %s, Run average (s): %s", str(sum(times["setup"])/runs), str(sum(times["solve"])/runs))
-    root.info("Setup standard deviation (s): %s, Run standard deviation (s): %s", str(std(times["setup"])), str(std(times["solve"])))
-    root.info("Average memory usage (MB): %s, Standard dev: %s", str(sum(memory_used)/runs), str(std(memory_used)))
+    root.info("Setup time (s): Average: %s, Standard Deviation: %s", str(sum(times["setup"])/runs), str(std(times["setup"])))
+    root.info("Solve time (s): Average:%s, Standard Deviation: %s", str(sum(times["solve"])/runs), str(std(times["solve"])))
+    root.info("Memory usage (MB): Average: %s, Standard Deviation: %s", str(sum(memory_used)/runs), str(std(memory_used)))
     return times
