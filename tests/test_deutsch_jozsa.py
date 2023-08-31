@@ -10,7 +10,6 @@ import z3
 logger = setup_logger("dj.log")
 for i in range(2,9):
     logger.info("Checking fixed_dj" + str(i))
-    logger.info("Checking constant")
     times = check("dj_fixed" + str(i) + ".slq",
                 "fixed_dj",
                 z3.unsat,
