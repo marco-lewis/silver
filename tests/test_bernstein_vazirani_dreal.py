@@ -1,6 +1,6 @@
 import logging
 from silver.silver.utils import DREAL, DREAL_UNSAT
-from tests.check import check
+from tests.check import check, report_results
 from tests.log_settings import setup_logger
 import z3
 
@@ -9,12 +9,11 @@ import z3
 logger = setup_logger("bvdreal.log")
 for i in range(2,9):
     logger.info("Checking bv_fixed" + str(i))
-    avg_setup, avg_solve = check("bv_fixed" + str(i) + ".slq",
-                                 "fixed_bv",
-                                 DREAL_UNSAT,
-                                 check_store=True,
-                                 log_level=logging.ERROR,
-                                 mode=DREAL,
-                                 runs=10
-                                 )
-    logger.info("Setup average: %ss, Run average: %ss", str(avg_setup), str(avg_solve))
+    times = check("bv_fixed" + str(i) + ".slq",
+                "fixed_bv",
+                DREAL_UNSAT,
+                check_store=True,
+                log_level=logging.ERROR,
+                mode=DREAL,
+                )
+    report_results(logger, times)

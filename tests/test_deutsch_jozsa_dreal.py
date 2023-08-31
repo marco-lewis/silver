@@ -1,6 +1,6 @@
 import logging
 from silver.silver.utils import DREAL, DREAL_UNSAT
-from tests.check import folder, check
+from tests.check import folder, check, report_results
 from tests.log_settings import setup_logger
 import z3
 
@@ -12,26 +12,12 @@ logger = setup_logger("djdreal.log")
 for i in range(2,9):
     logger.info("Checking fixed_dj" + str(i))
     logger.info("Checking constant")
-    avg_setupC, avg_solveC = check("dj_fixed" + str(i) + ".slq",
-                                "fixed_dj",
-                                DREAL_UNSAT,
-                                spq_file=folder+"dj_fixed" + str(i) + "const.spq",
-                                check_store=True,
-                                log_level=logging.ERROR,
-                                mode=DREAL,
-                                runs=10
-                                )
-    logger.info("(Constant) Setup average: %s, Run average: %s", str(avg_setupC), str(avg_solveC))
-    logger.info("Checking balanced")
-    avg_setupB, avg_solveB = check("dj_fixed" + str(i) + ".slq",
-                                 "fixed_dj",
-                                 DREAL_UNSAT,
-                                 spq_file=folder+"dj_fixed" + str(i) + "bal.spq",
-                                 check_store=True,
-                                 log_level=logging.ERROR,
-                                 mode=DREAL,
-                                 runs=10)
-    logger.info("(Balanced) Setup average: %s, Run average: %s", str(avg_setupB), str(avg_solveB))
-    avg_setup = avg_setupC
-    avg_solve = avg_solveB + avg_solveC
-    logger.info("Setup average: %s, Run average: %s", str(avg_setup), str(avg_solve))
+    times = check("dj_fixed" + str(i) + ".slq",
+                    "fixed_dj",
+                    DREAL_UNSAT,
+                    spq_file=folder+"dj_fixed" + str(i) + ".spq",
+                    check_store=True,
+                    log_level=logging.ERROR,
+                    mode=DREAL,
+                    )
+    report_results(logger, times)

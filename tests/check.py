@@ -5,6 +5,7 @@ sys.path.append('../silver')
 from silver.silver.SilVer import SilVer
 from silver.silver.utils import DREAL, DREAL_SAT, DREAL_UNSAT, Z3
 
+from numpy import std
 import z3
 
 folder = "examples/Silq_Programs/"
@@ -12,7 +13,7 @@ logger = logging.getLogger("check")
 root = logging.getLogger()
 THREE_HOURS = 3 * 60 * 60 * 1000
 
-def check(json_file, func, expected, log_level=logging.INFO, silver_log_level=logging.ERROR, spq_file=None, stats=False, timeout=THREE_HOURS, seed=1, check_store=False, mode=Z3, delta=0.0001, runs=1):
+def check(json_file, func, expected, log_level=logging.INFO, silver_log_level=logging.ERROR, spq_file=None, stats=False, timeout=THREE_HOURS, seed=1, check_store=False, mode=Z3, delta=0.0001, runs=10):
     times = {"setup": [], "solve": []}
     logger.setLevel(log_level)
     logger.info("Starting check on %s in %s", func, json_file)
@@ -44,4 +45,9 @@ def check(json_file, func, expected, log_level=logging.INFO, silver_log_level=lo
         times["solve"].append(time_dict["solve"])
         logger.info("Done.")
         sys.stdout.flush()
-    return sum(times["setup"])/runs, sum(times["solve"])/runs
+    return times
+
+def report_results(logger, times, runs=10):
+    logger.info("Setup average: %s, Run average: %s", str(sum(times["setup"])/runs), str(sum(times["solve"])/runs))
+    logger.info("Setup standard deviation: %s, Run standard deviation: %s", str(std(times["setup"])), str(std(times["solve"])))
+    
