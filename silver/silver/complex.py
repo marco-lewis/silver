@@ -6,6 +6,7 @@
 #
 # Author: Leonardo de Moura (leonardo)
 ############################################
+# Modified by: Marco Lewis
 
 import sys
 if sys.version_info.major >= 3:
