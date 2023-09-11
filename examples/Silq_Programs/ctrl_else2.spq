@@ -1,8 +1,0 @@
-ctrl_else2(define a:{0, 1}^3)->(define ctrl_else2_ret:{0, 1}^3)
-pre{
-
-}
-post{
-    assert((a < 3) -> ctrl_else2_ret >= 3)
-    assert((a >= 3) -> ¬ctrl_else2_ret = 7)
-}

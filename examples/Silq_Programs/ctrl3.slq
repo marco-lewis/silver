@@ -1,7 +1,0 @@
-def ctrl3(a : !uint[3]){
-    b := a;
-    if b > 5 {
-        b = b - 3;
-    }
-    return b;
-}

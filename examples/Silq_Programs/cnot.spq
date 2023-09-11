@@ -1,8 +1,0 @@
-cnot(define a:{0, 1},define b:{0, 1})->(define cnot_ret:{0, 1})
-pre{
-
-}
-post{
-    assert(a = 1 -> cnot_ret = 1 - b)
-    assert(a = 0 -> cnot_ret = b)
-}

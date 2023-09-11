@@ -1,7 +1,0 @@
-def cnot(a:!B, b:!B):!B{
-    r := b;
-    if a{
-        r = X(r);
-    }
-    return r;
-}

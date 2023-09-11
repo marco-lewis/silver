@@ -1,8 +1,0 @@
-def hadamard(){
-    x := 0 :uint[5];
-    x[2] := H(x[2]);
-    x[3] := H(x[3]);
-    x[4] := H(x[4]);
-    x := measure(x);
-    return x;
-}

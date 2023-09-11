@@ -1,7 +1,0 @@
-ctrl3(define a:{0, 1}^3)->(define ctrl3_ret:{0, 1}^3)
-pre{
-
-}
-post{
-    assert(ctrl3_ret <= 5)
-}

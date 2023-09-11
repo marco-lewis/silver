@@ -1,8 +1,0 @@
-ccnot(define a:{0, 1},define b:{0, 1}, define c:{0, 1})->(define ccnot_ret:{0, 1})
-pre{
-
-}
-post{
-    assert(a * b = 1 -> ccnot_ret = 1 - c)
-    assert( (¬(a * b = 1)) -> ccnot_ret = c)
-}
