@@ -9,3 +9,4 @@ examples/Silq_Programs/.obl/*
 examples/todo/*
 tests/logs/*.log
 .VSCodeCounter/
+env
