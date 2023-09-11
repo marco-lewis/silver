@@ -3,11 +3,9 @@ __pycache__/
 *.ipynb
 example.py
 Deprecated/
-toy.py
-tests_analysis.py
 examples/Silq_Programs/.ast/*
 examples/Silq_Programs/.hash/*
 examples/Silq_Programs/.obl/*
 examples/todo/*
-logs/*.log
+tests/logs/*.log
 .VSCodeCounter/
