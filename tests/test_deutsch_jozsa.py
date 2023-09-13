@@ -12,4 +12,5 @@ for i in range(2,6):
                 z3.unsat,
                 spq_file=folder+"dj_fixed" + str(i) + ".spq",
                 log_level=logging.ERROR,
+                timeout=20*60*1000
                 )
