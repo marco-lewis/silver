@@ -7,4 +7,5 @@ logger = setup_logger("bv.log")
 times = check("setup.slq",
                 "main",
                 z3.unsat,
+                log_level=logging.ERROR,
                 )
