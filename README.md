@@ -4,7 +4,9 @@ SilVer (**Sil**q **Ver**ification) is an automated verification tool for Silq pr
 
 ## Installation
 
-TBD
+Requires Python 3.10.4
+
+Full instructions to be released soon.
 
 ### Running Tests
 
@@ -22,6 +24,8 @@ Create a Python file that creates a `silver = silver.SilVer()` object and run:
 `silver.verify_func(<path-to-silq-file>, <function-to-verify>)`
     
 On the first run a spq file will be created which can be used to specify behaviour using SilSpeq. When ran again, SilVer will verify the function against the behaviour specified.
+
+Full documentation to be released soon.
 
 ## Credits
 
