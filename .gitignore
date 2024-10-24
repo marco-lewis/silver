@@ -10,3 +10,4 @@ examples/todo/*
 tests/logs/*.log
 .VSCodeCounter/
 env
+*.pyc
