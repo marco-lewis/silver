@@ -6,7 +6,17 @@ SilVer (**Sil**q **Ver**ification) is an automated verification tool for Silq pr
 
 Requires Python 3.10.4
 
-Full instructions to be released soon.
+1. Preparing Silq
+    1. Download/clone the following fork of Silq: https://github.com/marco-lewis/silq/tree/ast-file (make sure to be on the branch ast-file)
+    2. Build Silq, following the instructions in the README
+    3. Add the Silq folder to the path
+
+2. Open a terminal in the `silver` directory.
+3. Create the python environment: `python3.10 -m venv env`
+
+4. Activate the environment: `source env/bin/activate`
+
+5. Install requirements: `pip install -r requirements.txt`
 
 ### Running Tests
 
