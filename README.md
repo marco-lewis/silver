@@ -24,6 +24,9 @@ While within the directory `<path_to_project>/verif-silq/`:
 
 ```python -m tests.test_<test_to_run>```
 
+## Docker
+Alternatively, there is a Docker artifact available at https://zenodo.org/records/11395797
+
 ## Usage
 Import SilVer into your python file:
 
@@ -36,6 +39,22 @@ Create a Python file that creates a `silver = silver.SilVer()` object and run:
 On the first run a spq file will be created which can be used to specify behaviour using SilSpeq. When ran again, SilVer will verify the function against the behaviour specified.
 
 Full documentation to be released soon.
+
+## Reference
+If you use the tool in your research, please add a citation to the publication:
+```
+@INPROCEEDINGS{Lewis24,
+  author={Lewis, Marco and Zuliani, Paolo and Soudjani, Sadegh},
+  booktitle={2024 IEEE International Conference on Quantum Software (QSW)}, 
+  title={Automated Verification of Silq Quantum Programs using SMT Solvers}, 
+  year={2024},
+  volume={},
+  number={},
+  pages={125-134},
+  keywords={Silver;Computer languages;Adaptation models;Quantum computing;Quantum entanglement;Computational modeling;Programming;Quantum programs;Program verification;SMT Solvers;Silq;Intermediate representation},
+  doi={10.1109/QSW62656.2024.00027}
+}
+```
 
 ## Credits
 
