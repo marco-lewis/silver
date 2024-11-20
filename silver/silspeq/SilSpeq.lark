@@ -41,6 +41,7 @@
     | "(" ")"                           -> unit
     | bool                              -> bool
     | bool "^" NUMBER                   -> int
+    | bool "^" NAME                     -> int
     | type ("->" type)+                 -> function
     | "!" type                          -> classical
 
