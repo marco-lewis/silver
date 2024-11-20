@@ -303,19 +303,21 @@ class SilVer:
 
         if speq_flag_itp.quantum_out: pass
 
-    def get_speq_obs(self, file):
+    def get_speq_obs(self, file, hyperparameters={}):
         tree = self.speq_parser.parse_file(file)
-        self.check_speq_sat(tree)
-        speq_z3_itp = SilSpeqZ3Interpreter()
+        speq_z3_itp = SilSpeqZ3Interpreter(hyperparameters=hyperparameters)
+        self.check_speq_sat(tree, speq_z3_itp)
         return speq_z3_itp.visit(tree)
     
-    def check_speq_sat(self, tree):
+    def check_speq_sat(self, tree, speq_itp : SilSpeqZ3Interpreter):
         """
         Given a SilSpeq tree, check that all generated Z3 expressions are satisfiable
         """
         speq_solver = self.make_solver_instance()
-        speq_itp = SilSpeqZ3Interpreter(False)
+        speq_itp.not_post = False
         obl_dict = speq_itp.visit(tree)
+        speq_itp.not_post = True
+
         self.assumptions = speq_itp.assumptions
         for func_name in obl_dict:
             func_obls = obl_dict[func_name]

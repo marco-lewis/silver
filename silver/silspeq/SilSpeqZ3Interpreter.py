@@ -20,10 +20,11 @@ FUNC = "FUNC"
 CLASSICAL = "CLASSICAL"
 
 class SilSpeqZ3Interpreter(Interpreter):  
-    def __init__(self, not_post : bool = True):
+    def __init__(self, not_post : bool = True, hyperparameters={}):
         self.vars = {}
         self.types = {}
         self.not_post = not_post
+        self.hyperparameters = hyperparameters
         self.assumptions = []
         super().__init__()
 
@@ -52,7 +53,8 @@ class SilSpeqZ3Interpreter(Interpreter):
         return new
 
     @visit_children_decor
-    def funcspec(self, tree): return tree
+    def funcspec(self, tree):
+        return tree
 
     @visit_children_decor
     def pre(self, stmts): return stmts
@@ -128,7 +130,14 @@ class SilSpeqZ3Interpreter(Interpreter):
     def assumption(self, zexpr):
         self.assumptions.append(zexpr)
         return True
-    
+
+    @visit_children_decor
+    def hyperparams(self, v):
+        for param in v:
+            if param.value not in self.hyperparameters:
+                raise Exception("Hyperparameter missing: " + param.value)
+        return []
+
     # Ignore most flags
     def rand(self, v): return []
     def qout(self, v): return []
@@ -150,7 +159,8 @@ class SilSpeqZ3Interpreter(Interpreter):
     def int(self, n):
         if n == []:
             return 1
-        if n[0] == BOOL: return int(n[1])
+        if n[0] == BOOL:
+            return int(self.token(n[1]))
         return int(n[0].value)
     
     def classical(self, a): return CLASSICAL
@@ -284,4 +294,6 @@ class SilSpeqZ3Interpreter(Interpreter):
 
     def NUMBER(self, n: Token): return float(n.value)
 
-    def NAME(self, var: Token): return self.vars[var.value]
+    def NAME(self, var: Token):
+        if var.value in self.hyperparameters: return self.hyperparameters[var.value]
+        return self.vars[var.value]
