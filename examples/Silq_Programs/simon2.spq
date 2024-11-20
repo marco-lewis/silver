@@ -1,4 +1,4 @@
-simon[rand](define f:{0, 1}^2->{0, 1}^2)->(define simon_ret:{0, 1}^2)
+simon{rand}(define f:{0, 1}^2->{0, 1}^2)->(define simon_ret:{0, 1}^2)
 pre{
     define b : {0,1}^2
     assert(b = 0 -> distinct(f(0), f(1), f(2), f(3)))

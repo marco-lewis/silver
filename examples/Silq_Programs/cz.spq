@@ -1,4 +1,4 @@
-cz[cert](define a:{0, 1})->(define cz_ret:{0, 1})
+cz{cert}(define a:{0, 1})->(define cz_ret:{0, 1})
 pre{
 
 }

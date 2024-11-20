@@ -1,4 +1,4 @@
-whp[whp]()->(define whp_ret:{0, 1}^4)
+whp{whp}()->(define whp_ret:{0, 1}^4)
 pre{
 
 }
@@ -14,7 +14,7 @@ post{
     assert(whpatval_ret = a)
 }
 
-cert[cert]()->(define cert_ret:{0, 1}^2)
+cert{cert}()->(define cert_ret:{0, 1}^2)
 pre{
 
 }
@@ -22,7 +22,7 @@ post{
     assert(cert_ret = 1)
 }
 
-rand[rand]()->(define rand_ret:{0, 1}^2)
+rand{rand}()->(define rand_ret:{0, 1}^2)
 pre{
 
 }

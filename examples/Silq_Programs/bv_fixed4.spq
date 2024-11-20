@@ -6,7 +6,7 @@ post{
 
 }
 
-fixed_bv[cert](define f:{0, 1}^4->{0, 1})->(define fixed_bv_ret:{0, 1}^4)
+fixed_bv{cert}(define f:{0, 1}^4->{0, 1})->(define fixed_bv_ret:{0, 1}^4)
 pre{
     define s : {0,1}^4
     define x : {0,1}^4

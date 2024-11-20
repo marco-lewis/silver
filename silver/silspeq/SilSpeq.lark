@@ -1,9 +1,13 @@
 ?start: (func_spec)* -> specs
 
-?func_spec: func funcflags "(" (defs)? ")" "->" "(" (defs)? ")" pre post -> funcspec
+?func_spec: func ("[" hyperparameters "]")? ("{" funcflags "}")? "(" (defs)? ")" "->" "(" (defs)? ")" pre post -> funcspec
+
+// Hyperparameters
+?hyperparameters: hyperparam ("," hyperparam)*
+?hyperparam: NAME ":" type      -> hyperparam
 
 // Flag Rules
-?funcflags: ("["funcflag ("," funcflag)*"]")?    -> funcflags
+?funcflags: funcflag ("," funcflag)*    -> funcflags
 ?funcflag: "qout"               -> qout
         | "rand"                -> rand
         | "cert"                -> cert

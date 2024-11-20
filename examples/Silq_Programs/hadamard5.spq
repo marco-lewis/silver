@@ -1,4 +1,4 @@
-hadamard[whp(1/32)]()->(define hadamard_ret:{0, 1}^5)
+hadamard{whp(1/32)}()->(define hadamard_ret:{0, 1}^5)
 pre{
 
 }

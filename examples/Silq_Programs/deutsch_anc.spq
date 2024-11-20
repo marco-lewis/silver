@@ -1,4 +1,4 @@
-deutsch[cert](define f:{0, 1}->{0, 1})->(define deutsch_ret:{0,1})
+deutsch{cert}(define f:{0, 1}->{0, 1})->(define deutsch_ret:{0,1})
 pre{
 
 }
