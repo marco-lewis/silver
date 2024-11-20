@@ -1,6 +1,6 @@
 ?start: (func_spec)* -> specs
 
-?func_spec: func ("[" hyperparameters "]")? ("{" funcflags "}")? "(" (defs)? ")" "->" "(" (defs)? ")" pre post -> funcspec
+?func_spec: func ("{" funcflags "}")? ("[" hyperparameters "]")? "(" (defs)? ")" "->" "(" (defs)? ")" pre post -> funcspec
 
 // Hyperparameters
 ?hyperparameters: hyperparam ("," hyperparam)*
