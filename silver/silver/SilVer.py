@@ -81,24 +81,6 @@ class SilVer:
         else:
             logger.info("Unable to determine if satisfiable")
             logger.debug("Satisfiability: %s", sat)
-            
-    def check_flags(self, file, func):
-        speq_flag_itp = SilSpeqFlagInterpreter(func)
-        tree = self.speq_parser.parse_file(file)
-        flags = speq_flag_itp.visit(tree)
-        self.config[MEASURE_OPTION] = []
-
-        for flag, other in flags:
-            if isinstance(flag, MeasureOptions): self.config[MEASURE_OPTION].append(flag)
-            if flag == HIGH_PROB:
-                low = other
-                if low >= 0 and low <= 1: self.config[MEASURE_BOUND] = low
-                else: error("Bound given for highprob flag is not between 0 and 1")
-            if flag == SPECIFIC_VALUE:
-                self.config[MEASURE_MARK] = other
-        if self.config[MEASURE_OPTION] == []: self.config[MEASURE_OPTION].append(RAND)
-
-        if speq_flag_itp.quantum_out: pass
 
     def verify_func(self, silq_file_path, func, log_level=logging.WARNING, spq_file=None, mode=Z3, delta = 0.0001):
         self.json_interp = JSONInterpreter()
@@ -303,6 +285,24 @@ class SilVer:
         if not(exists(folder)): os.mkdir(folder)
         path = "/".join(path) + ".smt2"
         return path
+    
+    def check_flags(self, file, func):
+        speq_flag_itp = SilSpeqFlagInterpreter(func)
+        tree = self.speq_parser.parse_file(file)
+        flags = speq_flag_itp.visit(tree)
+        self.config[MEASURE_OPTION] = []
+
+        for flag, other in flags:
+            if isinstance(flag, MeasureOptions): self.config[MEASURE_OPTION].append(flag)
+            if flag == HIGH_PROB:
+                low = other
+                if low >= 0 and low <= 1: self.config[MEASURE_BOUND] = low
+                else: error("Bound given for highprob flag is not between 0 and 1")
+            if flag == SPECIFIC_VALUE:
+                self.config[MEASURE_MARK] = other
+        if self.config[MEASURE_OPTION] == []: self.config[MEASURE_OPTION].append(RAND)
+
+        if speq_flag_itp.quantum_out: pass
 
     def get_speq_obs(self, file):
         tree = self.speq_parser.parse_file(file)
