@@ -1,0 +1,21 @@
+main()->(define main_ret:())
+pre{
+
+}
+post{
+
+}
+
+dj[n :!N]{rand}(define f:{0, 1}^n->{0, 1})->(define fixed_dj_ret:{0, 1}^2)
+pre{
+    define y : N
+    define x : {0,1}^n
+    define bal : {0,1}
+
+    assert(SUM[x](f) = y)
+    assert((bal = 0 & (y = 0 | y = 2^n)) | (bal = 1 & y = 2^(n-1)))
+}
+post{
+    assert(bal = 0 -> fixed_dj_ret = 0)
+    assert(bal = 1 -> ¬fixed_dj_ret = 0)
+}
