@@ -18,8 +18,9 @@ logger = logging.getLogger("JSONinter")
 class JSONInterpreter:
     isqrt2 = Real("isqrt2")
 
-    def __init__(self, log_level=logging.INFO):
+    def __init__(self, log_level=logging.INFO, hyperparameters={}):
         self.program = Program()
+        self.hyperparameters = hyperparameters
         logger.setLevel(log_level)
 
     def set_log_level(self, log_level):

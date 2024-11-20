@@ -1,6 +1,6 @@
 // import dj_oracles;
 
-def fixed_dj[n : !N](f: const uint[n] !->qfree B){
+def dj[n : !N](f: const uint[n] !->qfree B){
     x := 0:uint[n];
 
     x[0] := H(x[0]);

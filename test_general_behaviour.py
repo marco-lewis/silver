@@ -1,6 +1,7 @@
 from silver.silver.SilVer import SilVer
 
-silver = SilVer()
-obs = silver.get_speq_obs("examples/Silq_Programs/dj_general.spq", hyperparameters={'n': 2})
+import logging
 
-print(obs)
+silver = SilVer()
+file_name = "examples/Silq_Programs/dj_general"
+silver.verify_func(file_name + ".slq", "dj", log_level=logging.INFO, spq_file = file_name + ".spq", hyperparameters={'n': 2})

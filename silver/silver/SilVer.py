@@ -84,7 +84,13 @@ class SilVer:
             logger.info("Unable to determine if satisfiable")
             logger.debug("Satisfiability: %s", sat)
 
-    def verify_func(self, silq_file_path, func, log_level=logging.WARNING, spq_file=None, mode=Z3, delta = 0.0001):
+    def verify_func(self, silq_file_path,
+                    func,
+                    log_level=logging.WARNING,
+                    spq_file=None,
+                    hyperparameters={},
+                    mode=Z3,
+                    delta = 0.0001):
         logger.level = log_level
         self.json_interp.set_log_level(log_level)
         self.solver.reset()
@@ -94,7 +100,7 @@ class SilVer:
 
         logger.info("Verifying %s in %s", func, silq_file_path)
         json_file_path = self.generate_ast_file(silq_file_path)
-        obl_dict = self.make_obs(json_file_path, func, spq_file=spq_file)
+        obl_dict = self.make_obs(json_file_path, func, spq_file=spq_file, hyperparameters=hyperparameters)
         obs = obl_dict[PROG_OBS] + obl_dict[SPEQ_OBS]
         for i in range(len(obs)): self.solver.assert_and_track(obs[i], func + '_tracker' + str(i))
         logger.info("Full Obligations in Solver")
@@ -197,7 +203,7 @@ class SilVer:
         os.rename(json_file_path, json_file_path_dest)
         return json_file_path_dest
 
-    def make_obs(self, json_file_path, func, spq_file=None):
+    def make_obs(self, json_file_path, func, spq_file=None, hyperparameters={}):
         self.setup_time = 0
         start = time.time()
         self.check_speq_exists(json_file_path, spq_file=spq_file)
@@ -205,7 +211,7 @@ class SilVer:
         self.check_flags(spq_path, func)
         
         logger.info("Generating SilSpeq proof obligations...")
-        speq_obs = self.get_speq_obs(spq_path)
+        speq_obs = self.get_speq_obs(spq_path, hyperparameters=hyperparameters)
         for key in speq_obs: speq_obs[key] = self.clean_obligation_list(speq_obs[key])
         logger.info("SilSpeq proof obligations generated")
         logger.debug("SpeqObligations:\n%s", speq_obs)
